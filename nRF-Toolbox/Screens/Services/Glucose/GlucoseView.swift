@@ -76,26 +76,27 @@ struct GlucoseView: View {
             }
         }
         
-        InlinePicker(title: "Mode", systemImage: "square.on.square", selectedValue: $viewMode) { newMode in
-            viewModel.requestRecords(newMode.recordOperator)
-        }
-        .labeledContentStyle(.accentedContent)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    switch viewMode {
-                    case .all:
-                        viewModel.requestRecords(.allRecords)
-                    case .first:
-                        viewModel.requestRecords(.firstRecord)
-                    case .last:
-                        viewModel.requestRecords(.lastRecord)
+        InlinePicker(title: "Mode", systemImage: "square.on.square", selectedValue: $viewMode)
+            .onChange(of: viewMode) {
+                viewModel.requestRecords(viewMode.recordOperator)
+            }
+            .labeledContentStyle(.accentedContent)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        switch viewMode {
+                        case .all:
+                            viewModel.requestRecords(.allRecords)
+                        case .first:
+                            viewModel.requestRecords(.firstRecord)
+                        case .last:
+                            viewModel.requestRecords(.lastRecord)
+                        }
+                    } label: {
+                        Image(systemName: "arrow.counterclockwise")
                     }
-                } label: {
-                    Image(systemName: "arrow.counterclockwise")
                 }
             }
-        }
     }
     
     // MARK: noDataView()
