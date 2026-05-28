@@ -2073,7 +2073,7 @@
 			repositoryURL = "https://github.com/NordicPlayground/IOS-Common-Libraries.git";
 			requirement = {
 				kind = exactVersion;
-				version = 0.2.1;
+				version = 0.2.4;
 			};
 		};
 		018873CA2A583C3300253273 /* XCRemoteSwiftPackageReference "IOS-BLE-Library" */ = {

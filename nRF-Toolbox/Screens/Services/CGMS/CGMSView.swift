@@ -49,12 +49,13 @@ struct CGMSView: View {
             }
         }
         
-        InlinePicker(title: "Mode", systemImage: "square.on.square", selectedValue: $mode) { newMode in
-            Task {
-                await viewModel.requestRecords(newMode.recordOperator)
+        InlinePicker(title: "Mode", systemImage: "square.on.square", selectedValue: $mode)
+            .onChange(of: mode) {
+                Task {
+                    await viewModel.requestRecords(mode.recordOperator)
+                }
             }
-        }
-        .labeledContentStyle(.accentedContent)
+            .labeledContentStyle(.accentedContent)
     }
     
     @ViewBuilder
