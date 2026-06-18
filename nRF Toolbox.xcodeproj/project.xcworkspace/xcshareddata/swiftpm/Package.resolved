@@ -1,4 +1,5 @@
 {
+  "originHash" : "bd5108e377831e4040f93866d455b7989268952dc818ab68890c98edd6fb6665",
   "pins" : [
     {
       "identity" : "aexml",
@@ -19,6 +20,15 @@
       }
     },
     {
+      "identity" : "ios-ble-library",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/nordicsemi/IOS-BLE-Library.git",
+      "state" : {
+        "revision" : "f610daf7cdb1b0e1a5eaac19917db906221b8102",
+        "version" : "0.4.4"
+      }
+    },
+    {
       "identity" : "ios-bluetooth-numbers-database",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/NickKibish/iOS-Bluetooth-Numbers-Database.git",
@@ -28,21 +38,21 @@
       }
     },
     {
-      "identity" : "swift-docc-plugin",
+      "identity" : "ios-common-libraries",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-docc-plugin",
+      "location" : "https://github.com/nordicsemi/IOS-Common-Libraries.git",
       "state" : {
-        "revision" : "3e4f133a77e644a5812911a0513aeb7288b07d06",
-        "version" : "1.4.5"
+        "revision" : "72bfd8c35274d89de4276efe12386d13d87921cc",
+        "version" : "0.2.4"
       }
     },
     {
-      "identity" : "swift-docc-symbolkit",
+      "identity" : "ios-corebluetooth-mock",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/swiftlang/swift-docc-symbolkit",
+      "location" : "https://github.com/nordicsemi/IOS-CoreBluetooth-Mock.git",
       "state" : {
-        "revision" : "b45d1f2ed151d057b54504d653e0da5552844e34",
-        "version" : "1.0.0"
+        "revision" : "477998d850a2233e05d1941ed0b5a2385da8cf4d",
+        "version" : "1.0.4"
       }
     },
     {
@@ -55,5 +65,5 @@
       }
     }
   ],
-  "version" : 2
+  "version" : 3
 }

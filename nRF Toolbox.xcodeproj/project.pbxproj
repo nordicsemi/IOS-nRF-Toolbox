@@ -2070,7 +2070,7 @@
 /* Begin XCRemoteSwiftPackageReference section */
 		017D10592A580D3800E38E5F /* XCRemoteSwiftPackageReference "IOS-Common-Libraries" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/NordicPlayground/IOS-Common-Libraries.git";
+			repositoryURL = "https://github.com/nordicsemi/IOS-Common-Libraries.git";
 			requirement = {
 				kind = exactVersion;
 				version = 0.2.4;
@@ -2078,7 +2078,7 @@
 		};
 		018873CA2A583C3300253273 /* XCRemoteSwiftPackageReference "IOS-BLE-Library" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/NordicSemiconductor/IOS-BLE-Library.git";
+			repositoryURL = "https://github.com/nordicsemi/IOS-BLE-Library.git";
 			requirement = {
 				kind = exactVersion;
 				version = 0.4.4;
@@ -2094,7 +2094,7 @@
 		};
 		A7255E6A2EAF9C6600774CEE /* XCRemoteSwiftPackageReference "IOS-CoreBluetooth-Mock" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/NordicSemiconductor/IOS-CoreBluetooth-Mock.git";
+			repositoryURL = "https://github.com/nordicsemi/IOS-CoreBluetooth-Mock.git";
 			requirement = {
 				kind = exactVersion;
 				version = 1.0.4;
