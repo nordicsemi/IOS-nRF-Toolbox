@@ -1,5 +1,4 @@
 {
-  "originHash" : "bd5108e377831e4040f93866d455b7989268952dc818ab68890c98edd6fb6665",
   "pins" : [
     {
       "identity" : "aexml",
@@ -20,15 +19,6 @@
       }
     },
     {
-      "identity" : "ios-ble-library",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/nordicsemi/IOS-BLE-Library.git",
-      "state" : {
-        "revision" : "f610daf7cdb1b0e1a5eaac19917db906221b8102",
-        "version" : "0.4.4"
-      }
-    },
-    {
       "identity" : "ios-bluetooth-numbers-database",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/NickKibish/iOS-Bluetooth-Numbers-Database.git",
@@ -38,21 +28,39 @@
       }
     },
     {
-      "identity" : "ios-common-libraries",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/nordicsemi/IOS-Common-Libraries.git",
-      "state" : {
-        "revision" : "72bfd8c35274d89de4276efe12386d13d87921cc",
-        "version" : "0.2.4"
-      }
-    },
-    {
       "identity" : "ios-corebluetooth-mock",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/nordicsemi/IOS-CoreBluetooth-Mock.git",
       "state" : {
-        "revision" : "477998d850a2233e05d1941ed0b5a2385da8cf4d",
-        "version" : "1.0.4"
+        "revision" : "5748c9e8b1750e0d7bc09243c099ff618f211cdf",
+        "version" : "1.0.6"
+      }
+    },
+    {
+      "identity" : "swift-docc-plugin",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-docc-plugin",
+      "state" : {
+        "revision" : "647c708be89f834fa6a6d4945442793a77ddf5b6",
+        "version" : "1.5.0"
+      }
+    },
+    {
+      "identity" : "swift-docc-symbolkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-docc-symbolkit",
+      "state" : {
+        "revision" : "b45d1f2ed151d057b54504d653e0da5552844e34",
+        "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "swiftcbor",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/valpackett/SwiftCBOR.git",
+      "state" : {
+        "revision" : "fd929a6d8f7651ce0f63fc99397fd5762358cc29",
+        "version" : "0.6.0"
       }
     },
     {
@@ -65,5 +73,5 @@
       }
     }
   ],
-  "version" : 3
+  "version" : 2
 }

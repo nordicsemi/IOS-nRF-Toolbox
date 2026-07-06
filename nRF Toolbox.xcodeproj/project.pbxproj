@@ -62,6 +62,9 @@
 		01FB19D02AE3DB0D006DAB9F /* SensorCalibrationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01FB19CF2AE3DB0D006DAB9F /* SensorCalibrationScreen.swift */; };
 		01FB19D22AE3DB70006DAB9F /* SensorCalibrationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01FB19D12AE3DB70006DAB9F /* SensorCalibrationViewModel.swift */; };
 		01FD68D32AE82EB90021101C /* AttributeList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01FD68D22AE82EB90021101C /* AttributeList.swift */; };
+		3D1BAEBAAC4E5DC66C104ECE /* QuickStartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 838EF19A90E7035E289601C1 /* QuickStartView.swift */; };
+		54005A3DA50E16F5C1A4BD0E /* QuickStartViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34795FE4995F10A42831A874 /* QuickStartViewModel.swift */; };
+		925DE321D0CF40B036A96ED0 /* iOSOtaLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = E81C02279B4F9FF7F03A4898 /* iOSOtaLibrary */; };
 		A70054642E9E82BC00F781BE /* HeartRateCBMPeripheralSpecDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70054632E9E82B000F781BE /* HeartRateCBMPeripheralSpecDelegate.swift */; };
 		A704BC4C2F1FB120003ACE2C /* LogItemDomain.swift in Sources */ = {isa = PBXBuildFile; fileRef = A704BC4B2F1FB11C003ACE2C /* LogItemDomain.swift */; };
 		A70A61FC2F0D46CA00C341AB /* LogDb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70A61FB2F0D46C500C341AB /* LogDb.swift */; };
@@ -186,6 +189,8 @@
 		AAF272F42D9BF5F6007B63D3 /* CGMSViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF272F32D9BF5F6007B63D3 /* CGMSViewModel.swift */; };
 		AAF272F82D9C10F3007B63D3 /* CGMSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF272F72D9C10F3007B63D3 /* CGMSView.swift */; };
 		AAF7DE622CFDD4BC000A347A /* SidebarDeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF7DE612CFDD4BC000A347A /* SidebarDeviceView.swift */; };
+		C16222BEF38F6906BDBA362F /* ObservabilityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A9CE80F9AC1E781D395DB1 /* ObservabilityViewModel.swift */; };
+		DA6DC8AA4037E47143718FEE /* ObservabilityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 687B91A850DB607D7A9D3C88 /* ObservabilityView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -264,6 +269,7 @@
 		01FB19D12AE3DB70006DAB9F /* SensorCalibrationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensorCalibrationViewModel.swift; sourceTree = "<group>"; };
 		01FD68D22AE82EB90021101C /* AttributeList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributeList.swift; sourceTree = "<group>"; };
 		309F08671E6D706B00B7546A /* HomeKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HomeKit.framework; path = System/Library/Frameworks/HomeKit.framework; sourceTree = SDKROOT; };
+		34795FE4995F10A42831A874 /* QuickStartViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QuickStartViewModel.swift; sourceTree = "<group>"; };
 		5217F3E51859EE0000F2D5BB /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		5217F3E71859EE0000F2D5BB /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		5217F3E91859EE0000F2D5BB /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -271,6 +277,9 @@
 		522636361C60FFB00054A550 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		52BDCB181C3FD31F00E2680F /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		52BDCBBD1C3FD86900E2680F /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		687B91A850DB607D7A9D3C88 /* ObservabilityView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ObservabilityView.swift; sourceTree = "<group>"; };
+		68A9CE80F9AC1E781D395DB1 /* ObservabilityViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ObservabilityViewModel.swift; sourceTree = "<group>"; };
+		838EF19A90E7035E289601C1 /* QuickStartView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QuickStartView.swift; sourceTree = "<group>"; };
 		89CF4D2BA242FBAD9F6C46E9 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A70054632E9E82B000F781BE /* HeartRateCBMPeripheralSpecDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartRateCBMPeripheralSpecDelegate.swift; sourceTree = "<group>"; };
 		A704BC4B2F1FB11C003ACE2C /* LogItemDomain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogItemDomain.swift; sourceTree = "<group>"; };
@@ -416,6 +425,7 @@
 				A7E289352EB35E70007199DB /* CoreBluetoothMock in Frameworks */,
 				A755EB242F3203CF002AEC76 /* CombineExt in Frameworks */,
 				01B861872AB34DBF0001118F /* iOS-Bluetooth-Numbers-Database in Frameworks */,
+				925DE321D0CF40B036A96ED0 /* iOSOtaLibrary in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -483,6 +493,8 @@
 				01ABB0752AE6FDCF00615A21 /* HeartRate */,
 				013E5D882ADD33BF00B9C475 /* Running */,
 				AA7E77E42DF0915F0091447F /* SupportedServiceViewModel.swift */,
+				8858121C6901CC592C41BAA0 /* QuickStart */,
+				EB59AE2DAAC97F6011A60B59 /* Observability */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -813,6 +825,15 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		8858121C6901CC592C41BAA0 /* QuickStart */ = {
+			isa = PBXGroup;
+			children = (
+				34795FE4995F10A42831A874 /* QuickStartViewModel.swift */,
+				838EF19A90E7035E289601C1 /* QuickStartView.swift */,
+			);
+			path = QuickStart;
+			sourceTree = "<group>";
+		};
 		A70A61FA2F0D46C000C341AB /* Persistent */ = {
 			isa = PBXGroup;
 			children = (
@@ -1044,6 +1065,15 @@
 			path = CGMS;
 			sourceTree = "<group>";
 		};
+		EB59AE2DAAC97F6011A60B59 /* Observability */ = {
+			isa = PBXGroup;
+			children = (
+				68A9CE80F9AC1E781D395DB1 /* ObservabilityViewModel.swift */,
+				687B91A850DB607D7A9D3C88 /* ObservabilityView.swift */,
+			);
+			path = Observability;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -1069,6 +1099,7 @@
 				AA1AD37E2DD5DFC400799308 /* AEXML */,
 				A7E289342EB35E70007199DB /* CoreBluetoothMock */,
 				A755EB232F3203CF002AEC76 /* CombineExt */,
+				E81C02279B4F9FF7F03A4898 /* iOSOtaLibrary */,
 			);
 			productName = "nRF-Toolbox";
 			productReference = 017D102B2A5809E300E38E5F /* nRF-Toolbox.app */;
@@ -1154,6 +1185,7 @@
 				01C81ACC2A5CAC350011B41E /* XCRemoteSwiftPackageReference "iOS-Bluetooth-Numbers-Database" */,
 				A7255E6A2EAF9C6600774CEE /* XCRemoteSwiftPackageReference "IOS-CoreBluetooth-Mock" */,
 				A755EB222F320299002AEC76 /* XCRemoteSwiftPackageReference "CombineExt" */,
+				0232C9BB9E4A658B7B854A9A /* XCLocalSwiftPackageReference "../IOS-nRF-Connect-Device-Manager" */,
 			);
 			productRefGroup = 5217F3E31859EE0000F2D5BB /* Products */;
 			projectDirPath = "";
@@ -1403,6 +1435,10 @@
 				A7CB671E2E967BFA007E1311 /* CGMSSensorStatusOctet.swift in Sources */,
 				AA7E77E52DF0915F0091447F /* SupportedServiceViewModel.swift in Sources */,
 				01FB19D02AE3DB0D006DAB9F /* SensorCalibrationScreen.swift in Sources */,
+				54005A3DA50E16F5C1A4BD0E /* QuickStartViewModel.swift in Sources */,
+				3D1BAEBAAC4E5DC66C104ECE /* QuickStartView.swift in Sources */,
+				C16222BEF38F6906BDBA362F /* ObservabilityViewModel.swift in Sources */,
+				DA6DC8AA4037E47143718FEE /* ObservabilityView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2067,13 +2103,20 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		0232C9BB9E4A658B7B854A9A /* XCLocalSwiftPackageReference "../IOS-nRF-Connect-Device-Manager" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../IOS-nRF-Connect-Device-Manager";
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		017D10592A580D3800E38E5F /* XCRemoteSwiftPackageReference "IOS-Common-Libraries" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/nordicsemi/IOS-Common-Libraries.git";
 			requirement = {
-				kind = exactVersion;
-				version = 0.2.4;
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.2.5;
 			};
 		};
 		018873CA2A583C3300253273 /* XCRemoteSwiftPackageReference "IOS-BLE-Library" */ = {
@@ -2096,8 +2139,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/nordicsemi/IOS-CoreBluetooth-Mock.git";
 			requirement = {
-				kind = exactVersion;
-				version = 1.0.4;
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.6;
 			};
 		};
 		A755EB222F320299002AEC76 /* XCRemoteSwiftPackageReference "CombineExt" */ = {
@@ -2153,6 +2196,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C3CD27D326B097510026FE67 /* XCRemoteSwiftPackageReference "AEXML" */;
 			productName = AEXML;
+		};
+		E81C02279B4F9FF7F03A4898 /* iOSOtaLibrary */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0232C9BB9E4A658B7B854A9A /* XCLocalSwiftPackageReference "../IOS-nRF-Connect-Device-Manager" */;
+			productName = iOSOtaLibrary;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

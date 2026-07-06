@@ -168,6 +168,10 @@ extension DeviceDetailsViewModel {
                 switch service.uuid {
                 case .nordicBlinkyService:
                     supportedServiceViewModels.append(BlinkyViewModel(peripheral: peripheral, characteristics: characteristics))
+                case .quickStartService:
+                    supportedServiceViewModels.append(QuickStartViewModel(peripheral: peripheral, characteristics: characteristics))
+                case .memfaultDiagnosticService:
+                    supportedServiceViewModels.append(ObservabilityViewModel(peripheral: peripheral, characteristics: characteristics))
                 case .runningSpeedCadence:
                     supportedServiceViewModels.append(RunningServiceViewModel(peripheral: peripheral, characteristics: characteristics))
                 case .cyclingSpeedCadence:
@@ -275,6 +279,10 @@ extension CBUUID {
         return switch self {
         case .nordicBlinkyService:
             "Blinky"
+        case .quickStartService:
+            "Quick Start"
+        case .memfaultDiagnosticService:
+            "Observability"
         case .runningSpeedCadence:
             "Running Speed and Cadence"
         case .cyclingSpeedCadence:
