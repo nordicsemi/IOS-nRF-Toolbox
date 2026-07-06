@@ -66,7 +66,6 @@
 		3D1BAEBAAC4E5DC66C104ECE /* QuickStartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 838EF19A90E7035E289601C1 /* QuickStartView.swift */; };
 		4BF5091C4EDDFA65714FE021 /* ObservabilityUnsupportedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AAF465C170F8E08E772866 /* ObservabilityUnsupportedView.swift */; };
 		54005A3DA50E16F5C1A4BD0E /* QuickStartViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34795FE4995F10A42831A874 /* QuickStartViewModel.swift */; };
-		925DE321D0CF40B036A96ED0 /* iOSOtaLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = E81C02279B4F9FF7F03A4898 /* iOSOtaLibrary */; };
 		A70054642E9E82BC00F781BE /* HeartRateCBMPeripheralSpecDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70054632E9E82B000F781BE /* HeartRateCBMPeripheralSpecDelegate.swift */; };
 		A704BC4C2F1FB120003ACE2C /* LogItemDomain.swift in Sources */ = {isa = PBXBuildFile; fileRef = A704BC4B2F1FB11C003ACE2C /* LogItemDomain.swift */; };
 		A70A61FC2F0D46CA00C341AB /* LogDb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70A61FB2F0D46C500C341AB /* LogDb.swift */; };
@@ -87,6 +86,8 @@
 		A7451D6F2F07F0F400336EF6 /* LogsTransfarable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7451D6E2F07F0EB00336EF6 /* LogsTransfarable.swift */; };
 		A745E2AD2F18CEEE000B47FD /* LogsSettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A745E2AC2F18CEE9000B47FD /* LogsSettingsScreen.swift */; };
 		A74B9FDE2EEADDB100121B7A /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = A74B9FDD2EEADDB100121B7A /* .gitignore */; };
+		A74E1E252FFBF11000011C72 /* iOSMcuManagerLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = A74E1E0C2FFBEB5000011C72 /* iOSMcuManagerLibrary */; };
+		A74E1E262FFBF11000011C72 /* iOSOtaLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = A74E1E0D2FFBEB5000011C72 /* iOSOtaLibrary */; };
 		A75291BA2EEC2D25002D50F4 /* rename_files.sh in Resources */ = {isa = PBXBuildFile; fileRef = A75291B92EEC2D25002D50F4 /* rename_files.sh */; };
 		A755EB242F3203CF002AEC76 /* CombineExt in Frameworks */ = {isa = PBXBuildFile; productRef = A755EB232F3203CF002AEC76 /* CombineExt */; };
 		A755EB262F326FDF002AEC76 /* ViewModelContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A755EB252F326FDE002AEC76 /* ViewModelContainer.swift */; };
@@ -415,17 +416,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		A76A45252E7D638E00E0E19C /* nRF-ToolboxTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = "nRF-ToolboxTests";
-			sourceTree = "<group>";
-		};
+		A76A45252E7D638E00E0E19C /* nRF-ToolboxTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "nRF-ToolboxTests"; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -433,13 +424,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A74E1E262FFBF11000011C72 /* iOSOtaLibrary in Frameworks */,
+				A74E1E252FFBF11000011C72 /* iOSMcuManagerLibrary in Frameworks */,
 				015642472AA4E640005A0A44 /* iOS-BLE-Library-Mock in Frameworks */,
 				AA1AD37F2DD5DFC400799308 /* AEXML in Frameworks */,
 				018873C42A58332400253273 /* iOSCommonLibraries in Frameworks */,
 				A7E289352EB35E70007199DB /* CoreBluetoothMock in Frameworks */,
 				A755EB242F3203CF002AEC76 /* CombineExt in Frameworks */,
 				01B861872AB34DBF0001118F /* iOS-Bluetooth-Numbers-Database in Frameworks */,
-				925DE321D0CF40B036A96ED0 /* iOSOtaLibrary in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1115,7 +1107,8 @@
 				AA1AD37E2DD5DFC400799308 /* AEXML */,
 				A7E289342EB35E70007199DB /* CoreBluetoothMock */,
 				A755EB232F3203CF002AEC76 /* CombineExt */,
-				E81C02279B4F9FF7F03A4898 /* iOSOtaLibrary */,
+				A74E1E0C2FFBEB5000011C72 /* iOSMcuManagerLibrary */,
+				A74E1E0D2FFBEB5000011C72 /* iOSOtaLibrary */,
 			);
 			productName = "nRF-Toolbox";
 			productReference = 017D102B2A5809E300E38E5F /* nRF-Toolbox.app */;
@@ -1201,7 +1194,7 @@
 				01C81ACC2A5CAC350011B41E /* XCRemoteSwiftPackageReference "iOS-Bluetooth-Numbers-Database" */,
 				A7255E6A2EAF9C6600774CEE /* XCRemoteSwiftPackageReference "IOS-CoreBluetooth-Mock" */,
 				A755EB222F320299002AEC76 /* XCRemoteSwiftPackageReference "CombineExt" */,
-				0232C9BB9E4A658B7B854A9A /* XCLocalSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */,
+				A74E1E0B2FFBEB5000011C72 /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */,
 			);
 			productRefGroup = 5217F3E31859EE0000F2D5BB /* Products */;
 			projectDirPath = "";
@@ -2121,13 +2114,6 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		0232C9BB9E4A658B7B854A9A /* XCLocalSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = "../IOS-nRF-Connect-Device-Manager";
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCRemoteSwiftPackageReference section */
 		017D10592A580D3800E38E5F /* XCRemoteSwiftPackageReference "IOS-Common-Libraries" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -2159,6 +2145,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.0.6;
+			};
+		};
+		A74E1E0B2FFBEB5000011C72 /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/nordicsemi/IOS-nRF-Connect-Device-Manager";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.14.5;
 			};
 		};
 		A755EB222F320299002AEC76 /* XCRemoteSwiftPackageReference "CombineExt" */ = {
@@ -2201,6 +2195,16 @@
 			package = 01C81ACC2A5CAC350011B41E /* XCRemoteSwiftPackageReference "iOS-Bluetooth-Numbers-Database" */;
 			productName = "iOS-Bluetooth-Numbers-Database";
 		};
+		A74E1E0C2FFBEB5000011C72 /* iOSMcuManagerLibrary */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A74E1E0B2FFBEB5000011C72 /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */;
+			productName = iOSMcuManagerLibrary;
+		};
+		A74E1E0D2FFBEB5000011C72 /* iOSOtaLibrary */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A74E1E0B2FFBEB5000011C72 /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */;
+			productName = iOSOtaLibrary;
+		};
 		A755EB232F3203CF002AEC76 /* CombineExt */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A755EB222F320299002AEC76 /* XCRemoteSwiftPackageReference "CombineExt" */;
@@ -2214,11 +2218,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C3CD27D326B097510026FE67 /* XCRemoteSwiftPackageReference "AEXML" */;
 			productName = AEXML;
-		};
-		E81C02279B4F9FF7F03A4898 /* iOSOtaLibrary */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 0232C9BB9E4A658B7B854A9A /* XCLocalSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */;
-			productName = iOSOtaLibrary;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

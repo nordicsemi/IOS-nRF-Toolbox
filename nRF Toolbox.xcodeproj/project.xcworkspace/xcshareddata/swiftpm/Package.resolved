@@ -37,6 +37,15 @@
       }
     },
     {
+      "identity" : "ios-nrf-connect-device-manager",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/nordicsemi/IOS-nRF-Connect-Device-Manager",
+      "state" : {
+        "revision" : "d1c2a785231deab08e0a2c635a188beddf083f49",
+        "version" : "1.14.5"
+      }
+    },
+    {
       "identity" : "swift-docc-plugin",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-docc-plugin",
