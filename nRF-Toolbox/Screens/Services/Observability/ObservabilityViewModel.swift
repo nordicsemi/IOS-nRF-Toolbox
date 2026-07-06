@@ -63,7 +63,10 @@ final class ObservabilityViewModel: SupportedServiceViewModel {
     // MARK: Properties
 
     private(set) var status: Status = .connecting
-    private(set) var lastChunkUpdate: String?
+    private(set) var pendingChunksCount: Int = 0
+    private(set) var pendingBytesCount: Int = 0
+    private(set) var uploadedChunksCount: Int = 0
+    private(set) var uploadedBytesCount: Int = 0
 
     var errors: CurrentValueSubject<ErrorsHolder, Never> = CurrentValueSubject<ErrorsHolder, Never>(ErrorsHolder())
 
@@ -72,6 +75,7 @@ final class ObservabilityViewModel: SupportedServiceViewModel {
     private let observabilityManager = ObservabilityManager()
     private let peripheralIdentifier: UUID
     private var streamTask: Task<Void, Never>?
+    private var pendingChunkSizes: [UInt8: Int] = [:]
     private let log = NordicLog(category: "ObservabilityViewModel", subsystem: "com.nordicsemi.nrf-toolbox")
 
     // MARK: init
@@ -146,7 +150,16 @@ final class ObservabilityViewModel: SupportedServiceViewModel {
         case .disconnected:
             status = .offline
         case .updatedChunk(let chunk):
-            lastChunkUpdate = "Chunk #\(chunk.sequenceNumber): \(chunk.status)"
+            switch chunk.status {
+            case .pendingUpload, .uploading, .uploadError:
+                pendingChunkSizes[chunk.sequenceNumber] = chunk.data.count
+            case .success:
+                pendingChunkSizes[chunk.sequenceNumber] = nil
+                uploadedChunksCount += 1
+                uploadedBytesCount += chunk.data.count
+            }
+            pendingChunksCount = pendingChunkSizes.count
+            pendingBytesCount = pendingChunkSizes.values.reduce(0, +)
         }
     }
 
