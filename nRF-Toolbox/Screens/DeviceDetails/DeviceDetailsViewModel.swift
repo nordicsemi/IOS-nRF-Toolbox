@@ -205,7 +205,11 @@ extension DeviceDetailsViewModel {
                     break
                 }
             }
-            
+
+            if !discoveredServices.contains(where: { $0.uuid == .memfaultDiagnosticService }) {
+                supportedServiceViewModels.append(ObservabilityUnsupportedViewModel())
+            }
+
             attributeTable = table
             
             signalViewModel = SignalChartViewModel(peripheral: peripheral)

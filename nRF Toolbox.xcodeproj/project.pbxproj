@@ -62,7 +62,9 @@
 		01FB19D02AE3DB0D006DAB9F /* SensorCalibrationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01FB19CF2AE3DB0D006DAB9F /* SensorCalibrationScreen.swift */; };
 		01FB19D22AE3DB70006DAB9F /* SensorCalibrationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01FB19D12AE3DB70006DAB9F /* SensorCalibrationViewModel.swift */; };
 		01FD68D32AE82EB90021101C /* AttributeList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01FD68D22AE82EB90021101C /* AttributeList.swift */; };
+		39EF6B5629414FEB22F8E81F /* ObservabilityUnsupportedViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D9FDB6294EACDE1A90EB08E /* ObservabilityUnsupportedViewModel.swift */; };
 		3D1BAEBAAC4E5DC66C104ECE /* QuickStartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 838EF19A90E7035E289601C1 /* QuickStartView.swift */; };
+		4BF5091C4EDDFA65714FE021 /* ObservabilityUnsupportedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6AAF465C170F8E08E772866 /* ObservabilityUnsupportedView.swift */; };
 		54005A3DA50E16F5C1A4BD0E /* QuickStartViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34795FE4995F10A42831A874 /* QuickStartViewModel.swift */; };
 		925DE321D0CF40B036A96ED0 /* iOSOtaLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = E81C02279B4F9FF7F03A4898 /* iOSOtaLibrary */; };
 		A70054642E9E82BC00F781BE /* HeartRateCBMPeripheralSpecDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70054632E9E82B000F781BE /* HeartRateCBMPeripheralSpecDelegate.swift */; };
@@ -279,6 +281,7 @@
 		52BDCBBD1C3FD86900E2680F /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		687B91A850DB607D7A9D3C88 /* ObservabilityView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ObservabilityView.swift; sourceTree = "<group>"; };
 		68A9CE80F9AC1E781D395DB1 /* ObservabilityViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ObservabilityViewModel.swift; sourceTree = "<group>"; };
+		6D9FDB6294EACDE1A90EB08E /* ObservabilityUnsupportedViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ObservabilityUnsupportedViewModel.swift; sourceTree = "<group>"; };
 		838EF19A90E7035E289601C1 /* QuickStartView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QuickStartView.swift; sourceTree = "<group>"; };
 		89CF4D2BA242FBAD9F6C46E9 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A70054632E9E82B000F781BE /* HeartRateCBMPeripheralSpecDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartRateCBMPeripheralSpecDelegate.swift; sourceTree = "<group>"; };
@@ -408,10 +411,21 @@
 		AAF272F32D9BF5F6007B63D3 /* CGMSViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGMSViewModel.swift; sourceTree = "<group>"; };
 		AAF272F72D9C10F3007B63D3 /* CGMSView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGMSView.swift; sourceTree = "<group>"; };
 		AAF7DE612CFDD4BC000A347A /* SidebarDeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarDeviceView.swift; sourceTree = "<group>"; };
+		B6AAF465C170F8E08E772866 /* ObservabilityUnsupportedView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ObservabilityUnsupportedView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		A76A45252E7D638E00E0E19C /* nRF-ToolboxTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "nRF-ToolboxTests"; sourceTree = "<group>"; };
+		A76A45252E7D638E00E0E19C /* nRF-ToolboxTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = "nRF-ToolboxTests";
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1070,6 +1084,8 @@
 			children = (
 				68A9CE80F9AC1E781D395DB1 /* ObservabilityViewModel.swift */,
 				687B91A850DB607D7A9D3C88 /* ObservabilityView.swift */,
+				6D9FDB6294EACDE1A90EB08E /* ObservabilityUnsupportedViewModel.swift */,
+				B6AAF465C170F8E08E772866 /* ObservabilityUnsupportedView.swift */,
 			);
 			path = Observability;
 			sourceTree = "<group>";
@@ -1185,7 +1201,7 @@
 				01C81ACC2A5CAC350011B41E /* XCRemoteSwiftPackageReference "iOS-Bluetooth-Numbers-Database" */,
 				A7255E6A2EAF9C6600774CEE /* XCRemoteSwiftPackageReference "IOS-CoreBluetooth-Mock" */,
 				A755EB222F320299002AEC76 /* XCRemoteSwiftPackageReference "CombineExt" */,
-				0232C9BB9E4A658B7B854A9A /* XCLocalSwiftPackageReference "../IOS-nRF-Connect-Device-Manager" */,
+				0232C9BB9E4A658B7B854A9A /* XCLocalSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */,
 			);
 			productRefGroup = 5217F3E31859EE0000F2D5BB /* Products */;
 			projectDirPath = "";
@@ -1439,6 +1455,8 @@
 				3D1BAEBAAC4E5DC66C104ECE /* QuickStartView.swift in Sources */,
 				C16222BEF38F6906BDBA362F /* ObservabilityViewModel.swift in Sources */,
 				DA6DC8AA4037E47143718FEE /* ObservabilityView.swift in Sources */,
+				39EF6B5629414FEB22F8E81F /* ObservabilityUnsupportedViewModel.swift in Sources */,
+				4BF5091C4EDDFA65714FE021 /* ObservabilityUnsupportedView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2104,7 +2122,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		0232C9BB9E4A658B7B854A9A /* XCLocalSwiftPackageReference "../IOS-nRF-Connect-Device-Manager" */ = {
+		0232C9BB9E4A658B7B854A9A /* XCLocalSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "../IOS-nRF-Connect-Device-Manager";
 		};
@@ -2199,7 +2217,7 @@
 		};
 		E81C02279B4F9FF7F03A4898 /* iOSOtaLibrary */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 0232C9BB9E4A658B7B854A9A /* XCLocalSwiftPackageReference "../IOS-nRF-Connect-Device-Manager" */;
+			package = 0232C9BB9E4A658B7B854A9A /* XCLocalSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */;
 			productName = iOSOtaLibrary;
 		};
 /* End XCSwiftPackageProductDependency section */
