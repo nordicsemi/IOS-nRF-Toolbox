@@ -15,12 +15,6 @@ struct ObservabilityView: View {
 
     @Environment(ObservabilityViewModel.self) private var viewModel: ObservabilityViewModel
 
-    // MARK: Private
-
-    private func format(chunks: Int, bytes: Int) -> String {
-        String(format: "%d chunks (%d B)", chunks, bytes)
-    }
-
     // MARK: view
 
     var body: some View {
@@ -32,14 +26,14 @@ struct ObservabilityView: View {
         }
 
         LabeledContent {
-            Text(format(chunks: viewModel.pendingChunksCount, bytes: viewModel.pendingBytesCount))
+            Text(viewModel.chunksInfo.pendingBytesString())
         } label: {
             Label("Pending", systemImage: "clock.arrow.circlepath")
                 .setAccent(Color.universalAccentColor)
         }
 
         LabeledContent {
-            Text(format(chunks: viewModel.uploadedChunksCount, bytes: viewModel.uploadedBytesCount))
+            Text(viewModel.chunksInfo.uploadedBytesString())
         } label: {
             Label("Uploaded", systemImage: "checkmark.icloud")
                 .setAccent(Color.universalAccentColor)
