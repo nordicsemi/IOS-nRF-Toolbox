@@ -93,6 +93,7 @@ final class ObservabilityViewModel: SupportedServiceViewModel {
         streamTask?.cancel()
         streamTask = nil
         observabilityManager.disconnect(from: peripheralIdentifier)
+        status = .offline
     }
 
     // MARK: handle(_:)
