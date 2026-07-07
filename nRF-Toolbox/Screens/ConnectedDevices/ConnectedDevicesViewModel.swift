@@ -109,12 +109,43 @@ extension ConnectedDevicesViewModel {
     }
     
     // MARK: clearViewModel(:)
-    
+
     func clearViewModel(_ device: Device) {
         log.debug("\(type(of: self)).\(#function)")
         connectedDevices.removeAll(where: { $0.id == device.id })
         deviceViewModels.removeValue(forKey: device.id)
         log.info("Device successfully removed: \(device.logName)")
+    }
+
+    // MARK: reconnect(:)
+
+    func reconnect(_ device: Device) async {
+        log.debug("\(type(of: self)).\(#function)")
+        guard let peripheral = centralManager.retrievePeripherals(withIdentifiers: [device.id]).first else { return }
+        log.info("Reconnecting to the device: \(device.logName)")
+
+        if let i = connectedDevices.firstIndex(where: \.id, equals: device.id) {
+            connectedDevices[i].status = .connecting
+            deviceViewModels[device.id]?.device = connectedDevices[i]
+            deviceViewModels[device.id]?.errors = ErrorsHolder()
+        }
+
+        do {
+            _ = try await centralManager.connect(peripheral)
+                .timeout(.seconds(5), scheduler: DispatchQueue.main, customError: {
+                    ConnectionError.connectionTimeout
+                })
+                .first()
+                .firstValue
+            // On success, `observeConnections()` picks up the new connection and
+            // rebuilds the device's status/view model through the normal connect flow.
+        } catch {
+            log.error("\(#function) Error: \(error.localizedDescription)")
+            if let i = connectedDevices.firstIndex(where: \.id, equals: device.id) {
+                connectedDevices[i].status = .error(error)
+                deviceViewModels[device.id]?.device = connectedDevices[i]
+            }
+        }
     }
 }
 
@@ -374,26 +405,31 @@ extension ConnectedDevicesViewModel {
         
         enum Status: CustomStringConvertible {
             case connected
+            case connecting
             case userInitiatedDisconnection
             case error(_: Error)
-            
+
             var description: String {
                 switch self {
                 case .connected:
                     return "Connected"
+                case .connecting:
+                    return "Connecting"
                 case .userInitiatedDisconnection:
                     return "User initiated disconnection"
                 case .error(let error):
                     return "Error: \(error.localizedDescription)"
                 }
             }
-            
+
             var hashValue: Int {
                 switch self {
                 case .connected:
                     return 0
                 case .userInitiatedDisconnection:
                     return 1
+                case .connecting:
+                    return 2
                 case .error:
                     return 99
                 }

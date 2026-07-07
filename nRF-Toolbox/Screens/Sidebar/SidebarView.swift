@@ -39,6 +39,19 @@ struct SidebarView: View {
                         })
                         .listRowBackground(isSelected ? Color.universalAccentColor : nil)
                         .accessibilityIdentifier("device_item_\(index)")
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            if case .error = device.status {
+                                Button(role: .destructive) {
+                                    if isSelected {
+                                        rootViewModel.selectedCategory = nil
+                                    }
+                                    viewModel.clearViewModel(device)
+                                } label: {
+                                    Label("Remove", systemImage: "trash")
+                                }
+                                .accessibilityIdentifier("remove_device_\(index)")
+                            }
+                        }
                     }
                 }
             }

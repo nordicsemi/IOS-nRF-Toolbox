@@ -35,7 +35,7 @@ struct SidebarDeviceView: View {
             ScanResultItem(name: device.name ?? "Unnamed", services: device.services, isScanner: false)
             
             switch device.status {
-            case .connected, .userInitiatedDisconnection:
+            case .connected, .userInitiatedDisconnection, .connecting:
                 EmptyView()
             case .error(let error):
                 Label("Error: \(error.localizedDescription)", systemImage: "exclamationmark.circle")

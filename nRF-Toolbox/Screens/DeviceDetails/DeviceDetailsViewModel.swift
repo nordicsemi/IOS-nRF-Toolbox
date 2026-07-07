@@ -70,26 +70,10 @@ final class DeviceDetailsViewModel {
     }
 }
 
-// MARK: disconnect / reconnect
+// MARK: disconnect
 
 extension DeviceDetailsViewModel {
-    private struct TimeoutError: Error { }
-    
-    func reconnect() async {
-        log.debug("\(type(of: self)).\(#function)")
-        do {
-            _ = try await centralManager.connect(peripheral.peripheral)
-                // Set timeout for 5 seconds
-                .timeout(5, scheduler: DispatchQueue.main, customError: {
-                    TimeoutError()
-                })
-                .firstValue
-        } catch {
-            log.error("\(#function) Error: \(error.localizedDescription)")
-            await onDisconnect()
-        }
-    }
-    
+
     func onDisconnect() async {
         log.debug("\(type(of: self)).\(#function)")
         signalViewModel?.stopTimer()

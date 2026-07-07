@@ -74,9 +74,14 @@ struct DeviceScreen: View {
 
             Section("Connection") {
                 switch deviceViewModel.device.status {
-                case .userInitiatedDisconnection:
-                    ProgressView()
-                        .centered()
+                case .userInitiatedDisconnection, .connecting:
+                    Section {
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .centered()
+                            .tint(.nordicBlue)
+                            .id(UUID()) // This fix issue with loader not being displayed when appears for the second time.
+                    }
                 case .connected:
                     Button("Disconnect") {
                         disconnect()
@@ -89,15 +94,15 @@ struct DeviceScreen: View {
                         .foregroundStyle(Color.nordicRed)
                 }
             }
-            
+
             if case .error = deviceViewModel.device.status {
                 Section {
-                    Button("Clear Device") {
-                        connectedDevicesViewModel.clearViewModel(deviceViewModel.device)
-                        dismiss()
+                    Button("Reconnect") {
+                        reconnect()
                     }
                     .foregroundStyle(Color.universalAccentColor)
                     .centered()
+                    .accessibilityIdentifier("reconnect_button")
                 }
             }
         }
@@ -131,7 +136,7 @@ struct DeviceScreen: View {
     func reconnect() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
             Task { @MainActor in
-                await connectedDevicesViewModel.deviceViewModel(for: deviceViewModel.device.id)?.reconnect()
+                await connectedDevicesViewModel.reconnect(deviceViewModel.device)
             }
         }
     }
