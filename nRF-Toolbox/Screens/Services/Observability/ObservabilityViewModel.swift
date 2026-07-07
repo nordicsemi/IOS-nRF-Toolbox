@@ -15,8 +15,7 @@ import iOSOtaLibrary
 // MARK: - CBUUID
 
 extension CBMUUID {
-    /// Memfault Diagnostic Service. Its presence is what ObservabilityManager uses to
-    /// determine whether a connected peripheral supports Observability.
+    /// Memfault Diagnostic Service.
     static let memfaultDiagnosticService = CBMUUID(string: "54220000-F6A5-4007-A371-722F4EBD8436")
 }
 
@@ -25,44 +24,9 @@ extension CBMUUID {
 @Observable
 final class ObservabilityViewModel: SupportedServiceViewModel {
 
-    // MARK: Status
-
-    enum Status {
-        case connecting
-        case connected
-        case authenticated
-        case online
-        case offline
-        case unauthorized
-        case pairingError
-        case error(String)
-
-        var title: String {
-            switch self {
-            case .connecting: "Connecting…"
-            case .connected: "Connected"
-            case .authenticated: "Authenticated"
-            case .online: "Online"
-            case .offline: "Offline"
-            case .unauthorized: "Unauthorized"
-            case .pairingError: "Pairing Error"
-            case .error(let message): message
-            }
-        }
-
-        var systemImage: String {
-            switch self {
-            case .online, .authenticated, .connected: "checkmark.circle.fill"
-            case .connecting: "arrow.triangle.2.circlepath"
-            case .offline: "circle.slash"
-            case .unauthorized, .pairingError, .error: "exclamationmark.triangle.fill"
-            }
-        }
-    }
-
     // MARK: Properties
 
-    private(set) var status: Status = .connecting
+    private(set) var status: ObservabilityServiceStatus = .connecting
     private(set) var pendingChunksCount: Int = 0
     private(set) var pendingBytesCount: Int = 0
     private(set) var uploadedChunksCount: Int = 0
@@ -113,11 +77,11 @@ final class ObservabilityViewModel: SupportedServiceViewModel {
             guard let self else { return }
             do {
                 for try await value in stream {
-                    await handle(value.event)
+                    handle(value.event)
                 }
             } catch {
                 log.error("Observability stream error: \(error.localizedDescription)")
-                await handleStreamError(error)
+                handleStreamError(error)
             }
         }
     }

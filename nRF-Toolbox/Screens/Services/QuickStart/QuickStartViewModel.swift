@@ -14,6 +14,7 @@ import iOS_Common_Libraries
 // MARK: - CBUUID
 
 extension CBMUUID {
+    /// Quick Start Service. When this service is present then Quick Start info is displayed.
     static let quickStartService = CBMUUID(string: "B2007AAA-C203-43A5-8B6F-A7F3D001A1E0")
 }
 
