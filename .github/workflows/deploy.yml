@@ -1,8 +1,5 @@
 name: Deploy to App Store Connect
 on:
-  push:
-    tags:
-      - '*'
   workflow_dispatch:
 jobs:
   build:
