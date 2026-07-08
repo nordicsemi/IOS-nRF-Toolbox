@@ -28,29 +28,43 @@ struct ServiceBadgeGroup: View {
     }
     
     // MARK: view
-    
-    var body: some View {
-        LazyVGrid(columns: [
-            GridItem(.adaptive(minimum: 90), alignment: .topLeading)
-        ], content: {
-            ForEach(services) {
-                BadgeView(image: $0.systemImage, name: $0.name, color: $0.color ?? .primary)
-                    .lineLimit(1)
-            }
 
-            otherServicesBadge(count: services.reduce(0, { $0 + ($1.isSupported ? 0 : 1)  }))
-        })
-    }
-    
-    // MARK: otherServicesBadge(count:)
-    
-    @ViewBuilder
-    func otherServicesBadge(count: Int) -> some View {
-        if count > 0 {
-            BadgeView(name: otherServiceString(count: count))
-        } else {
-            EmptyView()
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            ForEach(rows.indices, id: \.self) { rowIndex in
+                HStack(alignment: .center, spacing: 8) {
+                    ForEach(rows[rowIndex].indices, id: \.self) { itemIndex in
+                        rows[rowIndex][itemIndex]
+                    }
+                }
+            }
         }
+    }
+
+    // MARK: rows
+
+    private var rows: [[AnyView]] {
+        let allBadges = badgeViews
+        return stride(from: 0, to: allBadges.count, by: 2).map {
+            Array(allBadges[$0..<min($0 + 2, allBadges.count)])
+        }
+    }
+
+    // MARK: badgeViews
+
+    private var badgeViews: [AnyView] {
+        var views = services.map { service in
+            AnyView(
+                BadgeView(image: service.systemImage, name: service.displayName, color: service.color ?? .primary)
+                    .lineLimit(1)
+            )
+        }
+
+        let overflowCount = services.reduce(0, { $0 + ($1.isSupported ? 0 : 1) })
+        if overflowCount > 0 {
+            views.append(AnyView(BadgeView(name: otherServiceString(count: overflowCount))))
+        }
+        return views
     }
     
     // MARK: otherServiceString(count:)

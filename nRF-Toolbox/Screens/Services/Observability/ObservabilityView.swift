@@ -22,7 +22,7 @@ struct ObservabilityView: View {
             Text(viewModel.status.title)
         } label: {
             Label("Status", systemImage: viewModel.status.systemImage)
-                .setAccent(viewModel.status.imageColor)
+                .setAccent(Color.universalAccentColor)
         }
 
         LabeledContent {

@@ -43,6 +43,8 @@ struct AboutView: View {
                 Text("""
                 nRF Toolbox is a multi-purpose container app providing access to multiple Bluetooh Low Energy profiles:
                 
+                • Quick Start
+                • Monitoring & Diagnostic
                 • Cycling Speed and Cadence
                 • Running Speed and Cadence
                 • Heart Rate Monitor

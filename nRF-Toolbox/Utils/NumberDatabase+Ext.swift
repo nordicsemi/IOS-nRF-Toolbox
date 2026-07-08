@@ -16,6 +16,23 @@ import iOS_Common_Libraries
 
 extension Service {
     
+    private static let serviceNames: [Service : String] = [
+        .runningSpeedAndCadence: "Running Service",
+        .cyclingSpeedAndCadence: "Cycling Service",
+        .heartRate: "Heart Rate",
+        .batteryService: "Battery Service",
+        .bloodPressure: "Blood Pressure",
+        .glucose: "Glucose Service",
+        .continuousGlucoseMonitoring: "Continous Glucose",
+        .healthThermometer: "Thermometer",
+        .nordicsemiLedAndButton: "LED & Button",
+        .throughputService: "Throughput",
+        .deviceInformation: "Device Info",
+        .nordicsemiUART: "UART Service",
+        .quickStartService: "Quick Start",
+        .memfaultMDS: "Diagnostic"
+    ]
+    
     private static let serviceIcons: [Service : String] = [
         .runningSpeedAndCadence: "figure.run",
         .cyclingSpeedAndCadence: "figure.outdoor.cycle",
@@ -67,6 +84,9 @@ extension Service {
         .memfaultMDS
     ]
     
+    var displayName: String {
+        return Service.serviceNames[self] ?? "Unknown"
+    }
     var systemImage: Image? {
         guard let iconName = Service.serviceIcons[self] else { return nil }
         if self == .quickStartService {
