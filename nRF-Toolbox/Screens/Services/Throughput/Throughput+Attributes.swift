@@ -18,7 +18,8 @@ public extension Service {
     static let throughputService = Service(name: "Throughput Service", identifier: "com.nordicsemi.service.throughput", uuidString: "0483DADD-6C9D-6CA9-5D41-03AD4FFF4ABB", source: "nordic")
     
     static let extendedServices: [Service] = [
-        .throughputService
+        .throughputService,
+        .quickStartService,
     ]
     
     static func extendedFind(by uuidString: String) -> Self? {

@@ -214,7 +214,13 @@ extension ConnectedDevicesViewModel {
             let viewModel = DeviceDetailsViewModel(cbPeripheral: peripheral, centralManager: centralManager, device: device)
             deviceViewModels[device.id] = viewModel
             Task {
-                await viewModel.discoverSupportedServices()
+                let services = await viewModel.discoverSupportedServices()
+                if let i = connectedDevices.firstIndex(where: \.id, equals: device.id) {
+                    var connectedDevice = connectedDevices[i]
+                    connectedDevice.services.formUnion(Set(services))
+                    connectedDevices[i] = connectedDevice
+                    deviceViewModels[device.id]?.device = connectedDevices[i]
+                }
             }
         }
     }
@@ -239,7 +245,7 @@ extension ConnectedDevicesViewModel {
                     self.connectedDevices.remove(at: i)
                 }
                 
-                if disconnectedDevice.status.hashValue != ConnectedDevicesViewModel.Device.Status.userInitiatedDisconnection.hashValue {
+                if disconnectedDevice.status.hashValue != Device.Status.userInitiatedDisconnection.hashValue {
                     self.showUnexpectedDisconnectionAlert = true
                     self.unexpectedDisconnectionMessage = "\(disconnectedDevice.name ?? "Unnamed Device") disconnected unexpectedly."
                 }
@@ -306,7 +312,7 @@ extension ConnectedDevicesViewModel {
     }
     
     @MainActor
-    func onConnectionResult(result: Result<Void, Error>) {
+    func handleError(result: Result<Void, Error>) {
         if case .failure(let error) = result {
             log.error("Error: \(error.localizedDescription)")
             self.unexpectedDisconnectionMessage = error.localizedDescription
@@ -392,83 +398,5 @@ extension ConnectedDevicesViewModel {
         devices.removeAll()
         setupManager()
         startScanning()
-    }
-}
-
-// MARK: - Device
-
-extension ConnectedDevicesViewModel {
-    
-    struct Device: Identifiable, CustomStringConvertible, CustomDebugStringConvertible, Hashable, Equatable {
-        
-        // MARK: Status
-        
-        enum Status: CustomStringConvertible {
-            case connected
-            case connecting
-            case userInitiatedDisconnection
-            case error(_: Error)
-
-            var description: String {
-                switch self {
-                case .connected:
-                    return "Connected"
-                case .connecting:
-                    return "Connecting"
-                case .userInitiatedDisconnection:
-                    return "User initiated disconnection"
-                case .error(let error):
-                    return "Error: \(error.localizedDescription)"
-                }
-            }
-
-            var hashValue: Int {
-                switch self {
-                case .connected:
-                    return 0
-                case .userInitiatedDisconnection:
-                    return 1
-                case .connecting:
-                    return 2
-                case .error:
-                    return 99
-                }
-            }
-        }
-        
-        // MARK: Properties
-        
-        let name: String?
-        let id: UUID
-        let services: Set<Service>
-        var status: Status
-        var description: String { name ?? "Unnamed" }
-        var debugDescription: String { description }
-        
-        var logName: String {
-            "Device(name: \(description), id: \(id))"
-        }
-        
-        // MARK: init
-        
-        init(name: String?, id: UUID, services: Set<Service>, status: Status) {
-            self.name = name
-            self.id = id
-            self.services = services
-            self.status = status
-        }
-        
-        // MARK: Equatable
-        
-        static func == (lhs: Device, rhs: Device) -> Bool {
-            return lhs.hashValue == rhs.hashValue
-        }
-        
-        // MARK: Hashable
-        
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(id)
-            hasher.combine(status.hashValue)
-        }
     }
 }

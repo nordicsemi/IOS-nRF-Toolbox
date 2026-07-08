@@ -31,7 +31,7 @@ extension RootNavigationView {
     enum MenuCategory: Equatable, Hashable, Identifiable {
         case scanner
         case logs(LogsTab)
-        case device(ConnectedDevicesViewModel.Device)
+        case device(Device)
         
         var id: UUID {
             switch self {

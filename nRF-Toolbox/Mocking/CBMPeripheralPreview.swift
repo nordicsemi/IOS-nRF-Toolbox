@@ -25,6 +25,8 @@ extension CBMUUID {
     static let cyclingSpeedCadence  = CBMUUID(string: "1816")
     static let deviceInformation    = CBMUUID(string: "180A")
     static let battery              = CBMUUID(string: "180F")
+    static let quickStart           = CBMUUID(string: "B2007AAA-C203-43A5-8B6F-A7F3D001A1E0")
+    static let memfaultDiagnostic   = CBMUUID(string: "54220000-F6A5-4007-A371-722F4EBD8436")
 }
 
 // MARK: - Services

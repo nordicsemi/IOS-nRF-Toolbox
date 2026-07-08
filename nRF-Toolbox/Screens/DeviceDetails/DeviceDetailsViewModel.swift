@@ -38,7 +38,7 @@ final class DeviceDetailsViewModel {
     
     var errors: ErrorsHolder = ErrorsHolder()
     
-    var device: ConnectedDevicesViewModel.Device
+    var device: Device
     
     private(set) var supportedServiceViewModels: [any SupportedServiceViewModel] = []
     
@@ -54,7 +54,7 @@ final class DeviceDetailsViewModel {
     
     // MARK: init
     
-    init(cbPeripheral: CBPeripheral, centralManager: CentralManager, device: ConnectedDevicesViewModel.Device) {
+    init(cbPeripheral: CBPeripheral, centralManager: CentralManager, device: Device) {
         self.peripheral = Peripheral(peripheral: cbPeripheral, delegate: ReactivePeripheralDelegate())
         self.centralManager = centralManager
         self.device = device
@@ -113,9 +113,11 @@ extension DeviceDetailsViewModel {
     
     // MARK: discoverSupportedServices()
     
-    func discoverSupportedServices() async {
+    func discoverSupportedServices() async -> [Service] {
         log.debug("\(type(of: self)).\(#function)")
         log.info("Discovering services...")
+
+        var discoveredServiceBadges: [Service] = []
         do {
             if supportedServiceViewModels.hasItems {
                 await onDisconnect()
@@ -123,7 +125,8 @@ extension DeviceDetailsViewModel {
             }
 
             discoveredServices = try await peripheral.discoverServices(serviceUUIDs: nil).firstValue
-            
+            discoveredServiceBadges = discoveredServices.compactMap { Service.extendedFind(by: $0.uuid.uuidString) }
+
             let ids = device.services.map { $0.uuid }.filter { $0.isSupported() }
             let discoveredIds = discoveredServices.map { $0.uuid }
             let missingIds = ids.filter { !discoveredIds.contains($0) }
@@ -131,7 +134,7 @@ extension DeviceDetailsViewModel {
                 missingIds.forEach { log.error("Missing required service: \($0.toServiceName())") }
                 throw ServiceError.noMandatoryCharacteristic
             }
-            
+
             var table = AttributeTable()
             for service in discoveredServices {
                 table.addService(service)
@@ -152,9 +155,9 @@ extension DeviceDetailsViewModel {
                 switch service.uuid {
                 case .nordicBlinkyService:
                     supportedServiceViewModels.append(BlinkyViewModel(peripheral: peripheral, characteristics: characteristics))
-                case .quickStartService:
+                case .quickStart:
                     supportedServiceViewModels.append(QuickStartViewModel(peripheral: peripheral, characteristics: characteristics))
-                case .memfaultDiagnosticService:
+                case .memfaultDiagnostic:
                     supportedServiceViewModels.append(ObservabilityViewModel(peripheral: peripheral, characteristics: characteristics))
                 case .runningSpeedCadence:
                     supportedServiceViewModels.append(RunningServiceViewModel(peripheral: peripheral, characteristics: characteristics))
@@ -210,6 +213,8 @@ extension DeviceDetailsViewModel {
             
             isInitialized = true
             log.info("Successfully initialized connection with the peripheral.")
+            
+            return discoveredServiceBadges
         } catch {
             if case let serviceError as ServiceError = error {
                 errors.error = serviceError
@@ -217,6 +222,7 @@ extension DeviceDetailsViewModel {
                 errors.error = AlertError.servicesNotFound
             }
             log.error("\(#function) Error: \(error.localizedDescription)")
+            return discoveredServiceBadges
         }
     }
     
@@ -263,9 +269,9 @@ extension CBUUID {
         return switch self {
         case .nordicBlinkyService:
             "Blinky"
-        case .quickStartService:
+        case .quickStart:
             "Quick Start"
-        case .memfaultDiagnosticService:
+        case .memfaultDiagnostic:
             "Observability"
         case .runningSpeedCadence:
             "Running Speed and Cadence"
@@ -297,6 +303,8 @@ extension CBUUID {
     func isSupported() -> Bool {
         return switch self {
         case .nordicBlinkyService,
+                .quickStart,
+                .memfaultDiagnostic,
                 .runningSpeedCadence,
                 .cyclingSpeedCadence,
                 .healthThermometer,

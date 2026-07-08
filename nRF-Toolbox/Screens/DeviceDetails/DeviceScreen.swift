@@ -36,7 +36,7 @@ struct DeviceScreen: View {
                 MissingCharacteristicsView()
             } else {
                 deviceViewModel.supportedServiceViews()
-                    .disabled(deviceViewModel.device.status.hashValue != ConnectedDevicesViewModel.Device.Status.connected.hashValue)
+                    .disabled(deviceViewModel.device.status.hashValue != Device.Status.connected.hashValue)
                     .disabled(!deviceViewModel.isInitialized)
                 
                 if let error = deviceViewModel.errors.warning {
@@ -54,11 +54,9 @@ struct DeviceScreen: View {
                 }
                 
                 Section("Device Information") {
-                    Button("Open Inspector", systemImage: "info.circle") {
+                    NavigationStyledButton(title: "Open Inspector", systemImage: "info.circle") {
                         deviceViewModel.showDeviceSheet = true
                     }
-                    .foregroundStyle(Color.universalAccentColor)
-                    .centered()
                 }
                 
                 Section("Troubleshooting") {

@@ -12,10 +12,10 @@ import SwiftUI
 
 enum ObservabilityServiceStatus {
     case connecting
-    case connected
-    case authenticated
-    case online
-    case offline
+    case awaitingChunks
+    case uploading
+    case suspended(seconds: Int)
+    case disconnected
     case unauthorized
     case pairingError
     case error(String)
@@ -23,10 +23,10 @@ enum ObservabilityServiceStatus {
     var title: String {
         switch self {
         case .connecting: "Connecting…"
-        case .connected: "Connected"
-        case .authenticated: "Authenticated"
-        case .online: "Online"
-        case .offline: "Offline"
+        case .awaitingChunks: "Awaiting chunks…"
+        case .uploading: "Uploading…"
+        case .suspended(let seconds): "Suspended for \(seconds)s"
+        case .disconnected: "Disconnected"
         case .unauthorized: "Unauthorized"
         case .pairingError: "Pairing Error"
         case .error(let message): message
@@ -35,17 +35,21 @@ enum ObservabilityServiceStatus {
 
     var systemImage: String {
         switch self {
-        case .online, .authenticated, .connected: "checkmark.circle.fill"
+        case .awaitingChunks: "hourglass"
+        case .uploading: "arrow.up.circle.fill"
         case .connecting: "arrow.triangle.2.circlepath"
-        case .offline: "circle.slash"
+        case .suspended: "pause.circle.fill"
+        case .disconnected: "circle.slash"
         case .unauthorized, .pairingError, .error: "exclamationmark.triangle.fill"
         }
     }
-    
+
     var imageColor: Color {
         switch self {
-        case .online, .authenticated, .connecting, .connected: .nordicGrass
-        case .offline: .nordicMiddleGrey
+        case .uploading, .connecting: .nordicGrass
+        case .awaitingChunks: .nordicMiddleGrey
+        case .suspended: .nordicSun
+        case .disconnected: .nordicMiddleGrey
         case .unauthorized, .pairingError, .error: .nordicRed
         }
     }

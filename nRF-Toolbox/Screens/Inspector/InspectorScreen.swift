@@ -23,7 +23,7 @@ struct InspectorScreen: View {
     
     // MARK: Properties
     
-    private let device: ConnectedDevicesViewModel.Device
+    private let device: Device
         
     private var deviceIsConnected: Bool {
         switch device.status {
@@ -36,7 +36,7 @@ struct InspectorScreen: View {
     
     // MARK: init
     
-    init(_ device: ConnectedDevicesViewModel.Device) {
+    init(_ device: Device) {
         self.device = device
     }
     

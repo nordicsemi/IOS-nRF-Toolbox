@@ -20,11 +20,11 @@ struct SidebarDeviceView: View {
     
     // MARK: Properties
     
-    private let device: ConnectedDevicesViewModel.Device
+    private let device: Device
     
     // MARK: Init
     
-    init(_ device: ConnectedDevicesViewModel.Device) {
+    init(_ device: Device) {
         self.device = device
     }
     

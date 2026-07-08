@@ -28,7 +28,9 @@ extension Service {
         .nordicsemiLedAndButton: "lightbulb.max.fill",
         .throughputService: "metronome",
         .deviceInformation: "cpu",
-        .nordicsemiUART: "character.cursor.ibeam"
+        .nordicsemiUART: "character.cursor.ibeam",
+        .quickStartService: "QuickStart",
+        .memfaultMDS: "waveform.path.ecg"
     ]
     
     private static let colors: [Service : Color] = [
@@ -43,7 +45,9 @@ extension Service {
         .nordicsemiLedAndButton: .nordicBlue,
         .deviceInformation: .black,
         .throughputService: .nordicBlue,
-        .nordicsemiUART: .nordicBlue
+        .nordicsemiUART: .nordicBlue,
+        .quickStartService: .nordicPower,
+        .memfaultMDS: .nordicBlueslate
     ]
     
     static var supportedServices: [Service] = [
@@ -58,10 +62,19 @@ extension Service {
         .healthThermometer,
         .batteryService,
         .deviceInformation,
-        .throughputService
+        .throughputService,
+        .quickStartService,
+        .memfaultMDS
     ]
     
-    var systemImage: Image? { Service.serviceIcons[self].flatMap { Image(systemName: $0) } }
+    var systemImage: Image? {
+        guard let iconName = Service.serviceIcons[self] else { return nil }
+        if self == .quickStartService {
+            return Image(iconName)
+                .renderingMode(.template)
+        }
+        return Image(systemName: iconName)
+    }
     var color: Color? { Service.colors[self] }
     var isSupported: Bool { Service.supportedServices.contains(self) }
     

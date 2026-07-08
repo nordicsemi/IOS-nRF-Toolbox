@@ -9,13 +9,14 @@ import SwiftUI
 import Combine
 import CoreBluetoothMock
 import iOS_BLE_Library_Mock
+import iOS_Bluetooth_Numbers_Database
 import iOS_Common_Libraries
 
-// MARK: - CBUUID
+// MARK: - Service
 
-extension CBMUUID {
-    /// Quick Start Service. When this service is present then Quick Start info is displayed.
-    static let quickStartService = CBMUUID(string: "B2007AAA-C203-43A5-8B6F-A7F3D001A1E0")
+public extension Service {
+
+    static let quickStartService = Service(name: "Quick Start Service", identifier: "com.nordicsemi.service.quickstart", uuidString: "B2007AAA-C203-43A5-8B6F-A7F3D001A1E0", source: "nordic")
 }
 
 // MARK: - QuickStartViewModel

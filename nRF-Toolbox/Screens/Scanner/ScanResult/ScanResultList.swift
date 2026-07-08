@@ -16,10 +16,13 @@ struct ScanResultList: View {
     // MARK: Environment
     
     @Environment(ConnectedDevicesViewModel.self) private var viewModel: ConnectedDevicesViewModel
+    @Environment(RootNavigationViewModel.self) private var rootViewModel: RootNavigationViewModel
     @Environment(\.dismiss) var dismiss
-    
+
+    private let log = NordicLog(category: "ScanResultList", subsystem: "com.nordicsemi.nrf-toolbox")
+
     // MARK: view
-    
+
     var body: some View {
         List {
             Section {
@@ -27,9 +30,14 @@ struct ScanResultList: View {
                     Button {
                         Task {
                             let result = await viewModel.connect(to: device)
-                            dismiss() // Dismiss first before showing error.
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                                viewModel.onConnectionResult(result: result)
+
+                            if case .success = result {
+                                await navigateToConnectedDevice(id: device.id)
+                            } else {
+                                dismiss() // Dismiss first before showing error.
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                                    viewModel.handleError(result: result)
+                                }
                             }
                         }
                     } label: {
@@ -56,5 +64,20 @@ struct ScanResultList: View {
             }
         }
         .listStyle(.insetGrouped)
+    }
+
+    // MARK: navigateToConnectedDevice(id:)
+
+    private func navigateToConnectedDevice(id: UUID) async {
+        for _ in 0..<50 {
+            if let connectedDevice = viewModel.connectedDevices.first(where: { $0.id == id }),
+               let deviceViewModel = viewModel.deviceViewModel(for: id),
+               deviceViewModel.isInitialized || deviceViewModel.errors.error != nil {
+                rootViewModel.selectedCategory = RootNavigationView.MenuCategory.device(connectedDevice)
+                return
+            }
+            try? await Task.sleep(nanoseconds: 100_000_000)
+        }
+        log.error("Timed out waiting for service discovery to complete for id: \(id)")
     }
 }
