@@ -19,6 +19,8 @@ The application includes distinct modules for the following standard and proprie
 * **Continuous Glucose Monitor**
 * **Nordic UART**
 * **Throughput**
+* **Monitoring & Diagnostic**
+* **Quick Start**
 
 ## Key Features
 
