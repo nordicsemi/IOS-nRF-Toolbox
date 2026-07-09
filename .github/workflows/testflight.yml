@@ -1,8 +1,5 @@
 name: Deploy to Testflight
 on:
-  push:
-    tags:
-      - '*'
   workflow_dispatch:
 jobs:
   build:
