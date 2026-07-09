@@ -27,7 +27,7 @@ final class ConnectedDevicesViewModel {
     // MARK: Properties
     
     fileprivate(set) var devices: [ConnectedDevicesViewModel.ScanResult]
-    fileprivate(set) var connectingDevice: ConnectedDevicesViewModel.ScanResult?
+    var connectingDevice: ConnectedDevicesViewModel.ScanResult?
     fileprivate(set) var scannerState: ScannerState
     
     fileprivate(set) var connectedDevices: [Device]
@@ -290,9 +290,6 @@ extension ConnectedDevicesViewModel {
         }
         
         connectingDevice = device
-        defer {
-            connectingDevice = nil
-        }
         
         // Get CBPeripheral's instance
         let peripheral = centralManager.retrievePeripherals(withIdentifiers: [device.id]).first!

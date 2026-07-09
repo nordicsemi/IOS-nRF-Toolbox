@@ -39,6 +39,8 @@ struct ScanResultList: View {
                                     viewModel.handleError(result: result)
                                 }
                             }
+                            
+                            viewModel.connectingDevice = nil
                         }
                     } label: {
                         ScanResultItem(name: device.name, services: device.services,
