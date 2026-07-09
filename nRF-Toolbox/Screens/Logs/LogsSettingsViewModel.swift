@@ -11,13 +11,25 @@ import Foundation
 import iOS_Common_Libraries
 import SwiftData
 
+/// Tells the screen *why* `logs` just changed, so it can decide how (or whether)
+/// to move the scroll position in response.
+enum LogsUpdateReason {
+    /// Search/level filter changed — the whole list was replaced.
+    case filterReset
+    /// New logs arrived and were appended at the end (list is oldest-first).
+    case newDataAppended
+    /// An older page was loaded and prepended at the front.
+    case olderPagePrepended
+}
+
 @MainActor
 @Observable
 class LogsSettingsViewModel {
-    
+
     private let log = NordicLog(category: "LogsSettingsScreen", subsystem: "com.nordicsemi.nrf-toolbox")
 
     var logs: [LogItemDomain]? = nil
+    var lastUpdateReason: LogsUpdateReason = .filterReset
     var logsMeta: LogsMeta? = nil
     var isLoading: Bool = false
     
@@ -35,10 +47,9 @@ class LogsSettingsViewModel {
     }
     
     private let readDataSource: LogsReadDataSource
-    
-    private var page: Int = 0
+
     private let itemsPerPage: Int = 100
-    private var canLoadMore: Bool = true
+    private var canLoadOlder: Bool = true
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -75,7 +86,7 @@ class LogsSettingsViewModel {
         NotificationCenter.default.publisher(for: ModelContext.didSave)
             .throttle(for: .seconds(1.0), scheduler: RunLoop.main, latest: true)
             .sink { [weak self] _ in
-                self?.reload()
+                self?.appendNewData()
             }
             .store(in: &cancellables)
     }
@@ -83,63 +94,105 @@ class LogsSettingsViewModel {
     func reload() {
         guard !isLoading else { return }
         activeLoadTask?.cancel()
-        
+
         isLoading = true
-        page = 0
-        canLoadMore = true
-        
+        canLoadOlder = true
+
         let currentSearch = searchText
         let currentLevel = selectedLogLevel
         let limit = itemsPerPage
-        
+
         activeLoadTask = Task.detached(priority: .userInitiated) { [weak self] in
             guard let self = self else { return }
-            
+
             let records = try? await self.readDataSource.fetch(
                 searchText: currentSearch,
                 logLevel: currentLevel,
                 limit: limit
             )
-            
+
             await MainActor.run {
                 guard !Task.isCancelled else { return }
-                self.logs = records
+                self.lastUpdateReason = .filterReset
+                self.logs = records.map { Array($0.reversed()) }
                 self.isLoading = false
                 self.fetchLogsCount()
             }
         }
     }
 
-    func loadNextPage() {
-        guard !isLoading, canLoadMore else { return }
+    private func appendNewData() {
+        guard !isLoading else { return }
         isLoading = true
-        
+
         let currentSearch = searchText
         let currentLevel = selectedLogLevel
-        let nextPage = page + 1
-        let amount = itemsPerPage
-        
+        let knownNewestTimestamp = logs?.last?.timestamp
+        let limit = itemsPerPage
+
         activeLoadTask = Task.detached(priority: .userInitiated) { [weak self] in
             guard let self = self else { return }
-            
-            let newRecords = try? await self.readDataSource.fetch(
-                searchText: currentSearch,
-                logLevel: currentLevel,
-                page: nextPage,
-                amountPerPage: amount
-            )
-            
+
+            let newRecords: [LogItemDomain]?
+            if let knownNewestTimestamp {
+                newRecords = try? await self.readDataSource.fetch(
+                    searchText: currentSearch,
+                    logLevel: currentLevel,
+                    newerThan: knownNewestTimestamp
+                )
+            } else {
+                let records = try? await self.readDataSource.fetch(
+                    searchText: currentSearch,
+                    logLevel: currentLevel,
+                    limit: limit
+                )
+                newRecords = records.map { Array($0.reversed()) }
+            }
+
             await MainActor.run {
                 guard !Task.isCancelled else { return }
-                
+
                 if let newRecords = newRecords, !newRecords.isEmpty {
-                    if (self.logs == nil) {
-                        self.logs = []
+                    self.lastUpdateReason = .newDataAppended
+                    if self.logs == nil {
+                        self.logs = newRecords
+                    } else {
+                        self.logs?.append(contentsOf: newRecords)
                     }
-                    self.logs?.append(contentsOf: newRecords)
-                    self.page += 1
+                }
+                self.isLoading = false
+                self.fetchLogsCount()
+            }
+        }
+    }
+
+    func loadOlderPage() {
+        guard !isLoading, canLoadOlder, let currentCount = logs?.count else { return }
+        isLoading = true
+
+        let currentSearch = searchText
+        let currentLevel = selectedLogLevel
+        let offset = currentCount
+        let amount = itemsPerPage
+
+        activeLoadTask = Task.detached(priority: .userInitiated) { [weak self] in
+            guard let self = self else { return }
+
+            let olderRecords = try? await self.readDataSource.fetch(
+                searchText: currentSearch,
+                logLevel: currentLevel,
+                offset: offset,
+                amountPerPage: amount
+            )
+
+            await MainActor.run {
+                guard !Task.isCancelled else { return }
+
+                if let olderRecords = olderRecords, !olderRecords.isEmpty {
+                    self.lastUpdateReason = .olderPagePrepended
+                    self.logs = olderRecords.reversed() + (self.logs ?? [])
                 } else {
-                    self.canLoadMore = false
+                    self.canLoadOlder = false
                 }
                 self.isLoading = false
             }

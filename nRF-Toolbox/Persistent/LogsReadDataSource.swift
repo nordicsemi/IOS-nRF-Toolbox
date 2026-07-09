@@ -38,20 +38,35 @@ actor LogsReadDataSource {
             .map { LogItemDomain(from: $0) }
     }
     
-    func fetch(searchText: String, logLevel: LogLevel, page: Int, amountPerPage: Int) throws -> [LogItemDomain] {
-        let alreadyFetched = page * amountPerPage
-        
+    func fetch(searchText: String, logLevel: LogLevel, offset: Int, amountPerPage: Int) throws -> [LogItemDomain] {
         var descriptor = getFetchDescriptor(searchText: searchText, logLevel: logLevel)
         descriptor.fetchLimit = amountPerPage
-        descriptor.fetchOffset = alreadyFetched
-        
+        descriptor.fetchOffset = offset
+
         let fetched = try modelContext.fetch(descriptor)
-        
+
         return fetched.map {
             LogItemDomain(from: $0)
         }
     }
-    
+
+    /// Fetches only records newer than `timestamp`, oldest-first, so they can be
+    /// appended directly to the end of an already oldest-to-newest ordered list.
+    func fetch(searchText: String, logLevel: LogLevel, newerThan timestamp: Date) throws -> [LogItemDomain] {
+        let descriptor = FetchDescriptor<LogDb>(
+            predicate: #Predicate { log in
+                (searchText.isEmpty ? true : log.value.localizedStandardContains(searchText)) && log.level <= logLevel.rawValue && log.timestamp > timestamp
+            },
+            sortBy: [
+                SortDescriptor(\.timestamp, order: .forward)
+            ]
+        )
+
+        return try modelContext
+            .fetch(descriptor)
+            .map { LogItemDomain(from: $0) }
+    }
+
     func getFetchDescriptor(searchText: String, logLevel: LogLevel) -> FetchDescriptor<LogDb> {
         return FetchDescriptor<LogDb>(
             predicate: #Predicate { log in

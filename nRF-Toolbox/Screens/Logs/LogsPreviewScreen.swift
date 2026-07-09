@@ -16,8 +16,9 @@ struct LogsPreviewScreen: View {
     
     @FocusState private var isFocused: Bool
     
-    @State private var scrollToTheTop = true
-    @State private var position: ScrollPosition = .init(idType: LogItemDomain.ID.self)
+    @State private var followLatest = true
+    @State private var scrollPosition = ScrollPosition(edge: .bottom)
+    @State private var pendingOlderPageAnchorID: LogItemDomain.ID?
     
     var body: some View {
         @Bindable var viewModel = viewModel
@@ -53,15 +54,18 @@ struct LogsPreviewScreen: View {
                 .tint(viewModel.selectedLogLevel.color)
                 
                 Button {
-                    scrollToTheTop = !scrollToTheTop
+                    followLatest.toggle()
+                    if followLatest {
+                        scrollPosition.scrollTo(edge: .bottom)
+                    }
                 } label: {
                     ZStack {
-                        Image(systemName: scrollToTheTop ? "lock" : "lock.slash")
+                        Image(systemName: followLatest ? "lock" : "lock.slash")
                     }.frame(width: 24, height: 24)
                 }
             }
             .padding()
-            
+
             LoadingListContainer(data: viewModel.logs) { logs in
                 ScrollView {
                     LazyVStack {
@@ -69,8 +73,12 @@ struct LogsPreviewScreen: View {
                             LogItem(log: log)
                                 .padding(.vertical, 10)
                                 .padding(.horizontal, 16)
-                                .onAppear { logs.last == log ? viewModel.loadNextPage() : nil }
-                            
+                                .onAppear {
+                                    guard logs.first == log else { return }
+                                    pendingOlderPageAnchorID = log.id
+                                    viewModel.loadOlderPage()
+                                }
+
                             if logs.last != log {
                                 Separator()
                             }
@@ -78,11 +86,29 @@ struct LogsPreviewScreen: View {
                     }
                     .scrollTargetLayout()
                 }
+                .onAppear {
+                    scrollPosition.scrollTo(edge: .bottom)
+                }
                 .searchable(text: $viewModel.searchText)
-                .scrollPosition($position, anchor: .top)
-                .onChange(of: viewModel.logs) {
-                    if scrollToTheTop {
-                        position.scrollTo(x: 0)
+                .defaultScrollAnchor(.bottom)
+                .scrollPosition($scrollPosition)
+                .onChange(of: viewModel.logs) { _, newValue in
+                    guard newValue != nil else { return }
+
+                    switch viewModel.lastUpdateReason {
+                    case .filterReset:
+                        scrollPosition.scrollTo(edge: .bottom)
+
+                    case .newDataAppended:
+                        if followLatest {
+                            scrollPosition.scrollTo(edge: .bottom)
+                        }
+
+                    case .olderPagePrepended:
+                        if let anchorID = pendingOlderPageAnchorID {
+                            pendingOlderPageAnchorID = nil
+                            scrollPosition.scrollTo(id: anchorID, anchor: .top)
+                        }
                     }
                 }
             }
