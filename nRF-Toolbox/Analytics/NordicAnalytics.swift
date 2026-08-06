@@ -16,6 +16,7 @@ class NordicAnalytics {
     
     static func configure() {
         FirebaseApp.configure()
+        logEvent(AppOpenEvent())
     }
     
     static func logEvent(_ event: AnalyticsEvent) {

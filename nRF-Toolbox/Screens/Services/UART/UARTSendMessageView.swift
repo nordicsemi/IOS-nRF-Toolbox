@@ -37,11 +37,7 @@ struct UARTSendMessageView: View {
             }
 
             Button {
-                let data = Data(viewModel.newMessage.utf8)
-                viewModel.newMessage = ""
-                Task {
-                    await viewModel.send(data)
-                }
+                viewModel.sendMessage()
             } label: {
                 Label("Send", systemImage: "paperplane.fill")
             }

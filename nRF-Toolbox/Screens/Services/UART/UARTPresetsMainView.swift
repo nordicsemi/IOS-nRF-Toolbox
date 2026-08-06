@@ -69,6 +69,12 @@ struct UARTPresetsMainView: View {
             Text("Presets")
                 .font(.title2.bold())
         }
+        .onChange(of: viewModel.selectedPresets) { oldValue, newValue in
+            if (newValue != .none) {
+                NordicAnalytics.logEvent(UARTChangeConfigurationEvent())
+            }
+            print("Changed from \(oldValue) to \(newValue)")
+        }
         .tint(.universalAccentColor)
         .alert("New Presets", isPresented: $showNewPresetsAlert) {
             TextField("Type Name Here", text: $newPresetsName)

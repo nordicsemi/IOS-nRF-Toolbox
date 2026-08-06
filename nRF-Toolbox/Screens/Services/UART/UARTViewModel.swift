@@ -145,7 +145,7 @@ final class UARTViewModel: SupportedServiceViewModel {
 extension UARTViewModel {
     
     @MainActor
-    func send(_ data: Data) async {
+    private func send(_ data: Data) async {
         guard let uartRX else { return }
         log.debug("\(type(of: self)).\(#function)")
         
@@ -211,6 +211,17 @@ extension UARTViewModel {
     func runCommand(_ command: UARTPreset) {
         log.debug("\(type(of: self)).\(#function)")
         guard let data = command.data else { return }
+        NordicAnalytics.logEvent(UARTSendEvent(mode: .preset))
+        Task {
+            await send(data)
+        }
+    }
+    
+    @MainActor
+    func sendMessage() {
+        let data = Data(newMessage.utf8)
+        newMessage = ""
+        NordicAnalytics.logEvent(UARTSendEvent(mode: .text))
         Task {
             await send(data)
         }
