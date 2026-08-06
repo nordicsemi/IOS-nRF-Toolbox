@@ -29,7 +29,6 @@ enum Profile: String {
     case uart = "UART"
     case mds = "MDS"
     case dis = "Device Information"
-    case dfu = "DFU"
 }
 
 enum UARTMode: String {
