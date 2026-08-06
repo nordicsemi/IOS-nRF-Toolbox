@@ -152,6 +152,8 @@ extension DeviceDetailsViewModel {
                 
                 log.info("\(service.uuid.toServiceName()) service discovered.")
                 
+                AnalyticsHelper.onServiceDiscovered(uuid: service.uuid)
+                
                 switch service.uuid {
                 case .nordicBlinkyService:
                     supportedServiceViewModels.append(BlinkyViewModel(peripheral: peripheral, characteristics: characteristics))
