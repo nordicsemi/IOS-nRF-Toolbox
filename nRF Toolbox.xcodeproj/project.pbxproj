@@ -122,6 +122,7 @@
 		A7F11C1C2ED05A5600D1862B /* Iridescence.metal in Sources */ = {isa = PBXBuildFile; fileRef = A7F11C172ED05A5600D1862B /* Iridescence.metal */; };
 		A7F11C1D2ED05A5600D1862B /* IridescenceModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F11C152ED05A5600D1862B /* IridescenceModifier.swift */; };
 		A7F11CA3302486640079DA29 /* LinkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F11CA2302486620079DA29 /* LinkView.swift */; };
+		A7F11CA83024BBBD0079DA29 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A7F11CA73024BBBD0079DA29 /* GoogleService-Info.plist */; };
 		A7F7BBA82F2A2B1600F2D42D /* LogsToolbarItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F7BBA72F2A2B1300F2D42D /* LogsToolbarItem.swift */; };
 		A7F7BBAA2F2A4F5F00F2D42D /* BeautifulLogFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F7BBA92F2A4F5900F2D42D /* BeautifulLogFormat.swift */; };
 		A7F7BBAC2F2A525700F2D42D /* LogFormatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F7BBAB2F2A525000F2D42D /* LogFormatters.swift */; };
@@ -346,6 +347,7 @@
 		A7F11C152ED05A5600D1862B /* IridescenceModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IridescenceModifier.swift; sourceTree = "<group>"; };
 		A7F11C172ED05A5600D1862B /* Iridescence.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Iridescence.metal; sourceTree = "<group>"; };
 		A7F11CA2302486620079DA29 /* LinkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkView.swift; sourceTree = "<group>"; };
+		A7F11CA73024BBBD0079DA29 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		A7F7BBA72F2A2B1300F2D42D /* LogsToolbarItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsToolbarItem.swift; sourceTree = "<group>"; };
 		A7F7BBA92F2A4F5900F2D42D /* BeautifulLogFormat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeautifulLogFormat.swift; sourceTree = "<group>"; };
 		A7F7BBAB2F2A525000F2D42D /* LogFormatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogFormatters.swift; sourceTree = "<group>"; };
@@ -814,6 +816,7 @@
 				A76A45252E7D638E00E0E19C /* nRF-ToolboxTests */,
 				5217F3E41859EE0000F2D5BB /* Frameworks */,
 				5217F3E31859EE0000F2D5BB /* Products */,
+				A7F11CA73024BBBD0079DA29 /* GoogleService-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -1232,6 +1235,7 @@
 			files = (
 				A74B9FDE2EEADDB100121B7A /* .gitignore in Resources */,
 				017D10362A5809E400E38E5F /* Preview Assets.xcassets in Resources */,
+				A7F11CA83024BBBD0079DA29 /* GoogleService-Info.plist in Resources */,
 				017D10322A5809E400E38E5F /* Assets.xcassets in Resources */,
 				01C81ADA2A5DFA8E0011B41E /* Localizable.stringsdict in Resources */,
 			);
