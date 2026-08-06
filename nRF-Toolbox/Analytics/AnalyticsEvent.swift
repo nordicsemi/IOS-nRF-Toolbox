@@ -16,7 +16,7 @@ class AnalyticsEvent {
     }
 }
 
-class AppOpenEventType : AnalyticsEvent {
+class AppOpenEvent : AnalyticsEvent {
     
     init() {
         super.init(name: "APP_OPEN", parameters: [:])
