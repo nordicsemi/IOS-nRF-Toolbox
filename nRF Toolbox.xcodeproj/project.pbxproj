@@ -118,6 +118,7 @@
 		A7E289352EB35E70007199DB /* CoreBluetoothMock in Frameworks */ = {isa = PBXBuildFile; productRef = A7E289342EB35E70007199DB /* CoreBluetoothMock */; };
 		A7EBBC2F2EBDF336000001DF /* SequenceItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7EBBC2E2EBDF334000001DF /* SequenceItemView.swift */; };
 		A7ED617B2FFE48010041A317 /* Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7ED617A2FFE47FF0041A317 /* Device.swift */; };
+		A7F11BA7302476A10079DA29 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = A7F11BA6302476A10079DA29 /* FirebaseAnalyticsCore */; };
 		A7F11C1C2ED05A5600D1862B /* Iridescence.metal in Sources */ = {isa = PBXBuildFile; fileRef = A7F11C172ED05A5600D1862B /* Iridescence.metal */; };
 		A7F11C1D2ED05A5600D1862B /* IridescenceModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F11C152ED05A5600D1862B /* IridescenceModifier.swift */; };
 		A7F7BBA82F2A2B1600F2D42D /* LogsToolbarItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F7BBA72F2A2B1300F2D42D /* LogsToolbarItem.swift */; };
@@ -421,6 +422,7 @@
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A76A45252E7D638E00E0E19C /* nRF-ToolboxTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "nRF-ToolboxTests"; sourceTree = "<group>"; };
+		A7F11BA8302476AD0079DA29 /* Analytics */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Analytics; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -432,6 +434,7 @@
 				A74E1E252FFBF11000011C72 /* iOSMcuManagerLibrary in Frameworks */,
 				015642472AA4E640005A0A44 /* iOS-BLE-Library-Mock in Frameworks */,
 				AA1AD37F2DD5DFC400799308 /* AEXML in Frameworks */,
+				A7F11BA7302476A10079DA29 /* FirebaseAnalyticsCore in Frameworks */,
 				018873C42A58332400253273 /* iOSCommonLibraries in Frameworks */,
 				A7E289352EB35E70007199DB /* CoreBluetoothMock in Frameworks */,
 				A755EB242F3203CF002AEC76 /* CombineExt in Frameworks */,
@@ -602,6 +605,7 @@
 		017D102C2A5809E300E38E5F /* nRF-Toolbox */ = {
 			isa = PBXGroup;
 			children = (
+				A7F11BA8302476AD0079DA29 /* Analytics */,
 				A70A61FA2F0D46C000C341AB /* Persistent */,
 				AA8DF2152DE9B08E00D49141 /* Info.plist */,
 				019E77792ACC289500760124 /* Screens */,
@@ -1105,6 +1109,9 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				A7F11BA8302476AD0079DA29 /* Analytics */,
+			);
 			name = "nRF-Toolbox";
 			packageProductDependencies = (
 				018873C32A58332400253273 /* iOSCommonLibraries */,
@@ -1115,6 +1122,7 @@
 				A755EB232F3203CF002AEC76 /* CombineExt */,
 				A74E1E0C2FFBEB5000011C72 /* iOSMcuManagerLibrary */,
 				A74E1E0D2FFBEB5000011C72 /* iOSOtaLibrary */,
+				A7F11BA6302476A10079DA29 /* FirebaseAnalyticsCore */,
 			);
 			productName = "nRF-Toolbox";
 			productReference = 017D102B2A5809E300E38E5F /* nRF-Toolbox.app */;
@@ -1201,6 +1209,7 @@
 				A7255E6A2EAF9C6600774CEE /* XCRemoteSwiftPackageReference "IOS-CoreBluetooth-Mock" */,
 				A755EB222F320299002AEC76 /* XCRemoteSwiftPackageReference "CombineExt" */,
 				A74E1E0B2FFBEB5000011C72 /* XCRemoteSwiftPackageReference "IOS-nRF-Connect-Device-Manager" */,
+				A7F11BA53024739D0079DA29 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			productRefGroup = 5217F3E31859EE0000F2D5BB /* Products */;
 			projectDirPath = "";
@@ -2171,6 +2180,14 @@
 				minimumVersion = 1.9.0;
 			};
 		};
+		A7F11BA53024739D0079DA29 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.17.0;
+			};
+		};
 		C39941BA27341AAE00E7AA33 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/weichsel/ZIPFoundation.git";
@@ -2221,6 +2238,11 @@
 		A7E289342EB35E70007199DB /* CoreBluetoothMock */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = CoreBluetoothMock;
+		};
+		A7F11BA6302476A10079DA29 /* FirebaseAnalyticsCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A7F11BA53024739D0079DA29 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsCore;
 		};
 		AA1AD37E2DD5DFC400799308 /* AEXML */ = {
 			isa = XCSwiftPackageProductDependency;
