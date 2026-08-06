@@ -121,6 +121,7 @@
 		A7F11BA7302476A10079DA29 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = A7F11BA6302476A10079DA29 /* FirebaseAnalyticsCore */; };
 		A7F11C1C2ED05A5600D1862B /* Iridescence.metal in Sources */ = {isa = PBXBuildFile; fileRef = A7F11C172ED05A5600D1862B /* Iridescence.metal */; };
 		A7F11C1D2ED05A5600D1862B /* IridescenceModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F11C152ED05A5600D1862B /* IridescenceModifier.swift */; };
+		A7F11CA3302486640079DA29 /* LinkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F11CA2302486620079DA29 /* LinkView.swift */; };
 		A7F7BBA82F2A2B1600F2D42D /* LogsToolbarItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F7BBA72F2A2B1300F2D42D /* LogsToolbarItem.swift */; };
 		A7F7BBAA2F2A4F5F00F2D42D /* BeautifulLogFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F7BBA92F2A4F5900F2D42D /* BeautifulLogFormat.swift */; };
 		A7F7BBAC2F2A525700F2D42D /* LogFormatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F7BBAB2F2A525000F2D42D /* LogFormatters.swift */; };
@@ -344,6 +345,7 @@
 		A7ED617A2FFE47FF0041A317 /* Device.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
 		A7F11C152ED05A5600D1862B /* IridescenceModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IridescenceModifier.swift; sourceTree = "<group>"; };
 		A7F11C172ED05A5600D1862B /* Iridescence.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Iridescence.metal; sourceTree = "<group>"; };
+		A7F11CA2302486620079DA29 /* LinkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkView.swift; sourceTree = "<group>"; };
 		A7F7BBA72F2A2B1300F2D42D /* LogsToolbarItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsToolbarItem.swift; sourceTree = "<group>"; };
 		A7F7BBA92F2A4F5900F2D42D /* BeautifulLogFormat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeautifulLogFormat.swift; sourceTree = "<group>"; };
 		A7F7BBAB2F2A525000F2D42D /* LogFormatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogFormatters.swift; sourceTree = "<group>"; };
@@ -548,6 +550,7 @@
 		015AAE622B03838C00D79833 /* Sidebar */ = {
 			isa = PBXGroup;
 			children = (
+				A7F11CA2302486620079DA29 /* LinkView.swift */,
 				015AAE632B0383BD00D79833 /* SidebarView.swift */,
 				AAF7DE612CFDD4BC000A347A /* SidebarDeviceView.swift */,
 			);
@@ -1420,6 +1423,7 @@
 				AADCFF222E0C3F5F00CD6DB6 /* CGMSAllRecordsChartView.swift in Sources */,
 				AA5AB3DB2D08649C005213D5 /* CyclingData.swift in Sources */,
 				017D102E2A5809E300E38E5F /* nRF_ToolboxApp.swift in Sources */,
+				A7F11CA3302486640079DA29 /* LinkView.swift in Sources */,
 				AA102C472E1574DE0001BDC5 /* MeasurementStatus.swift in Sources */,
 				A7CB67242E9680E3007E1311 /* UnitGlucoseTrend.swift in Sources */,
 				0108E87B2AF140D800C8B096 /* ChartTimeData.swift in Sources */,

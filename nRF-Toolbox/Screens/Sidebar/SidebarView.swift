@@ -76,9 +76,19 @@ struct SidebarView: View {
                     Label("About nRF Toolbox", systemImage: "app.gift")
                 }
                 
-                SourceCodeLinkView(url: URL(string: "https://github.com/NordicSemiconductor/IOS-nRF-Toolbox")!)
+                LinkView(
+                    link: .github,
+                    title: "Source Code (GitHub)",
+                    systemImage: "keyboard",
+                    url: "https://github.com/NordicSemiconductor/IOS-nRF-Toolbox"
+                )
                 
-                DevZoneLinkView()
+                LinkView(
+                    link: .devZone,
+                    title: "Help (Nordic DevZone)",
+                    systemImage: "lifepreserver",
+                    url: "https://devzone.nordicsemi.com/"
+                )
                 
                 let isSelected = if case .logs = rootViewModel.selectedCategory {
                     true
@@ -87,6 +97,7 @@ struct SidebarView: View {
                 }
                 
                 Button {
+                    NordicAnalytics.logEvent(LinkOpenEvent(link: .logger))
                     rootViewModel.selectedCategory = RootNavigationView.MenuCategory.logs(LogsTab.settings)
                 } label: {
                     Label("Logs settings", systemImage: "gearshape")
