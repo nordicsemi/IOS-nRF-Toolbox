@@ -15,6 +15,8 @@ import iOS_BLE_Library_Mock
 @main
 struct nRF_ToolboxApp: App {
     
+    @UIApplicationDelegateAdaptor(AnalyticsAppDelegate.self) var delegate
+    
     private static let centralManager = CentralManager()
     
     @State var viewModel = AppViewModel()
