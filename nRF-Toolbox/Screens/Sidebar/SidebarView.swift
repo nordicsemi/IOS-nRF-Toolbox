@@ -136,7 +136,9 @@ struct SidebarView: View {
                 Button {
                     showFirebaseSettingsDialog = true
                 } label: {
-                    Image(systemName: "eraser.line.dashed")
+                    Image("firebaseIcon")
+                        .renderingMode(.template)
+                        .foregroundStyle(.primary)
                 }
             }
         }
