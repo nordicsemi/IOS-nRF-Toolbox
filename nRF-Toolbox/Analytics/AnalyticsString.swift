@@ -26,6 +26,21 @@ enum AnalyticsString : LocalizedStringKey {
     case accept = "Share statistics"
     case decline = "Not now"
 
+    // MARK: Switch dialog
+
+    case switchTitle = "Usage Statistics"
+    case switchSubtitle = "Change your mind at any time — this only affects anonymous statistics."
+
+    case toggleTitle = "Share anonymous statistics"
+    case stateOn = "On"
+    case stateOff = "Off"
+
+    case stateOnDetail = "You allowed anonymous statistics. Turning this off stops collection immediately."
+    case stateOffDetail = "You declined anonymous statistics. Nothing is being collected."
+    case stateUndecidedDetail = "You haven't made a choice yet. Statistics are off until you turn them on."
+
+    case done = "Done"
+
     case description = """
 You can help improve our application by sharing anonymous statistics on how you interact with the app. You can enable or disable this feature at any time in Settings.
 
