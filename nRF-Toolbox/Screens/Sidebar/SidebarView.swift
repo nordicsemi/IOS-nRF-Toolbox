@@ -20,6 +20,7 @@ struct SidebarView: View {
     @Environment(ConnectedDevicesViewModel.self) var viewModel: ConnectedDevicesViewModel
     
     @State private var showFirebasePermissionDialog = NordicAnalytics.needsPermission()
+    @State private var showFirebaseSettingsDialog = false
     
     // MARK: view
     
@@ -123,6 +124,21 @@ struct SidebarView: View {
                 AnalyticsPermissionRequestDialog()
             }
             .setupTranslucentBackground()
+        }
+        .sheet(isPresented: $showFirebaseSettingsDialog) {
+            NavigationStack {
+                AnalyticsPermissionSwitchDialog()
+            }
+            .setupTranslucentBackground()
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showFirebaseSettingsDialog = true
+                } label: {
+                    Image(systemName: "eraser.line.dashed")
+                }
+            }
         }
     }
 }
