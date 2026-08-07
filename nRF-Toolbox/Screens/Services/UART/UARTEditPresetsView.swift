@@ -81,7 +81,6 @@ struct UARTEditPresetsView: View {
                     viewModel.updateSelectedPresetsName(name)
                     viewModel.updateSelectedPresetsSequence(sequence)
                     viewModel.savePresets()
-                    NordicAnalytics.logEvent(UARTCreateConfigurationEvent())
                 } label: {
                     Image(systemName: "checkmark")
                 }

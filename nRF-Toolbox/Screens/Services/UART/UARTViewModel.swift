@@ -200,6 +200,7 @@ extension UARTViewModel {
     
     @MainActor
     func newPresets(named: String) {
+        NordicAnalytics.logEvent(UARTCreateConfigurationEvent())
         let newPresets = UARTPresets(named)
         presets.append(newPresets)
         selectedPresets = newPresets
