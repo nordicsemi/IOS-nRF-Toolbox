@@ -14,21 +14,11 @@ struct AnalyticsPermissionRequestDialog: View {
 
     var body: some View {
         VStack {
-            Text(AnalyticsString.title.rawValue)
-                .font(.title)
-            
             Spacer()
             
-            if let attributedString = try? AttributedString(
-                markdown: AnalyticsString.description.rawValue,
-                options: .init(
-                    interpretedSyntax: .full
-                )
-            ) {
-                Text(attributedString)
-                    .font(.footnote)
-                    .padding()
-            }
+            Text(AnalyticsString.description.rawValue)
+                .font(.footnote)
+                .padding()
             
             Spacer()
             
@@ -47,6 +37,8 @@ struct AnalyticsPermissionRequestDialog: View {
             }
             .padding()
         }
+        .navigationTitle(AnalyticsString.title.rawValue)
+        .navigationBarTitleDisplayMode(.inline)
         .onDisappear {
             if NordicAnalytics.needsPermission() {
                 NordicAnalytics.setAnalyticsEnabled(false)

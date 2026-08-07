@@ -15,11 +15,9 @@ struct AnalyticsPermissionSwitchDialog: View {
         HStack {
             Text(AnalyticsString.title.rawValue)
             
-            if let attributedString = try? AttributedString(
-                markdown: AnalyticsString.description.rawValue
-            ) {
-                Text(attributedString)
-            }
+            Text(AnalyticsString.description.rawValue)
+                .font(.footnote)
+                .padding()
             
             VStack {
                 Button("Options") {
