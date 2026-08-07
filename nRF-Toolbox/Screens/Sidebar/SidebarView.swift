@@ -119,9 +119,10 @@ struct SidebarView: View {
         .tint(Color.universalAccentColor)
         .listStyle(.insetGrouped)
         .sheet(isPresented: $showFirebasePermissionDialog) {
-            AnalyticsPermissionRequestDialog()
-                .fixedSize(horizontal: false, vertical: true)
-                .presentationSizing(.fitted)
+            NavigationStack {
+                AnalyticsPermissionRequestDialog()
+            }
+            .setupTranslucentBackground()
         }
     }
 }

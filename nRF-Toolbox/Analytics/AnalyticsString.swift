@@ -6,7 +6,9 @@
 //  Copyright © 2026 Nordic Semiconductor. All rights reserved.
 //
 
-enum AnalyticsString : String {
+import SwiftUI
+
+enum AnalyticsString : LocalizedStringKey {
     case title = "Help us improve!"
     case description = """
 You can help improve our application by sharing anonymous statistics on how you interact with the app. You can enable or disable this feature at any time in Settings.
