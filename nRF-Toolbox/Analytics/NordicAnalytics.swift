@@ -25,6 +25,7 @@ class NordicAnalytics {
     }
     
     static func setAnalyticsEnabled(_ enabled: Bool) {
+        Analytics.setAnalyticsCollectionEnabled(enabled)
         storage.set(enabled, forKey: isEnabledKey)
     }
     
