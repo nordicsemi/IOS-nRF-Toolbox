@@ -76,7 +76,7 @@ struct UARTPresetsMainView: View {
             print("Changed from \(oldValue) to \(newValue)")
         }
         .tint(.universalAccentColor)
-        .alert("New Presets", isPresented: $showNewPresetsAlert) {
+        .alert("New Preset", isPresented: $showNewPresetsAlert) {
             TextField("Type Name Here", text: $newPresetsName)
                 .submitLabel(.done)
                 .onSubmit {
