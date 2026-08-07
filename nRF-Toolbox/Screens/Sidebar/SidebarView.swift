@@ -19,6 +19,8 @@ struct SidebarView: View {
     @Environment(RootNavigationViewModel.self) var rootViewModel: RootNavigationViewModel
     @Environment(ConnectedDevicesViewModel.self) var viewModel: ConnectedDevicesViewModel
     
+    @State private var showFirebasePermissionDialog = NordicAnalytics.needsPermission()
+    
     // MARK: view
     
     var body: some View {
@@ -116,5 +118,10 @@ struct SidebarView: View {
         }
         .tint(Color.universalAccentColor)
         .listStyle(.insetGrouped)
+        .sheet(isPresented: $showFirebasePermissionDialog) {
+            AnalyticsPermissionRequestDialog()
+                .fixedSize(horizontal: false, vertical: true)
+                .presentationSizing(.fitted)
+        }
     }
 }

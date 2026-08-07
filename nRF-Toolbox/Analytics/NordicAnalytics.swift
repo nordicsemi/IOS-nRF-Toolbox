@@ -27,4 +27,12 @@ class NordicAnalytics {
     static func setAnalyticsEnabled(_ enabled: Bool) {
         storage.set(enabled, forKey: isEnabledKey)
     }
+    
+    static func isAnalyticsEnabled() -> Bool {
+        return storage.bool(forKey: isEnabledKey)
+    }
+    
+    static func needsPermission() -> Bool {
+        return storage.object(forKey: isEnabledKey) == nil
+    }
 }
