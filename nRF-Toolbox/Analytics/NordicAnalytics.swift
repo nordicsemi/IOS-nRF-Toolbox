@@ -13,14 +13,21 @@ class NordicAnalytics {
     
     private static let isEnabledKey = "analytics.enabled"
     private static let storage = UserDefaults(suiteName: "analytics")!
+    private static var hasBeenConfigured = false
     
     static func configure() {
+        guard storage.bool(forKey: isEnabledKey) else { return }
         FirebaseApp.configure()
+        hasBeenConfigured = true
         logEvent(AppOpenEvent())
     }
     
     static func logEvent(_ event: AnalyticsEvent) {
         guard storage.bool(forKey: isEnabledKey) else { return }
+        if !hasBeenConfigured {
+            FirebaseApp.configure()
+            hasBeenConfigured = true
+        }
         Analytics.logEvent(event.name, parameters: event.parameters)
     }
     
