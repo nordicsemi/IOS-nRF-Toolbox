@@ -140,6 +140,18 @@ struct CharacteristicReader {
         return output
     }
     
+    private static let twelveHourDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy MM dd HH mm ss a"
+        return formatter
+    }()
+
+    private static let twentyFourHourDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy MM dd HH mm ss"
+        return formatter
+    }()
+
     static func readDateTime(ptr aPointer : inout UnsafeMutablePointer<UInt8>) -> Date {
         let year  = CharacteristicReader.readUInt16Value(ptr: &aPointer)
         let month = CharacteristicReader.readUInt8Value(ptr: &aPointer)
@@ -147,9 +159,8 @@ struct CharacteristicReader {
         var hour  = CharacteristicReader.readUInt8Value(ptr: &aPointer)
         let min   = CharacteristicReader.readUInt8Value(ptr: &aPointer)
         let sec   = CharacteristicReader.readUInt8Value(ptr: &aPointer)
-        
-        let dateFormatter = DateFormatter()
 
+        let dateFormatter: DateFormatter
         var dateString : String
         if using12hClockFormat()  == true {
             var merediumString :String = "am"
@@ -158,31 +169,49 @@ struct CharacteristicReader {
                 merediumString = "pm"
             }
             dateString = String(format: "%d %d %d %d %d %d %@", year, month, day, hour, min, sec, merediumString)
-            dateFormatter.dateFormat = "yyyy MM dd HH mm ss a"
+            dateFormatter = twelveHourDateFormatter
         }else{
             dateString = String(format: "%d %d %d %d %d %d", year, month, day, hour, min, sec)
-            dateFormatter.dateFormat = "yyyy MM dd HH mm ss"
+            dateFormatter = twentyFourHourDateFormatter
         }
         return dateFormatter.date(from: dateString)!
     }
-    
+
     static func readNibble(ptr aPointer : inout UnsafeMutablePointer<UInt8>) -> Nibble {
         let value = CharacteristicReader.readUInt8Value(ptr: &aPointer)
         let nibble = Nibble(first: value & 0xF, second: value >> 4)
         return nibble
     }
-    
+
+    private static let clockFormatCacheLock = NSLock()
+    private static var clockFormatCache: (localeIdentifier: String, isTwelveHour: Bool)?
+
     static func using12hClockFormat() -> Bool {
-        
+        let locale = Locale.current
+
+        clockFormatCacheLock.lock()
+        let cached = clockFormatCache
+        clockFormatCacheLock.unlock()
+
+        if let cached, cached.localeIdentifier == locale.identifier {
+            return cached.isTwelveHour
+        }
+
         let formatter = DateFormatter()
-        formatter.locale = Locale.current
+        formatter.locale = locale
         formatter.dateStyle = .none
         formatter.timeStyle = .short
-        
+
         let dateString = formatter.string(from: Date())
         let amRange = dateString.range(of: formatter.amSymbol)
         let pmRange = dateString.range(of: formatter.pmSymbol)
-        
-        return !(pmRange == nil && amRange == nil)
+
+        let isTwelveHour = !(pmRange == nil && amRange == nil)
+
+        clockFormatCacheLock.lock()
+        clockFormatCache = (locale.identifier, isTwelveHour)
+        clockFormatCacheLock.unlock()
+
+        return isTwelveHour
     }
 }

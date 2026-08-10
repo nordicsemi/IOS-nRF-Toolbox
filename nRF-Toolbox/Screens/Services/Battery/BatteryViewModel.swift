@@ -118,8 +118,9 @@ final class BatteryViewModel: SupportedServiceViewModel {
                 }
                 return res
             })
+            .receive(on: DispatchQueue.main)
             .sink { completion in
-                
+
             } receiveValue: { [unowned self] level in
                 var lvlData = level
                 while lvlData.count < Self.batteryLevelDataLength {

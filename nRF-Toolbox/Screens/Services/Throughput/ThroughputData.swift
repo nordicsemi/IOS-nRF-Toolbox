@@ -35,13 +35,16 @@ struct ThroughputData {
     
     // MARK: API
     
+    private static let naturalScaleFormatter: MeasurementFormatter = {
+        let formatter = MeasurementFormatter()
+        formatter.unitOptions = .naturalScale
+        return formatter
+    }()
+
     func bytesReceivedString() -> String {
         let measurement = Measurement<UnitInformationStorage>(value: Double(bytesReceived),
                                                               unit: .bytes)
-        
-        let formatter = MeasurementFormatter()
-        formatter.unitOptions = .naturalScale
-        return formatter.string(from: measurement)
+        return Self.naturalScaleFormatter.string(from: measurement)
     }
     
     func bytesReceivedMeasurement() -> Measurement<UnitInformationStorage> {

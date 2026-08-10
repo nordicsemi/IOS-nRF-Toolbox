@@ -38,53 +38,25 @@ public struct DeviceInformation: CustomDebugStringConvertible {
     // MARK: init
     
     public init(_ characteristics: [CBCharacteristic], peripheral: Peripheral) async throws {
-        if let c = characteristics.first(where: { $0.uuid == CBUUID(string: Characteristic.manufacturerNameString.uuidString) }) {
-            if let data = try await peripheral.readValue(for: c).firstValue {
-                manufacturerName = String(data: data, encoding: .utf8)
-            }
+        var characteristicsByUUID = [CBUUID: CBCharacteristic](minimumCapacity: characteristics.count)
+        for characteristic in characteristics {
+            characteristicsByUUID[characteristic.uuid] = characteristic
         }
 
-        if let c = characteristics.first(where: { $0.uuid == CBUUID(string: Characteristic.modelNumberString.uuidString) }) {
-            if let data = try await peripheral.readValue(for: c).firstValue {
-                modelNumber = String(data: data, encoding: .utf8)
-            }
+        func readString(_ characteristic: Characteristic) async throws -> String? {
+            guard let c = characteristicsByUUID[CBUUID(string: characteristic.uuidString)],
+                  let data = try await peripheral.readValue(for: c).firstValue else { return nil }
+            return String(data: data, encoding: .utf8)
         }
 
-        if let c = characteristics.first(where: { $0.uuid == CBUUID(string: Characteristic.serialNumberString.uuidString) }) {
-            if let data = try await peripheral.readValue(for: c).firstValue {
-                serialNumber = String(data: data, encoding: .utf8)
-            }
-        }
-
-        if let c = characteristics.first(where: { $0.uuid == CBUUID(string: Characteristic.hardwareRevisionString.uuidString) }) {
-            if let data = try await peripheral.readValue(for: c).firstValue {
-                hardwareRevision = String(data: data, encoding: .utf8)
-            }
-        }
-
-        if let c = characteristics.first(where: { $0.uuid == CBUUID(string: Characteristic.firmwareRevisionString.uuidString) }) {
-            if let data = try await peripheral.readValue(for: c).firstValue {
-                firmwareRevision = String(data: data, encoding: .utf8)
-            }
-        }
-
-        if let c = characteristics.first(where: { $0.uuid == CBUUID(string: Characteristic.softwareRevisionString.uuidString) }) {
-            if let data = try await peripheral.readValue(for: c).firstValue {
-                softwareRevision = String(data: data, encoding: .utf8)
-            }
-        }
-
-        if let c = characteristics.first(where: { $0.uuid == CBUUID(string: Characteristic.systemId.uuidString) }) {
-            if let data = try await peripheral.readValue(for: c).firstValue {
-                systemID = String(data: data, encoding: .utf8)
-            }
-        }
-
-        if let c = characteristics.first(where: { $0.uuid == CBUUID(string: Characteristic.ieee11073_20601RegulatoryCertificationDataList.uuidString) }) {
-            if let data = try await peripheral.readValue(for: c).firstValue {
-                ieee11073 = String(data: data, encoding: .utf8)
-            }
-        }
+        manufacturerName = try await readString(.manufacturerNameString)
+        modelNumber = try await readString(.modelNumberString)
+        serialNumber = try await readString(.serialNumberString)
+        hardwareRevision = try await readString(.hardwareRevisionString)
+        firmwareRevision = try await readString(.firmwareRevisionString)
+        softwareRevision = try await readString(.softwareRevisionString)
+        systemID = try await readString(.systemId)
+        ieee11073 = try await readString(.ieee11073_20601RegulatoryCertificationDataList)
     }
     
     // MARK: debugDescription

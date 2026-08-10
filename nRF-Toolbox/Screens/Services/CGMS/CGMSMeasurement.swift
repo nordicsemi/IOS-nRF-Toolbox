@@ -93,11 +93,15 @@ struct CGMSMeasurement {
     
     // MARK: API
     
-    func toStringDate() -> String {
+    private static let dateFormatter: DateFormatter = {
         let dateFormatter = DateFormatter()
         dateFormatter.locale = Locale(identifier: "en_US")
         dateFormatter.setLocalizedDateFormatFromTemplate("E d MMM yyyy HH:mm:ss")
-        return dateFormatter.string(from: date)
+        return dateFormatter
+    }()
+
+    func toStringDate() -> String {
+        return Self.dateFormatter.string(from: date)
     }
     
     func isCrcValid() -> Bool? {

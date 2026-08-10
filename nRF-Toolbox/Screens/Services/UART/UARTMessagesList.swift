@@ -31,7 +31,7 @@ struct UARTMessagesList: View {
                     
                     Text("...")
                         .id(Date.Pongo)
-                        .onChange(of: viewModel.messages, initial: false) { _, _  in
+                        .onChange(of: viewModel.messages.count, initial: false) { _, _  in
                             withAnimation {
                                 proxy.scrollTo(Date.Pongo, anchor: .bottom)
                             }

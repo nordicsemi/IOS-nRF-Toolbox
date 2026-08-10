@@ -29,7 +29,7 @@ struct ScanResultItem: View {
         self.services = services
         self.inProgress = showProgress
         self.isScanner = isScanner
-        self.hasSupportedServices = !services.map({ $0 }).filter(\.isSupported).isEmpty
+        self.hasSupportedServices = services.contains(where: \.isSupported)
     }
     
     // MARK: view

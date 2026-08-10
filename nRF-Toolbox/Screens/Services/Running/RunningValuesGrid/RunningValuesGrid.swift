@@ -42,11 +42,16 @@ struct RunningValuesGrid: View {
 // MARK: - Private
 
 private extension RunningValuesGrid {
-    
+
+    static let numberFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.maximumFractionDigits = 2
+        return formatter
+    }()
+
     var items: [RunningAttribute] {
-        let numberFormatter = NumberFormatter()
-        numberFormatter.maximumFractionDigits = 2
-        
+        let numberFormatter = Self.numberFormatter
+
         var items = [RunningAttribute]()
         
         let speedKey = "Speed"

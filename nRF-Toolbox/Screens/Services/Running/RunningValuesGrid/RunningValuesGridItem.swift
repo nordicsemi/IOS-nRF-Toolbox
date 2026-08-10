@@ -19,17 +19,16 @@ struct RunningValuesGridItem: View {
         self.unit = unit
     }
     
+    private static let defaultNumberFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.maximumFractionDigits = 2
+        return formatter
+    }()
+
     init<U: Unit>(title: String, measurement: Measurement<U>, numberFormatter: NumberFormatter? = nil) {
         self.title = title
-        
-        let nf: NumberFormatter
-        if let numberFormatter {
-            nf = numberFormatter
-        } else {
-            nf = NumberFormatter()
-            nf.maximumFractionDigits = 2
-        }
-        
+
+        let nf = numberFormatter ?? Self.defaultNumberFormatter
         self.value = nf.string(from: NSNumber(floatLiteral: measurement.value)) ?? "-.-"
         self.unit = measurement.unit.symbol
     }
