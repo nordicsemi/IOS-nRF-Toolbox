@@ -131,8 +131,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/nordicsemi/IOS-nRF-Connect-Device-Manager",
       "state" : {
-        "revision" : "d1c2a785231deab08e0a2c635a188beddf083f49",
-        "version" : "1.14.5"
+        "revision" : "0c211879e9e97ea756eaa76cd2182b610e6519b2",
+        "version" : "1.14.6"
       }
     },
     {
