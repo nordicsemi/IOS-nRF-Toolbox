@@ -125,7 +125,7 @@ extension CuffPressureViewModel {
                     return nil
                 }
             }
-            .receive(on: RunLoop.main)
+            .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [log] _ in
                 log.debug("Completion")
             }, receiveValue: { [weak self] newValue in

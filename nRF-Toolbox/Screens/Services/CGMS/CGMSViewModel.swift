@@ -268,9 +268,9 @@ private extension CGMSViewModel {
                 
                 return CGMSMeasurementParser.parse(data: data, sessionStartTime: peripheralSessionTime)
             }
-            .receive(on: RunLoop.main)
-            .sink(receiveCompletion: { _ in
-                print("Completion")
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { [log] _ in
+                log.debug("Completion")
             }, receiveValue: { [weak self] newValues in
                 guard let self, !newValues.isEmpty else { return }
                 
@@ -292,15 +292,24 @@ private extension CGMSViewModel {
             })
             .store(in: &cancellables)
     }
-    
+
     private func updateXDomain() {
-        let values = records.map { $0.measurement.value }
+        guard let first = records.first else {
+            minY = -5.0
+            maxY = 5.0
+            return
+        }
 
-        let minY = (values.min() ?? 0) - 5.0
-        let maxY = (values.max() ?? 0) + 5.0
+        var minValue = first.measurement.value
+        var maxValue = minValue
+        for record in records.dropFirst() {
+            let value = record.measurement.value
+            if value < minValue { minValue = value }
+            if value > maxValue { maxValue = value }
+        }
 
-        self.minY = minY
-        self.maxY = maxY
+        minY = minValue - 5.0
+        maxY = maxValue + 5.0
     }
     
     func listenToOperations(_ opsControlPointCharacteristic: CBCharacteristic) {
@@ -310,8 +319,9 @@ private extension CGMSViewModel {
                 log.debug("Received Ops Data \(data.hexEncodedString(options: [.prepend0x, .twoByteSpacing]))")
                 return data
             }
-            .sink(receiveCompletion: { _ in
-                print("Completion")
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { [log] _ in
+                log.debug("Completion")
             }, receiveValue: { [log] newValue in
                 log.debug("Received new Ops Control Point Values")
             })

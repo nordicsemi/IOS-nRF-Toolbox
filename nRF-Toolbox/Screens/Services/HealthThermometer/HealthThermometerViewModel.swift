@@ -111,6 +111,7 @@ final class HealthThermometerViewModel: SupportedServiceViewModel {
                 
                 return result
             }
+            .receive(on: DispatchQueue.main)
             .sink(to: \.measurement, in: self, assigningInCaseOfError: nil)
             .store(in: &cancellables)
     }

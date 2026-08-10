@@ -151,6 +151,7 @@ private extension RunningServiceViewModel {
                 
                 return result
             }
+            .receive(on: DispatchQueue.main)
             .sink { [unowned self] completion in
                 switch completion {
                 case .finished:

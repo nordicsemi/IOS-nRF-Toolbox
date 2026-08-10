@@ -17,7 +17,10 @@ import SwiftData
 final class AppViewModel {
     
     private static let bufferSize = 1000
-    
+
+    private static let flushInterval: DispatchQueue.SchedulerTimeType.Stride = .milliseconds(500)
+    private static let maxBatchSize = 250
+
     var logsSettings = LogsSettings()
     
     private let readDataSource: LogsReadDataSource
@@ -47,20 +50,22 @@ final class AppViewModel {
     
     private func observeLogs() {
         NordicLog.lastLog
-            .filter { _ in self.logsSettings.isEnabled == true }
+            .filter { [weak self] _ in self?.logsSettings.isEnabled == true }
             .compactMap { $0 }
             .map { log in LogItemDomain(value: log.message, level: log.level.rawValue, timestamp: log.timestamp) }
-            .sink(receiveValue: { log in self.replaySubject.send(log) } )
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] log in self?.replaySubject.send(log) } )
             .store(in: &cancellables)
     }
-    
+
     func observeLogsInsertion() {
         parentPublisher
             .switchToLatest()
-            .sink(receiveValue: { log in self.insertRecord(log) } )
+            .collect(.byTimeOrCount(DispatchQueue.main, Self.flushInterval, Self.maxBatchSize))
+            .sink(receiveValue: { [weak self] logs in self?.insertRecords(logs) } )
             .store(in: &cancellables)
     }
-    
+
     private func createNewPublisher(_ newReplySubject: ReplaySubject<LogItemDomain, Never>) -> AnyPublisher<LogItemDomain, Never> {
         replaySubject = newReplySubject
 
@@ -69,16 +74,19 @@ final class AppViewModel {
             .eraseToAnyPublisher()
     }
     
-    func insertRecord(_ item: LogItemDomain) {
-        logCounter += 1
+    func insertRecords(_ items: [LogItemDomain]) {
+        guard !items.isEmpty else { return }
+
+        logCounter += items.count
         if logCounter > 100000 {
             clearLogs()
         }
-        Task.detached(priority: .userInitiated) {
-            try await self.writeDataSource.insert(item)
+        let writeDataSource = self.writeDataSource
+        Task.detached(priority: .utility) {
+            try await writeDataSource.insert(items)
         }
     }
-    
+
     func clearLogs() {
         guard clearTask == nil else { return }
         parentPublisher.send(createNewPublisher(ReplaySubject<LogItemDomain, Never>(bufferSize: AppViewModel.bufferSize)))

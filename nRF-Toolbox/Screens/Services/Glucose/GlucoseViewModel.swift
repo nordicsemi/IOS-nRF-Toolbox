@@ -112,7 +112,7 @@ final class GlucoseViewModel: @MainActor SupportedServiceViewModel {
         
         listenToMeasurements(cbGlucoseMeasurement)
         glucoseNotifyEnabled = try await peripheral.setNotifyValue(true, for: cbGlucoseMeasurement)
-            .receive(on: RunLoop.main)
+            .receive(on: DispatchQueue.main)
             .firstValue
         log.debug("GlucoseMeasurement.setNotifyValue(true): \(glucoseNotifyEnabled)")
         
@@ -219,7 +219,7 @@ private extension GlucoseViewModel {
                 log.info(parsed.newDataLog())
                 return parsed
             }
-            .receive(on: RunLoop.main)
+            .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [log] _ in
                 log.debug("Completion")
             }, receiveValue: { [weak self] newValue in
@@ -237,18 +237,27 @@ private extension GlucoseViewModel {
             })
             .store(in: &cancellables)
     }
-    
+
     private func refreshXDomain() {
-        let values = allRecords.map { $0.measurement?.value ?? 0.0 }
-
-        let minY = (values.min() ?? 0.2) - 0.2
-        let maxY = (values.max() ?? 0.2) + 0.2
-
-        self.minY = minY
-        self.maxY = maxY
-        if let maxX = self.allRecords.max(by: { $0.sequenceNumber < $1.sequenceNumber })?.sequenceNumber {
-            self.maxX = Double(maxX)
+        guard let first = allRecords.first else {
+            minY = 0.0
+            maxY = 0.4
+            return
         }
+
+        var minValue = first.measurement?.value ?? 0.0
+        var maxValue = minValue
+        var maxSequenceNumber = first.sequenceNumber
+        for record in allRecords.dropFirst() {
+            let value = record.measurement?.value ?? 0.0
+            if value < minValue { minValue = value }
+            if value > maxValue { maxValue = value }
+            if record.sequenceNumber > maxSequenceNumber { maxSequenceNumber = record.sequenceNumber }
+        }
+
+        minY = minValue - 0.2
+        maxY = maxValue + 0.2
+        maxX = Double(maxSequenceNumber)
     }
     
     // MARK: processRACPResponse(:)

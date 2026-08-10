@@ -171,6 +171,7 @@ private extension HeartRateViewModel {
               
                 return result
             }
+            .receive(on: DispatchQueue.main)
             .sink { completion in
                 if case .failure = completion {
                     self.internalAlertError = ServiceWarning.measurement
@@ -185,19 +186,8 @@ private extension HeartRateViewModel {
                 if data.count > capacity {
                     data.removeFirst()
                 }
-                
-                let min = (data.min {
-                    $0.measurement.heartRateValue < $1.measurement.heartRateValue
-                }?.measurement.heartRateValue ?? 40)
-                
-                let max  = (data.max {
-                    $0.measurement.heartRateValue < $1.measurement.heartRateValue
-                }?.measurement.heartRateValue ?? 140)
-                
-                lowest = min - 5
-                highest = max + 5
-                
-                recalculateXDomain()
+
+                recalculateDomains()
             }
             .store(in: &cancellables)
     }
@@ -215,12 +205,28 @@ private extension HeartRateViewModel {
             handleError(error)
         }
     }
-    
-    private func recalculateXDomain() {
-        let values = data.map { $0.date }
 
-        minDate = (values.min() ?? .distantPast).addingTimeInterval(-5)
-        maxDate = (values.max() ?? .distantFuture).addingTimeInterval(5)
+    private func recalculateDomains() {
+        guard let first = data.first, let last = data.last else {
+            lowest = 40
+            highest = 200
+            minDate = .distantPast
+            maxDate = .distantFuture
+            return
+        }
+
+        var minValue = first.measurement.heartRateValue
+        var maxValue = minValue
+        for item in data.dropFirst() {
+            let value = item.measurement.heartRateValue
+            if value < minValue { minValue = value }
+            if value > maxValue { maxValue = value }
+        }
+
+        lowest = minValue - 5
+        highest = maxValue + 5
+        minDate = first.date.addingTimeInterval(-5)
+        maxDate = last.date.addingTimeInterval(5)
     }
 }
 

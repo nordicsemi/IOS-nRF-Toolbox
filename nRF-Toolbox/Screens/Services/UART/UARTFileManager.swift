@@ -24,9 +24,9 @@ class UARTFileManager {
             let xml = try parser.toXml(presets)
             let data = xml.data(using: .utf8)!
             try data.write(to: fileURL, options: [.atomicWrite])
-            print("File saved successfully at: \(fileURL)")
+            log.debug("File saved successfully at: \(fileURL)")
         } catch {
-            print("Error saving file: \(error.localizedDescription)")
+            log.error("Error saving file: \(error.localizedDescription)")
         }
     }
 }

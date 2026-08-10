@@ -156,6 +156,7 @@ extension ConnectedDevicesViewModel {
     private func observeStateChange() {
         log.debug("\(type(of: self)).\(#function)")
         centralManager.stateChannel
+            .receive(on: DispatchQueue.main)
             .sink { [log, weak self] state in
                 log.debug("BLE State changed to \(state).")
                 switch state {
@@ -183,7 +184,7 @@ extension ConnectedDevicesViewModel {
         centralManager.connectedPeripheralChannel
             .map { $0 } // Remove <Never> as $1
             .filter { $0.1 == nil } // No connection error
-            .receive(on: RunLoop.main)
+            .receive(on: DispatchQueue.main)
             .map { [weak self] (peripheral: CBPeripheral, error: Error?) -> Device in
                 let device = self?.devices.first(where: \.id, isEqualsTo: peripheral.identifier)
                 let advertisedServices = device?.services ?? Set<Service>()
@@ -230,6 +231,7 @@ extension ConnectedDevicesViewModel {
     private func observeDisconnections() {
         log.debug("\(type(of: self)).\(#function)")
         centralManager.disconnectedPeripheralsChannel
+            .receive(on: DispatchQueue.main)
             .sink { [unowned self] (peripheral, error) in
                 guard let i = self.connectedDevices.firstIndex(where: \.id, equals: peripheral.identifier) else {
                     return
@@ -336,8 +338,10 @@ extension ConnectedDevicesViewModel {
                     return .scanning
                 }
             }
-            .sink(receiveValue: { value in
-                self.scannerState = value
+            .receive(on: DispatchQueue.main)
+            .removeDuplicates()
+            .sink(receiveValue: { [weak self] value in
+                self?.scannerState = value
             })
             .store(in: &cancellables)
         

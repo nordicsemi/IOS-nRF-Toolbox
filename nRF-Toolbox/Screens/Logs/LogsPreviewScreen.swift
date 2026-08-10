@@ -67,6 +67,8 @@ struct LogsPreviewScreen: View {
             .padding()
 
             LoadingListContainer(data: viewModel.logs) { logs in
+                let firstID = logs.first?.id
+                let lastID = logs.last?.id
                 ScrollView {
                     LazyVStack {
                         ForEach(logs, id: \.id) { log in
@@ -74,12 +76,12 @@ struct LogsPreviewScreen: View {
                                 .padding(.vertical, 10)
                                 .padding(.horizontal, 16)
                                 .onAppear {
-                                    guard logs.first == log else { return }
+                                    guard firstID == log.id else { return }
                                     pendingOlderPageAnchorID = log.id
                                     viewModel.loadOlderPage()
                                 }
 
-                            if logs.last != log {
+                            if lastID != log.id {
                                 Separator()
                             }
                         }

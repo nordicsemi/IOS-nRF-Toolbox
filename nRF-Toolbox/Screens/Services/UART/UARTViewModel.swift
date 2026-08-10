@@ -183,7 +183,7 @@ extension UARTViewModel {
                 log.info("Received message: \(cleanString)")
                 return UARTMessage(text: cleanString, source: .other, previousMessage: nil)
             }
-            .receive(on: RunLoop.main)
+            .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [log] _ in
                 log.debug("Completion")
             }, receiveValue: { incoming in
@@ -228,6 +228,7 @@ extension UARTViewModel {
         }
     }
     
+    @MainActor
     func startEdit() {
         editedPresets = selectedPresets
         savePresetsToXmlFile(notifyUser: false)
@@ -282,83 +283,100 @@ extension UARTViewModel {
     func savePresetsToJsonFile() {
         log.debug("\(type(of: self)).\(#function)")
         let copy = presets
-        Task.detached {
+        Task.detached { [log] in
             do {
                 try Self.writeBack(presets: copy)
             } catch {
-                self.log.debug("Error while storing presets to a local cache - \(error.localizedDescription)")
+                log.debug("Error while storing presets to a local cache - \(error.localizedDescription)")
             }
         }
     }
     
     func loadPresetsFromJsonFile() {
         log.debug("\(type(of: self)).\(#function)")
-        Task.detached {
+        Task.detached { [log] in
             do {
-                if let savedPresets = try Self.read() {
+                guard let savedPresets = try Self.read() else { return }
+                // Decoding happens off the main queue; the observable state it feeds
+                // must be published back on it.
+                await MainActor.run { [weak self] in
+                    guard let self else { return }
                     self.presets = savedPresets
-                    if self.presets.count >= 2 {
+                    if savedPresets.count >= 2 {
                         self.selectedPresets = savedPresets[1]
                     }
                 }
             } catch {
-                self.log.debug("Error while importing presets from a local cache - \(error.localizedDescription)")
+                log.debug("Error while importing presets from a local cache - \(error.localizedDescription)")
             }
         }
     }
-    
+
+    @MainActor
     func savePresetsToXmlFile(notifyUser: Bool = true) {
         log.debug("\(type(of: self)).\(#function)")
-        Task.detached {
-            let text = (try? self.parser.toXml(self.selectedPresets)) ?? ""
-            let url = self.selectedPresets.url
+        // Snapshot on the main actor, then serialise and write off it.
+        let presetsToSave = selectedPresets
+        let parser = self.parser
+        Task.detached { [log] in
+            let text = (try? parser.toXml(presetsToSave)) ?? ""
+            let url = presetsToSave.url
 
+            let message: String
             do {
                 try text.write(to: url, atomically: true, encoding: .utf8)
-
-                if (notifyUser) {
-                    self.alertMessage = "Presets have been saved!"
-                    self.showAlert = true
-                }
+                message = "Presets have been saved!"
             } catch {
-                if (notifyUser) {
-                    self.alertMessage = "An error occured while saving presets. Please try again."
-                    self.showAlert = true
-                    self.log.debug("An error occured while saving presets: \(error.localizedDescription)")
-                }
+                log.debug("An error occured while saving presets: \(error.localizedDescription)")
+                message = "An error occured while saving presets. Please try again."
+            }
+
+            guard notifyUser else { return }
+            await MainActor.run { [weak self] in
+                self?.alertMessage = message
+                self?.showAlert = true
             }
         }
     }
-    
+
+    @MainActor
     func importPresets(result: Result<[URL], any Error>) {
         log.debug("\(type(of: self)).\(#function)")
         switch result {
         case .success(let urls):
-            do {
-                let url = urls.first!
-                
-                let didAccess = url.startAccessingSecurityScopedResource()
-                defer { if didAccess { url.stopAccessingSecurityScopedResource() } }
-                
-                guard didAccess else {
-                    alertMessage = "Cannot access a file. Please try again."
-                    showAlert = true
-                    return
-                }
+            let url = urls.first!
 
-                let data = try Data(contentsOf: url)
-                let presets = try parser.fromXml(data)
-                self.presets.append(presets)
-                
-                savePresetsToJsonFile()
-                
-                selectedPresets = presets
-                alertMessage = "Presets have been successfully imported!"
+            let didAccess = url.startAccessingSecurityScopedResource()
+            guard didAccess else {
+                alertMessage = "Cannot access a file. Please try again."
                 showAlert = true
-            } catch {
-                alertMessage = "An error occured while importing presets. Please try again."
-                showAlert = true
-                log.debug("Error while laoding presets: \(error.localizedDescription)")
+                return
+            }
+
+            // Reading the file and parsing its XML used to block the main queue for the
+            // whole import, which froze the UI for large preset files.
+            let parser = self.parser
+            Task.detached { [log] in
+                defer { url.stopAccessingSecurityScopedResource() }
+                do {
+                    let data = try Data(contentsOf: url)
+                    let imported = try parser.fromXml(data)
+
+                    await MainActor.run { [weak self] in
+                        guard let self else { return }
+                        self.presets.append(imported)
+                        self.savePresetsToJsonFile()
+                        self.selectedPresets = imported
+                        self.alertMessage = "Presets have been successfully imported!"
+                        self.showAlert = true
+                    }
+                } catch {
+                    log.debug("Error while laoding presets: \(error.localizedDescription)")
+                    await MainActor.run { [weak self] in
+                        self?.alertMessage = "An error occured while importing presets. Please try again."
+                        self?.showAlert = true
+                    }
+                }
             }
         case .failure(let error):
             alertMessage = "An error occured while importing presets. Please try again."

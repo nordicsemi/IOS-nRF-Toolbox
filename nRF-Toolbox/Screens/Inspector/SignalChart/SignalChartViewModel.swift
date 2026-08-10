@@ -65,27 +65,25 @@ import Charts
                     environment.scrollPosition = .now
                 }
                 environment.chartData.append(newSignalItem)
-                
+
                 if environment.chartData.count > Environment.capacity {
                     environment.chartData.removeFirst()
                 }
-                
-                // Set chart's Y bounds
-                let min = (environment.chartData.min {
-                    $0.signal < $1.signal
-                }?.signal ?? -100)
-                
-                let max  = (environment.chartData.max {
-                    $0.signal < $1.signal
-                }?.signal ?? -40)
-                
-                environment.lowest = min - 5
-                environment.highest = max + 5
-                
-                let values = environment.chartData.map { $0.date }
 
-                environment.minDate = (values.min() ?? .distantPast).addingTimeInterval(-2)
-                environment.maxDate = (values.max() ?? .distantFuture).addingTimeInterval(2)
+                guard let first = environment.chartData.first,
+                      let last = environment.chartData.last else { return }
+
+                var minSignal = first.signal
+                var maxSignal = minSignal
+                for item in environment.chartData.dropFirst() {
+                    if item.signal < minSignal { minSignal = item.signal }
+                    if item.signal > maxSignal { maxSignal = item.signal }
+                }
+
+                environment.lowest = minSignal - 5
+                environment.highest = maxSignal + 5
+                environment.minDate = first.date.addingTimeInterval(-2)
+                environment.maxDate = last.date.addingTimeInterval(2)
             }
             .store(in: &cancellable)
     }

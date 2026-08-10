@@ -74,7 +74,7 @@ class LogsSettingsViewModel {
     private func setupObservers() {
         Publishers.CombineLatest(searchTextSubject, selectedLogLevelSubject)
             .dropFirst()
-            .debounce(for: .seconds(0.3), scheduler: RunLoop.main)
+            .debounce(for: .seconds(0.3), scheduler: DispatchQueue.main)
             .removeDuplicates { prev, curr in
                 prev.0 == curr.0 && prev.1 == curr.1
             }
@@ -82,9 +82,9 @@ class LogsSettingsViewModel {
                 self?.reload()
             }
             .store(in: &cancellables)
-            
+
         NotificationCenter.default.publisher(for: ModelContext.didSave)
-            .throttle(for: .seconds(1.0), scheduler: RunLoop.main, latest: true)
+            .throttle(for: .seconds(1.0), scheduler: DispatchQueue.main, latest: true)
             .sink { [weak self] _ in
                 self?.appendNewData()
             }

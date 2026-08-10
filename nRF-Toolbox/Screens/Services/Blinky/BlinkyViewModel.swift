@@ -150,8 +150,9 @@ final class BlinkyViewModel: SupportedServiceViewModel {
                 self?.log.debug("Received button data: \(data.hexEncodedString(options: [.prepend0x, .twoByteSpacing]))")
                 return data.littleEndianBytes(as: UInt8.self) > 0
             }
+            .receive(on: DispatchQueue.main)
             .sink { completion in
-                
+
             } receiveValue: { [weak self] value in
                 self?.log.info("Button pressed: \(value)")
                 self?.isButtonPressed = value
