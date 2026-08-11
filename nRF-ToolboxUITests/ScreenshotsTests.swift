@@ -27,6 +27,12 @@ final class ScreenshotsTests: XCTestCase {
     }
 
     func testSnapshots() throws {
+        sleep(sleepTime)
+        
+        if app.buttons["Not now"].firstMatch.exists { // Close analytics consent.
+            app.buttons["Not now"].firstMatch.tap()
+        }
+        
         let scannerButton = app/*@START_MENU_TOKEN@*/.staticTexts["Connect to Device"]/*[[".buttons[\"scannerButton\"].staticTexts",".buttons.staticTexts[\"Connect to Device\"]",".staticTexts[\"Connect to Device\"]"],[[[-1,2],[-1,1],[-1,0]]],[0]]@END_MENU_TOKEN@*/.firstMatch
         scannerButton.tap()
         
