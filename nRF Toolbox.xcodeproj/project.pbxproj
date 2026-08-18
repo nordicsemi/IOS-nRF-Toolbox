@@ -103,6 +103,7 @@
 		A7A28FD32EAD3D4B004ECC8B /* AggregatedPeripheralSpecDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7A28FD22EAD3D46004ECC8B /* AggregatedPeripheralSpecDelegate.swift */; };
 		A7A28FD52EAD3E02004ECC8B /* MockSpecDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7A28FD42EAD3E01004ECC8B /* MockSpecDelegate.swift */; };
 		A7C30C382EF53E1800E3DB89 /* MissingCharacteristicsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C30C372EF53E1300E3DB89 /* MissingCharacteristicsView.swift */; };
+		A7D9A1012F00000100E3DB89 /* DeviceDisconnectedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D9A1002F00000100E3DB89 /* DeviceDisconnectedView.swift */; };
 		A7CB671E2E967BFA007E1311 /* CGMSSensorStatusOctet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7CB671D2E967BF5007E1311 /* CGMSSensorStatusOctet.swift */; };
 		A7CB67202E967C05007E1311 /* CGMSCalTempOctet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7CB671F2E967C00007E1311 /* CGMSCalTempOctet.swift */; };
 		A7CB67222E967C0D007E1311 /* CGMSWarningOctet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7CB67212E967C08007E1311 /* CGMSWarningOctet.swift */; };
@@ -327,6 +328,7 @@
 		A7A28FD42EAD3E01004ECC8B /* MockSpecDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSpecDelegate.swift; sourceTree = "<group>"; };
 		A7C21A5D2EE1C65B005E2610 /* testflight.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = testflight.yml; sourceTree = "<group>"; };
 		A7C30C372EF53E1300E3DB89 /* MissingCharacteristicsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissingCharacteristicsView.swift; sourceTree = "<group>"; };
+		A7D9A1002F00000100E3DB89 /* DeviceDisconnectedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceDisconnectedView.swift; sourceTree = "<group>"; };
 		A7CA690D2EE876F1006FC7F3 /* deploy.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = deploy.yml; sourceTree = "<group>"; };
 		A7CB67182E964A7C007E1311 /* nRF-ToolboxTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "nRF-ToolboxTests.xctestplan"; sourceTree = "<group>"; };
 		A7CB671D2E967BF5007E1311 /* CGMSSensorStatusOctet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGMSSensorStatusOctet.swift; sourceTree = "<group>"; };
@@ -610,6 +612,7 @@
 			children = (
 				A7D854F62FFD3CAF003C8D68 /* NavigationStyledButton.swift */,
 				A7C30C372EF53E1300E3DB89 /* MissingCharacteristicsView.swift */,
+				A7D9A1002F00000100E3DB89 /* DeviceDisconnectedView.swift */,
 				A77FD2622EB120E0007B05C0 /* CBMCharacteristicPropertiesExt.swift */,
 				0164A4852AD84A170093E501 /* DeviceDetailsViewModel.swift */,
 				01CEB4242AE9100300945105 /* DeviceScreen.swift */,
@@ -1404,6 +1407,7 @@
 				A7FA7A482E852D6500DA192B /* CGMSMeasurementParser.swift in Sources */,
 				AAC0D99F2D80514900F25096 /* AboutView.swift in Sources */,
 				A7C30C382EF53E1800E3DB89 /* MissingCharacteristicsView.swift in Sources */,
+				A7D9A1012F00000100E3DB89 /* DeviceDisconnectedView.swift in Sources */,
 				AA95CBD12D084C8B00D1FBC6 /* Error.swift in Sources */,
 				AAB2398A2DCA174600101F9D /* UARTMessagesPreview.swift in Sources */,
 				AAF7DE622CFDD4BC000A347A /* SidebarDeviceView.swift in Sources */,

@@ -39,7 +39,9 @@ final class DeviceDetailsViewModel {
     var errors: ErrorsHolder = ErrorsHolder()
     
     var device: Device
-    
+
+    private(set) var showReconnectScreen = false
+
     private(set) var supportedServiceViewModels: [any SupportedServiceViewModel] = []
     
     private let log = NordicLog(category: "DeviceDetails.VM", subsystem: "com.nordicsemi.nrf-toolbox")
@@ -59,7 +61,7 @@ final class DeviceDetailsViewModel {
         self.centralManager = centralManager
         self.device = device
         
-        listenForDisconnection()
+        listenForConnectionStatus()
         log.debug("\(type(of: self)).\(#function)")
     }
     
@@ -228,15 +230,29 @@ extension DeviceDetailsViewModel {
         }
     }
     
-    private func listenForDisconnection() {
+    // MARK: listenForConnectionStatus()
+
+    private func listenForConnectionStatus() {
         centralManager.disconnectedPeripheralsChannel
-            .filter { [unowned self] in $0.0.identifier == self.id }    // Filter other peripherals
-            .compactMap { $0.1 }                                        // Handle only disconnections with error
-            .sink { [unowned self] err in
+            .filter { [unowned self] in $0.0.identifier == self.id }
+            .compactMap { $0.1 }
+            .sink { [unowned self] error in
+                log.info("Connection lost: \(error.localizedDescription). Showing the reconnect screen.")
+                showReconnectScreen = true
                 supportedServiceViewModels.forEach {
                     $0.onDisconnect()
                 }
                 signalViewModel?.stopTimer()
+            }
+            .store(in: &cancellable)
+
+        centralManager.connectedPeripheralChannel
+            .map { $0 }
+            .filter { [unowned self] in $0.0.identifier == self.id }
+            .filter { $0.1 == nil }
+            .sink { [unowned self] _ in
+                log.info("Peripheral reconnected. Hiding the reconnect screen.")
+                showReconnectScreen = false
             }
             .store(in: &cancellable)
     }

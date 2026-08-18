@@ -34,6 +34,29 @@ struct DeviceScreen: View {
             
             if (hasMissingCharacteristics) {
                 MissingCharacteristicsView()
+            } else if (deviceViewModel.showReconnectScreen) {
+                DeviceDisconnectedView()
+                
+                
+                switch deviceViewModel.device.status {
+                case .userInitiatedDisconnection, .connecting:
+                    Section {
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .centered()
+                            .tint(.nordicBlue)
+                            .id(UUID()) // This fix issue with loader not being displayed when appears for the second time.
+                    }
+                default:
+                    Section {
+                        Button("Reconnect") {
+                            reconnect()
+                        }
+                        .foregroundStyle(Color.universalAccentColor)
+                        .centered()
+                        .accessibilityIdentifier("reconnect_button")
+                    }
+                }
             } else {
                 deviceViewModel.supportedServiceViews()
                     .disabled(deviceViewModel.device.status.hashValue != Device.Status.connected.hashValue)
@@ -68,39 +91,28 @@ struct DeviceScreen: View {
                     }
                     .accentColor(.universalAccentColor)
                 }
-            }
-
-            Section("Connection") {
-                switch deviceViewModel.device.status {
-                case .userInitiatedDisconnection, .connecting:
-                    Section {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .centered()
-                            .tint(.nordicBlue)
-                            .id(UUID()) // This fix issue with loader not being displayed when appears for the second time.
+                
+                Section("Connection") {
+                    switch deviceViewModel.device.status {
+                    case .userInitiatedDisconnection, .connecting:
+                        Section {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .centered()
+                                .tint(.nordicBlue)
+                                .id(UUID()) // This fix issue with loader not being displayed when appears for the second time.
+                        }
+                    case .connected:
+                        Button("Disconnect") {
+                            disconnect()
+                        }
+                        .foregroundStyle(Color.red)
+                        .centered()
+                        .accessibilityIdentifier("disconnect_button")
+                    case .error(let error):
+                        Label(error.localizedDescription, systemImage: "exclamationmark.circle")
+                            .foregroundStyle(Color.nordicRed)
                     }
-                case .connected:
-                    Button("Disconnect") {
-                        disconnect()
-                    }
-                    .foregroundStyle(Color.red)
-                    .centered()
-                    .accessibilityIdentifier("disconnect_button")
-                case .error(let error):
-                    Label(error.localizedDescription, systemImage: "exclamationmark.circle")
-                        .foregroundStyle(Color.nordicRed)
-                }
-            }
-
-            if case .error = deviceViewModel.device.status {
-                Section {
-                    Button("Reconnect") {
-                        reconnect()
-                    }
-                    .foregroundStyle(Color.universalAccentColor)
-                    .centered()
-                    .accessibilityIdentifier("reconnect_button")
                 }
             }
         }
