@@ -40,7 +40,7 @@ final class DeviceDetailsViewModel {
     
     var device: Device
 
-    private(set) var showReconnectScreen = false
+    private(set) var showReconnectScreen = true
 
     private(set) var supportedServiceViewModels: [any SupportedServiceViewModel] = []
     
@@ -215,6 +215,7 @@ extension DeviceDetailsViewModel {
                     }.store(in: &cancellable)
             }
             
+            showReconnectScreen = false
             isInitialized = true
             log.info("Successfully initialized connection with the peripheral.")
             
@@ -247,7 +248,6 @@ extension DeviceDetailsViewModel {
             .store(in: &cancellable)
 
         centralManager.connectedPeripheralChannel
-            .map { $0 }
             .filter { [unowned self] in $0.0.identifier == self.id }
             .filter { $0.1 == nil }
             .sink { [unowned self] _ in
