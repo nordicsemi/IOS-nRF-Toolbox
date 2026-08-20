@@ -56,6 +56,20 @@ struct DeviceScreen: View {
                             .tint(.nordicBlue)
                             .id(UUID()) // This fix issue with loader not being displayed when appears for the second time.
                     }
+                case .error(let error):
+                    Section("Error") {
+                        Label(error.localizedDescription, systemImage: "exclamationmark.circle")
+                            .foregroundStyle(Color.nordicRed)
+                    }
+                    
+                    Section {
+                        Button("Reconnect") {
+                            reconnect()
+                        }
+                        .foregroundStyle(Color.universalAccentColor)
+                        .centered()
+                        .accessibilityIdentifier("reconnect_button")
+                    }
                 default:
                     Section {
                         Button("Reconnect") {
