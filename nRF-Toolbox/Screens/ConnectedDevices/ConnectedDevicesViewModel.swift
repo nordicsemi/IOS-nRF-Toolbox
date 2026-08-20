@@ -47,6 +47,8 @@ final class ConnectedDevicesViewModel {
     // MARK: Private Properties
     
     private let centralManager: CentralManager
+    
+    private var cancelledConnectionAttempts: Set<UUID> = []
     private var deviceViewModels: [UUID: DeviceDetailsViewModel] = [:]
     private var cancellables = Set<AnyCancellable>()
     private var scannerCancellables = Set<AnyCancellable>()
@@ -137,10 +139,11 @@ extension ConnectedDevicesViewModel {
                 })
                 .first()
                 .firstValue
-            // On success, `observeConnections()` picks up the new connection and
-            // rebuilds the device's status/view model through the normal connect flow.
         } catch {
             log.error("\(#function) Error: \(error.localizedDescription)")
+            
+            cancelledConnectionAttempts.insert(peripheral.identifier)
+            centralManager.centralManager.cancelPeripheralConnection(peripheral)
             if let i = connectedDevices.firstIndex(where: \.id, equals: device.id) {
                 connectedDevices[i].status = .error(error)
                 deviceViewModels[device.id]?.device = connectedDevices[i]
@@ -205,6 +208,8 @@ extension ConnectedDevicesViewModel {
     
     private func handleConnection(device: Device) {
         log.info("Connecting to the device: \(device.logName)")
+
+        cancelledConnectionAttempts.remove(device.id)
         if let i = connectedDevices.firstIndex(where: \.id, equals: device.id) {
             connectedDevices[i] = device
         } else {
@@ -236,6 +241,11 @@ extension ConnectedDevicesViewModel {
         centralManager.disconnectedPeripheralsChannel
             .receive(on: DispatchQueue.main)
             .sink { [unowned self] (peripheral, error) in
+                if self.cancelledConnectionAttempts.remove(peripheral.identifier) != nil {
+                    self.log.debug("Device already diconnected.")
+                    return
+                }
+
                 guard let i = self.connectedDevices.firstIndex(where: \.id, equals: peripheral.identifier) else {
                     return
                 }
@@ -308,6 +318,7 @@ extension ConnectedDevicesViewModel {
                 .firstValue
             log.debug("Connected to \(connectedDevice)")
         } catch let error {
+            centralManager.centralManager.cancelPeripheralConnection(peripheral)
             return Result.failure(error)
         }
         return Result.success(Void())
