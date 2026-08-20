@@ -103,6 +103,11 @@ extension ConnectedDevicesViewModel {
             clearViewModel(device)
         }
         
+        guard peripheral.state != .disconnected else {
+            log.info("Device already disconnected: \(device.logName)")
+            return
+        }
+        
         do {
             _ = try await centralManager.cancelPeripheralConnection(peripheral).firstValue
         } catch {
