@@ -34,6 +34,15 @@ struct DeviceScreen: View {
             
             if (hasMissingCharacteristics) {
                 MissingCharacteristicsView()
+                
+                Section {
+                    Button("Disconnect") {
+                        disconnect()
+                    }
+                    .foregroundStyle(Color.red)
+                    .centered()
+                    .accessibilityIdentifier("disconnect_button")
+                }
             } else if (deviceViewModel.showReconnectScreen) {
                 DeviceDisconnectedView()
                 
