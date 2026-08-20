@@ -113,7 +113,7 @@ extension ConnectedDevicesViewModel {
     func clearViewModel(_ device: Device) {
         log.debug("\(type(of: self)).\(#function)")
         connectedDevices.removeAll(where: { $0.id == device.id })
-        deviceViewModels.removeValue(forKey: device.id)
+        deviceViewModels.removeValue(forKey: device.id)?.tearDown()
         log.info("Device successfully removed: \(device.logName)")
     }
 
@@ -212,8 +212,11 @@ extension ConnectedDevicesViewModel {
         }
 
         if let peripheral = centralManager.retrievePeripherals(withIdentifiers: [device.id]).first {
+
+            deviceViewModels[device.id]?.tearDown()
             let viewModel = DeviceDetailsViewModel(cbPeripheral: peripheral, centralManager: centralManager, device: device)
             deviceViewModels[device.id] = viewModel
+            
             Task {
                 let services = await viewModel.discoverSupportedServices()
                 if let i = connectedDevices.firstIndex(where: \.id, equals: device.id) {

@@ -29,7 +29,8 @@ final class DeviceDetailsViewModel {
     // MARK: Private Properties
     
     private var discoveredServices: [CBService] = []
-    private var cancellable = Set<AnyCancellable>()
+    private var connectionCancellables = Set<AnyCancellable>()
+    private var serviceCancellables = Set<AnyCancellable>()
     
     let centralManager: CentralManager
     let peripheral: Peripheral
@@ -84,6 +85,16 @@ extension DeviceDetailsViewModel {
         }
         peripheral.peripheral.delegate = nil
     }
+
+    func tearDown() {
+        log.debug("\(type(of: self)).\(#function)")
+        connectionCancellables.removeAll()
+        serviceCancellables.removeAll()
+        signalViewModel?.stopTimer()
+        signalViewModel = nil
+        supportedServiceViewModels.removeAll()
+        peripheral.peripheral.delegate = nil
+    }
 }
 
 // MARK: - Service View Models
@@ -125,6 +136,8 @@ extension DeviceDetailsViewModel {
                 await onDisconnect()
                 supportedServiceViewModels.removeAll()
             }
+            
+            serviceCancellables.removeAll()
 
             discoveredServices = try await peripheral.discoverServices(serviceUUIDs: nil).firstValue
             discoveredServiceBadges = discoveredServices.compactMap { Service.extendedFind(by: $0.uuid.uuidString) }
@@ -212,9 +225,9 @@ extension DeviceDetailsViewModel {
                     })
                     .sink { [weak self] error in
                         self?.errors = error
-                    }.store(in: &cancellable)
+                    }.store(in: &serviceCancellables)
             }
-            
+
             showReconnectScreen = false
             isInitialized = true
             log.info("Successfully initialized connection with the peripheral.")
@@ -234,10 +247,13 @@ extension DeviceDetailsViewModel {
     // MARK: listenForConnectionStatus()
 
     private func listenForConnectionStatus() {
+        connectionCancellables.removeAll()
+
         centralManager.disconnectedPeripheralsChannel
-            .filter { [unowned self] in $0.0.identifier == self.id }
+            .filter { [weak self] in $0.0.identifier == self?.id }
             .compactMap { $0.1 }
-            .sink { [unowned self] error in
+            .sink { [weak self] error in
+                guard let self else { return }
                 log.info("Connection lost: \(error.localizedDescription). Showing the reconnect screen.")
                 showReconnectScreen = true
                 supportedServiceViewModels.forEach {
@@ -245,16 +261,7 @@ extension DeviceDetailsViewModel {
                 }
                 signalViewModel?.stopTimer()
             }
-            .store(in: &cancellable)
-
-        centralManager.connectedPeripheralChannel
-            .filter { [unowned self] in $0.0.identifier == self.id }
-            .filter { $0.1 == nil }
-            .sink { [unowned self] _ in
-                log.info("Peripheral reconnected. Hiding the reconnect screen.")
-                showReconnectScreen = false
-            }
-            .store(in: &cancellable)
+            .store(in: &connectionCancellables)
     }
 }
 
