@@ -32,18 +32,7 @@ struct DeviceScreen: View {
         List {
             let hasMissingCharacteristics = (deviceViewModel.errors.error as? ServiceError) == .noMandatoryCharacteristic
             
-            if (hasMissingCharacteristics) {
-                MissingCharacteristicsView()
-                
-                Section {
-                    Button("Disconnect") {
-                        disconnect()
-                    }
-                    .foregroundStyle(Color.red)
-                    .centered()
-                    .accessibilityIdentifier("disconnect_button")
-                }
-            } else if (deviceViewModel.showReconnectScreen) {
+            if (deviceViewModel.showReconnectScreen) {
                 DeviceDisconnectedView()
                 
                 
@@ -79,6 +68,17 @@ struct DeviceScreen: View {
                         .centered()
                         .accessibilityIdentifier("reconnect_button")
                     }
+                }
+            } else if (hasMissingCharacteristics) {
+                MissingCharacteristicsView()
+                
+                Section {
+                    Button("Disconnect") {
+                        disconnect()
+                    }
+                    .foregroundStyle(Color.red)
+                    .centered()
+                    .accessibilityIdentifier("disconnect_button")
                 }
             } else {
                 deviceViewModel.supportedServiceViews()

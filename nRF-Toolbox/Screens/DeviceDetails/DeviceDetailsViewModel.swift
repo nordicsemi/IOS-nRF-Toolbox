@@ -234,6 +234,7 @@ extension DeviceDetailsViewModel {
             
             return discoveredServiceBadges
         } catch {
+            showReconnectScreen = false
             if case let serviceError as ServiceError = error {
                 errors.error = serviceError
             } else {
