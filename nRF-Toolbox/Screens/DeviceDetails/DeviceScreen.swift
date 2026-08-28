@@ -37,14 +37,6 @@ struct DeviceScreen: View {
                 
                 
                 switch deviceViewModel.device.status {
-                case .userInitiatedDisconnection, .connecting:
-                    Section {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .centered()
-                            .tint(.nordicBlue)
-                            .id(UUID()) // This fix issue with loader not being displayed when appears for the second time.
-                    }
                 case .error(let error):
                     Section("Error") {
                         Label(error.localizedDescription, systemImage: "exclamationmark.circle")
@@ -61,12 +53,11 @@ struct DeviceScreen: View {
                     }
                 default:
                     Section {
-                        Button("Reconnect") {
-                            reconnect()
-                        }
-                        .foregroundStyle(Color.universalAccentColor)
-                        .centered()
-                        .accessibilityIdentifier("reconnect_button")
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .centered()
+                            .tint(.nordicBlue)
+                            .id(UUID()) // This fix issue with loader not being displayed when appears for the second time.
                     }
                 }
             } else if (hasMissingCharacteristics) {
