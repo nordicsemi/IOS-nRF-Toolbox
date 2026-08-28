@@ -49,6 +49,7 @@ final class ConnectedDevicesViewModel {
     private let centralManager: CentralManager
     
     private var cancelledConnectionAttempts: Set<UUID> = []
+    private var ongoingConnectionAttempts: Set<UUID> = []
     private var deviceViewModels: [UUID: DeviceDetailsViewModel] = [:]
     private var cancellables = Set<AnyCancellable>()
     private var scannerCancellables = Set<AnyCancellable>()
@@ -129,6 +130,14 @@ extension ConnectedDevicesViewModel {
     func reconnect(_ device: Device) async {
         log.debug("\(type(of: self)).\(#function)")
         guard let peripheral = centralManager.retrievePeripherals(withIdentifiers: [device.id]).first else { return }
+
+        guard ongoingConnectionAttempts.insert(device.id).inserted else {
+            log.info("Reconnection already in progress, ignoring: \(device.logName)")
+            return
+        }
+
+        defer { ongoingConnectionAttempts.remove(device.id) }
+
         log.info("Reconnecting to the device: \(device.logName)")
 
         if let i = connectedDevices.firstIndex(where: \.id, equals: device.id) {
