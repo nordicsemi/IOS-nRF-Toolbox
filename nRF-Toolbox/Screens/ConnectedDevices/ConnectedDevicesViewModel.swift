@@ -51,6 +51,8 @@ final class ConnectedDevicesViewModel {
     private var cancelledConnectionAttempts: Set<UUID> = []
     private var ongoingConnectionAttempts: Set<UUID> = []
     private var deviceViewModels: [UUID: DeviceDetailsViewModel] = [:]
+
+    private var peripherals: [UUID: Peripheral] = [:]
     private var cancellables = Set<AnyCancellable>()
     private var scannerCancellables = Set<AnyCancellable>()
     
@@ -219,7 +221,16 @@ extension ConnectedDevicesViewModel {
             }
             .store(in: &cancellables)
     }
-    
+
+    private func peripheral(for cbPeripheral: CBPeripheral) -> Peripheral {
+        if let peripheral = peripherals[cbPeripheral.identifier] {
+            return peripheral
+        }
+        let peripheral = Peripheral(peripheral: cbPeripheral, delegate: ReactivePeripheralDelegate())
+        peripherals[cbPeripheral.identifier] = peripheral
+        return peripheral
+    }
+
     private func handleConnection(device: Device) {
         log.info("Connecting to the device: \(device.logName)")
 
@@ -230,10 +241,11 @@ extension ConnectedDevicesViewModel {
             connectedDevices.append(device)
         }
 
-        if let peripheral = centralManager.retrievePeripherals(withIdentifiers: [device.id]).first {
+        if let cbPeripheral = centralManager.retrievePeripherals(withIdentifiers: [device.id]).first {
 
             deviceViewModels[device.id]?.tearDown()
-            let viewModel = DeviceDetailsViewModel(cbPeripheral: peripheral, centralManager: centralManager, device: device)
+            let peripheral = peripheral(for: cbPeripheral)
+            let viewModel = DeviceDetailsViewModel(peripheral: peripheral, centralManager: centralManager, device: device)
             deviceViewModels[device.id] = viewModel
             
             Task {

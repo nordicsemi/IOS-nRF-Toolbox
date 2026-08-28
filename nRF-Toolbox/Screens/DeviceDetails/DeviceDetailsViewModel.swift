@@ -57,8 +57,8 @@ final class DeviceDetailsViewModel {
     
     // MARK: init
     
-    init(cbPeripheral: CBPeripheral, centralManager: CentralManager, device: Device) {
-        self.peripheral = Peripheral(peripheral: cbPeripheral, delegate: ReactivePeripheralDelegate())
+    init(peripheral: Peripheral, centralManager: CentralManager, device: Device) {
+        self.peripheral = peripheral
         self.centralManager = centralManager
         self.device = device
         
@@ -83,7 +83,6 @@ extension DeviceDetailsViewModel {
         supportedServiceViewModels.forEach {
             $0.onDisconnect()
         }
-        peripheral.peripheral.delegate = nil
     }
 
     func tearDown() {
@@ -93,7 +92,6 @@ extension DeviceDetailsViewModel {
         signalViewModel?.stopTimer()
         signalViewModel = nil
         supportedServiceViewModels.removeAll()
-        peripheral.peripheral.delegate = nil
     }
 }
 
