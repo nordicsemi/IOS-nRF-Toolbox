@@ -1,6 +1,15 @@
 
+# Package plugins and macros require a one-time trust prompt in the Xcode UI.
+# CI has no UI, so the build fails with e.g.
+# "Plugin “MockGenerator” from package “iOS-BLE-Library” must be enabled before it can be used".
+# These flags tell xcodebuild to trust them without prompting.
+SKIP_PLUGIN_VALIDATION = "-skipPackagePluginValidation -skipMacroValidation"
+
 lane :tests do
-  run_tests(scheme: "nRF-ToolboxTests")
+  run_tests(
+    scheme: "nRF-ToolboxTests",
+    xcargs: SKIP_PLUGIN_VALIDATION
+  )
 end
 
 lane :version do
@@ -78,6 +87,7 @@ lane :build do
   path = build_app(
     scheme: "nRF-Toolbox",
     export_method: "app-store",
+    xcargs: SKIP_PLUGIN_VALIDATION
   )
   
   path
