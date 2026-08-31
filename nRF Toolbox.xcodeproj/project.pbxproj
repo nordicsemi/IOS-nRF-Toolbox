@@ -103,7 +103,6 @@
 		A7A28FD32EAD3D4B004ECC8B /* AggregatedPeripheralSpecDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7A28FD22EAD3D46004ECC8B /* AggregatedPeripheralSpecDelegate.swift */; };
 		A7A28FD52EAD3E02004ECC8B /* MockSpecDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7A28FD42EAD3E01004ECC8B /* MockSpecDelegate.swift */; };
 		A7C30C382EF53E1800E3DB89 /* MissingCharacteristicsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C30C372EF53E1300E3DB89 /* MissingCharacteristicsView.swift */; };
-		A7D9A1012F00000100E3DB89 /* DeviceDisconnectedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D9A1002F00000100E3DB89 /* DeviceDisconnectedView.swift */; };
 		A7CB671E2E967BFA007E1311 /* CGMSSensorStatusOctet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7CB671D2E967BF5007E1311 /* CGMSSensorStatusOctet.swift */; };
 		A7CB67202E967C05007E1311 /* CGMSCalTempOctet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7CB671F2E967C00007E1311 /* CGMSCalTempOctet.swift */; };
 		A7CB67222E967C0D007E1311 /* CGMSWarningOctet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7CB67212E967C08007E1311 /* CGMSWarningOctet.swift */; };
@@ -116,6 +115,7 @@
 		A7D7B0DA2EBA1E59009B69CE /* XMLFileDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D7B0D92EBA1E56009B69CE /* XMLFileDocument.swift */; };
 		A7D851D52FFCDFF4003C8D68 /* ObservabilityServiceStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D851D42FFCDFEE003C8D68 /* ObservabilityServiceStatus.swift */; };
 		A7D854F72FFD3CB0003C8D68 /* NavigationStyledButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D854F62FFD3CAF003C8D68 /* NavigationStyledButton.swift */; };
+		A7D9A1012F00000100E3DB89 /* DeviceDisconnectedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D9A1002F00000100E3DB89 /* DeviceDisconnectedView.swift */; };
 		A7E289352EB35E70007199DB /* CoreBluetoothMock in Frameworks */ = {isa = PBXBuildFile; productRef = A7E289342EB35E70007199DB /* CoreBluetoothMock */; };
 		A7EBBC2F2EBDF336000001DF /* SequenceItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7EBBC2E2EBDF334000001DF /* SequenceItemView.swift */; };
 		A7ED617B2FFE48010041A317 /* Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7ED617A2FFE47FF0041A317 /* Device.swift */; };
@@ -328,7 +328,6 @@
 		A7A28FD42EAD3E01004ECC8B /* MockSpecDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSpecDelegate.swift; sourceTree = "<group>"; };
 		A7C21A5D2EE1C65B005E2610 /* testflight.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = testflight.yml; sourceTree = "<group>"; };
 		A7C30C372EF53E1300E3DB89 /* MissingCharacteristicsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissingCharacteristicsView.swift; sourceTree = "<group>"; };
-		A7D9A1002F00000100E3DB89 /* DeviceDisconnectedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceDisconnectedView.swift; sourceTree = "<group>"; };
 		A7CA690D2EE876F1006FC7F3 /* deploy.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = deploy.yml; sourceTree = "<group>"; };
 		A7CB67182E964A7C007E1311 /* nRF-ToolboxTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "nRF-ToolboxTests.xctestplan"; sourceTree = "<group>"; };
 		A7CB671D2E967BF5007E1311 /* CGMSSensorStatusOctet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGMSSensorStatusOctet.swift; sourceTree = "<group>"; };
@@ -343,6 +342,7 @@
 		A7D7B0D92EBA1E56009B69CE /* XMLFileDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMLFileDocument.swift; sourceTree = "<group>"; };
 		A7D851D42FFCDFEE003C8D68 /* ObservabilityServiceStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservabilityServiceStatus.swift; sourceTree = "<group>"; };
 		A7D854F62FFD3CAF003C8D68 /* NavigationStyledButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStyledButton.swift; sourceTree = "<group>"; };
+		A7D9A1002F00000100E3DB89 /* DeviceDisconnectedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceDisconnectedView.swift; sourceTree = "<group>"; };
 		A7E289322EB35E5F007199DB /* IOS-CoreBluetooth-Mock */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "IOS-CoreBluetooth-Mock"; path = "../IOS-CoreBluetooth-Mock"; sourceTree = "<group>"; };
 		A7EBBC2E2EBDF334000001DF /* SequenceItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SequenceItemView.swift; sourceTree = "<group>"; };
 		A7ED617A2FFE47FF0041A317 /* Device.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
@@ -2167,7 +2167,7 @@
 			repositoryURL = "https://github.com/nordicsemi/IOS-BLE-Library.git";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 0.4.4;
+				minimumVersion = 0.4.5;
 			};
 		};
 		01C81ACC2A5CAC350011B41E /* XCRemoteSwiftPackageReference "iOS-Bluetooth-Numbers-Database" */ = {
