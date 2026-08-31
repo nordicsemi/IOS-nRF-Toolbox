@@ -2191,7 +2191,7 @@
 			repositoryURL = "https://github.com/nordicsemi/IOS-nRF-Connect-Device-Manager";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 1.14.5;
+				minimumVersion = 1.14.7;
 			};
 		};
 		A755EB222F320299002AEC76 /* XCRemoteSwiftPackageReference "CombineExt" */ = {

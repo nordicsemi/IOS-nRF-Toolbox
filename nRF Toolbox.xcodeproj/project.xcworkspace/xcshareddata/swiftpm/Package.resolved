@@ -1,4 +1,5 @@
 {
+  "originHash" : "4ad90e3c26fda09b422a33d3f6d8fe4b11be7c9f808257d5c02b92d57b9fbb5d",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -109,12 +110,30 @@
       }
     },
     {
+      "identity" : "ios-ble-library",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/nordicsemi/IOS-BLE-Library.git",
+      "state" : {
+        "revision" : "4f3e4987f41e0558c6fdc1e8407eb92c59ae0eff",
+        "version" : "0.4.5"
+      }
+    },
+    {
       "identity" : "ios-bluetooth-numbers-database",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/NickKibish/iOS-Bluetooth-Numbers-Database.git",
       "state" : {
         "revision" : "40ae8d7050d16fc2603c314dd560a7992c35f56f",
         "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "ios-common-libraries",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/nordicsemi/IOS-Common-Libraries.git",
+      "state" : {
+        "revision" : "8e6e4c117fc0bd4b8e856501002740ebe0ff4088",
+        "version" : "0.2.5"
       }
     },
     {
@@ -131,8 +150,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/nordicsemi/IOS-nRF-Connect-Device-Manager",
       "state" : {
-        "revision" : "0c211879e9e97ea756eaa76cd2182b610e6519b2",
-        "version" : "1.14.6"
+        "revision" : "1e5fd4b11243e947c8121c2ea9aa8da70b605d42",
+        "version" : "1.14.7"
       }
     },
     {
@@ -163,24 +182,6 @@
       }
     },
     {
-      "identity" : "swift-docc-plugin",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-docc-plugin",
-      "state" : {
-        "revision" : "647c708be89f834fa6a6d4945442793a77ddf5b6",
-        "version" : "1.5.0"
-      }
-    },
-    {
-      "identity" : "swift-docc-symbolkit",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/swiftlang/swift-docc-symbolkit",
-      "state" : {
-        "revision" : "b45d1f2ed151d057b54504d653e0da5552844e34",
-        "version" : "1.0.0"
-      }
-    },
-    {
       "identity" : "swiftcbor",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/valpackett/SwiftCBOR.git",
@@ -199,5 +200,5 @@
       }
     }
   ],
-  "version" : 2
+  "version" : 3
 }
