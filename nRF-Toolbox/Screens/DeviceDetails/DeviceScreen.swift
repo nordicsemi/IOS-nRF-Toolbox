@@ -38,9 +38,11 @@ struct DeviceScreen: View {
                 
                 switch deviceViewModel.device.status {
                 case .error(let error):
-                    Section("Error") {
-                        Label(error.localizedDescription, systemImage: "exclamationmark.circle")
-                            .foregroundStyle(Color.nordicRed)
+                    if (error as? ConnectedDevicesViewModel.ConnectionError) != .connectionLost {
+                        Section("Error") {
+                            Label(error.localizedDescription, systemImage: "exclamationmark.circle")
+                                .foregroundStyle(Color.nordicRed)
+                        }
                     }
                     
                     Section {

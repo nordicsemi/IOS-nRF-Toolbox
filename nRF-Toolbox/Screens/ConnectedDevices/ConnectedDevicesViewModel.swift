@@ -268,7 +268,10 @@ extension ConnectedDevicesViewModel {
                 self.log.debug("Disconnected Device Status: \(disconnectedDevice.status)")
                 if let error {
                     let device = connectedDevices[i]
-                    self.connectedDevices[i].status = .error(error)
+                    let statusError: Error = (error as? CBError)?.code == .connectionTimeout
+                        ? ConnectionError.connectionLost
+                        : error
+                    self.connectedDevices[i].status = .error(statusError)
                     deviceViewModels[device.id]?.device = connectedDevices[i]
                 } else {
                     self.connectedDevices.remove(at: i)
@@ -290,6 +293,7 @@ extension ConnectedDevicesViewModel {
     enum ConnectionError: LocalizedError {
         case bluetoothUnavailable
         case connectionTimeout
+        case connectionLost
         case ongoingConnection
         
         var errorDescription: String? {
@@ -298,6 +302,8 @@ extension ConnectedDevicesViewModel {
                 return "The connection was lost because Bluetooth was disabled."
             case .connectionTimeout:
                 return "Timeout when attempting to connect."
+            case .connectionLost:
+                return "The connection to the device has been lost."
             case .ongoingConnection:
                 return "Another connection is in progress."
             }
