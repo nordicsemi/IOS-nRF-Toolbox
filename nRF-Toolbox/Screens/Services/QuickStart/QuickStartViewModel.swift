@@ -27,6 +27,7 @@ final class QuickStartViewModel: SupportedServiceViewModel {
     // MARK: Properties
 
     var errors: CurrentValueSubject<ErrorsHolder, Never> = CurrentValueSubject<ErrorsHolder, Never>(ErrorsHolder())
+    var hardwareRevision: String?
 
     // MARK: Private Properties
 
@@ -44,6 +45,10 @@ final class QuickStartViewModel: SupportedServiceViewModel {
         log.debug("\(type(of: self)).\(#function)")
     }
 
+    var board: QuickStartBoard {
+        hardwareRevision.map(QuickStartBoard.init(hardwareRevision:)) ?? .unknown
+    }
+
     // MARK: description
 
     var description: String {
@@ -53,7 +58,7 @@ final class QuickStartViewModel: SupportedServiceViewModel {
     // MARK: attachedView
 
     var attachedView: any View {
-        QuickStartView()
+        QuickStartView(viewModel: self)
     }
 
     // MARK: onConnect() / onDisconnect()

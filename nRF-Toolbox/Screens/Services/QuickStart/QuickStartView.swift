@@ -11,11 +11,15 @@ import SwiftUI
 
 struct QuickStartView: View {
 
+    // MARK: Properties
+
+    let viewModel: QuickStartViewModel
+
     // MARK: view
 
     var body: some View {
         VStack {
-            Image("nrf54dk")
+            Image(viewModel.board.imageName)
                 .resizable()
                 .scaledToFit()
                 .padding()

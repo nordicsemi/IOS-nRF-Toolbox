@@ -216,6 +216,10 @@ extension DeviceDetailsViewModel {
             signalViewModel?.startTimer()
             log.info("Initialised RSSI probing.")
             
+            for case let quickStartViewModel as QuickStartViewModel in supportedServiceViewModels {
+                quickStartViewModel.hardwareRevision = deviceInfo?.hardwareRevision
+            }
+
             for supportedServiceViewModel in self.supportedServiceViewModels {
                 await supportedServiceViewModel.onConnect()
                 
