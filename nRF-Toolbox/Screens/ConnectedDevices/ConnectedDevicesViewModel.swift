@@ -276,7 +276,7 @@ extension ConnectedDevicesViewModel {
                 
                 if disconnectedDevice.status.hashValue != Device.Status.userInitiatedDisconnection.hashValue {
                     self.showUnexpectedDisconnectionAlert = true
-                    self.unexpectedDisconnectionMessage = "\(disconnectedDevice.name ?? "Unnamed Device") disconnected unexpectedly."
+                    self.unexpectedDisconnectionMessage = "\(disconnectedDevice.name ?? "Unnamed Device") has disconnected."
                 }
             }
             .store(in: &cancellables)
