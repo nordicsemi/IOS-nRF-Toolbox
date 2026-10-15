@@ -276,10 +276,15 @@ extension ConnectedDevicesViewModel {
                 } else {
                     self.connectedDevices.remove(at: i)
                 }
-                
+
                 if disconnectedDevice.status.hashValue != Device.Status.userInitiatedDisconnection.hashValue {
                     self.showUnexpectedDisconnectionAlert = true
                     self.unexpectedDisconnectionMessage = "\(disconnectedDevice.name ?? "Unnamed Device") has disconnected."
+
+                    if error != nil, self.centralManager.centralManager.state == .poweredOn {
+                        self.log.info("Unexpected disconnection. Reconnecting to the device: \(disconnectedDevice.logName)")
+                        Task { await self.reconnect(disconnectedDevice) }
+                    }
                 }
             }
             .store(in: &cancellables)
