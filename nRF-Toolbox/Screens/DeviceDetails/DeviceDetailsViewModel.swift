@@ -46,7 +46,6 @@ final class DeviceDetailsViewModel {
     private static let reconnectScreenDelay: Duration = .seconds(4)
 
     private(set) var supportedServiceViewModels: [any SupportedServiceViewModel] = []
-    private var previousServiceViewModels: [any SupportedServiceViewModel] = []
 
     private let log = NordicLog(category: "DeviceDetails.VM", subsystem: "com.nordicsemi.nrf-toolbox")
     
@@ -67,7 +66,7 @@ final class DeviceDetailsViewModel {
 
         listenForConnectionStatus()
         if let previousServiceViewModels {
-            self.previousServiceViewModels = previousServiceViewModels
+            supportedServiceViewModels = previousServiceViewModels
             showReconnectScreen = false
             scheduleReconnectScreen()
         }
@@ -115,8 +114,7 @@ extension DeviceDetailsViewModel {
     
     @ViewBuilder
     func supportedServiceViews() -> some View {
-        let displayedViewModels = isInitialized ? supportedServiceViewModels : previousServiceViewModels
-        let includedViews = displayedViewModels
+        let includedViews = supportedServiceViewModels
             .filter { !($0 is BatteryViewModel) }
             .map { viewModel in
                 Section(viewModel.description) {
@@ -143,11 +141,7 @@ extension DeviceDetailsViewModel {
 
         var discoveredServiceBadges: [Service] = []
         do {
-            if supportedServiceViewModels.hasItems {
-                await onDisconnect()
-                supportedServiceViewModels.removeAll()
-            }
-            
+            var viewModels: [any SupportedServiceViewModel] = []
             serviceCancellables.removeAll()
 
             discoveredServices = try await peripheral.discoverServices(serviceUUIDs: nil).firstValue
@@ -182,38 +176,38 @@ extension DeviceDetailsViewModel {
                 
                 switch service.uuid {
                 case .nordicBlinkyService:
-                    supportedServiceViewModels.append(BlinkyViewModel(peripheral: peripheral, characteristics: characteristics))
+                    viewModels.append(BlinkyViewModel(peripheral: peripheral, characteristics: characteristics))
                 case .quickStart:
-                    supportedServiceViewModels.append(QuickStartViewModel(peripheral: peripheral, characteristics: characteristics))
+                    viewModels.append(QuickStartViewModel(peripheral: peripheral, characteristics: characteristics))
                 case .memfaultDiagnostic:
-                    supportedServiceViewModels.append(ObservabilityViewModel(peripheral: peripheral, characteristics: characteristics))
+                    viewModels.append(ObservabilityViewModel(peripheral: peripheral, characteristics: characteristics))
                 case .runningSpeedCadence:
-                    supportedServiceViewModels.append(RunningServiceViewModel(peripheral: peripheral, characteristics: characteristics))
+                    viewModels.append(RunningServiceViewModel(peripheral: peripheral, characteristics: characteristics))
                 case .cyclingSpeedCadence:
-                    supportedServiceViewModels.append(CyclingServiceViewModel(peripheral: peripheral, characteristics: characteristics))
+                    viewModels.append(CyclingServiceViewModel(peripheral: peripheral, characteristics: characteristics))
                 case .healthThermometer:
-                    supportedServiceViewModels.append(HealthThermometerViewModel(peripheral: peripheral, characteristics: characteristics))
+                    viewModels.append(HealthThermometerViewModel(peripheral: peripheral, characteristics: characteristics))
                 case .heartRate:
-                    supportedServiceViewModels.append(HeartRateViewModel(peripheral: peripheral, characteristics: characteristics))
+                    viewModels.append(HeartRateViewModel(peripheral: peripheral, characteristics: characteristics))
                 case .bloodPressure:
-                    supportedServiceViewModels.append(BloodPressureViewModel(peripheral: peripheral, characteristics: characteristics))
+                    viewModels.append(BloodPressureViewModel(peripheral: peripheral, characteristics: characteristics))
                     let cuffCharacteristics: [CBCharacteristic] = characteristics.filter { cbChar in
                         cbChar.uuid == Characteristic.intermediateCuffPressure.uuid
                     }
                     if cuffCharacteristics.hasItems {
                         log.info("Cuff Pressure Characteristic discovered.")
-                        supportedServiceViewModels.append(CuffPressureViewModel(peripheral: peripheral, characteristics: characteristics))
+                        viewModels.append(CuffPressureViewModel(peripheral: peripheral, characteristics: characteristics))
                     }
                 case .battery:
-                    supportedServiceViewModels.append(BatteryViewModel(peripheral: peripheral, characteristics: characteristics))
+                    viewModels.append(BatteryViewModel(peripheral: peripheral, characteristics: characteristics))
                 case .throughputService:
-                    supportedServiceViewModels.append(ThroughputViewModel(peripheral, characteristics: characteristics))
+                    viewModels.append(ThroughputViewModel(peripheral, characteristics: characteristics))
                 case .glucoseService:
-                    supportedServiceViewModels.append(GlucoseViewModel(peripheral: peripheral, characteristics: characteristics))
+                    viewModels.append(GlucoseViewModel(peripheral: peripheral, characteristics: characteristics))
                 case .continuousGlucoseMonitoringService:
-                    supportedServiceViewModels.append(CGMSViewModel(peripheral: peripheral, characteristics: characteristics))
+                    viewModels.append(CGMSViewModel(peripheral: peripheral, characteristics: characteristics))
                 case .nordicsemiUART:
-                    supportedServiceViewModels.append(UARTViewModel(peripheral: peripheral, characteristics: characteristics))
+                    viewModels.append(UARTViewModel(peripheral: peripheral, characteristics: characteristics))
                 case .deviceInformation:
                     deviceInfo = try await DeviceInformation(characteristics, peripheral: peripheral)
                 default:
@@ -227,11 +221,11 @@ extension DeviceDetailsViewModel {
             signalViewModel?.startTimer()
             log.info("Initialised RSSI probing.")
             
-            for case let quickStartViewModel as QuickStartViewModel in supportedServiceViewModels {
+            for case let quickStartViewModel as QuickStartViewModel in viewModels {
                 quickStartViewModel.hardwareRevision = deviceInfo?.hardwareRevision
             }
 
-            for supportedServiceViewModel in self.supportedServiceViewModels {
+            for supportedServiceViewModel in viewModels {
                 await supportedServiceViewModel.onConnect()
                 
                 supportedServiceViewModel.errors
@@ -243,12 +237,14 @@ extension DeviceDetailsViewModel {
                     }.store(in: &serviceCancellables)
             }
 
+            supportedServiceViewModels = viewModels
             hideReconnectScreen()
             isInitialized = true
             log.info("Successfully initialized connection with the peripheral.")
             
             return discoveredServiceBadges
         } catch {
+            supportedServiceViewModels.removeAll()
             hideReconnectScreen()
             if case let serviceError as ServiceError = error {
                 errors.error = serviceError
@@ -296,7 +292,6 @@ extension DeviceDetailsViewModel {
     private func hideReconnectScreen() {
         reconnectScreenTask?.cancel()
         reconnectScreenTask = nil
-        previousServiceViewModels.removeAll()
         showReconnectScreen = false
     }
 }
