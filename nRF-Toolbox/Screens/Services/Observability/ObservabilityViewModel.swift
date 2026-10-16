@@ -191,10 +191,17 @@ final class ObservabilityViewModel: SupportedServiceViewModel {
 
     @MainActor
     private func handleStreamError(_ error: Error) {
-        if case ObservabilityError.pairingError = error {
+        switch error {
+        case ObservabilityError.pairingError:
             status = .pairingError
-        } else {
+        case ObservabilityError.peripheralNotConnected:
+            isBLEConnected = false
+            recomputeStatus()
+        case is ObservabilityError:
             status = .error(error.localizedDescription)
+        default:
+            isBLEConnected = false
+            recomputeStatus()
         }
     }
 }
