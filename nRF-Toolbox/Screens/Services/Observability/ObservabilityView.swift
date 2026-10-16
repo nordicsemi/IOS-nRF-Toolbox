@@ -18,11 +18,17 @@ struct ObservabilityView: View {
     // MARK: view
 
     var body: some View {
-        LabeledContent {
-            Text(viewModel.status.title)
-        } label: {
+        HStack(spacing: 8) {
             Label("Status", systemImage: viewModel.status.systemImage)
                 .setAccent(Color.universalAccentColor)
+                .lineLimit(1)
+                .layoutPriority(1)
+
+            Text(viewModel.status.title)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .foregroundStyle(Color.secondary)
+                .frame(maxWidth: .infinity, alignment: .trailing)
         }
 
         LabeledContent {

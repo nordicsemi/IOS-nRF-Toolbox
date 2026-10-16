@@ -24,6 +24,15 @@ enum QuickStartBoard {
         }
     }
 
+    var displayName: String {
+        switch self {
+        case .nRF54LM20:
+            return "nRF54LM20DK"
+        case .nRF54L15, .unknown:
+            return "nRF54L15DK"
+        }
+    }
+
     var imageName: String {
         switch self {
         case .nRF54LM20:

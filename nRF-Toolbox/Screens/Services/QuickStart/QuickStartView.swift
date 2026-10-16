@@ -25,7 +25,7 @@ struct QuickStartView: View {
                 .padding()
                 .padding(.horizontal, 16)
             
-            Text("Congratulations! You have successfully connected to the Bluetooth Quick Start sample on nRF54L15DK.")
+            Text("Congratulations! You have successfully connected to the Bluetooth Quick Start sample on \(viewModel.board.displayName).")
                 .font(.caption)
         }
     }
