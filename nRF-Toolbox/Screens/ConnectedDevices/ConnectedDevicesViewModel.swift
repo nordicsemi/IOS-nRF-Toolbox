@@ -232,8 +232,14 @@ extension ConnectedDevicesViewModel {
 
         if let peripheral = centralManager.retrievePeripherals(withIdentifiers: [device.id]).first {
 
+            let previousServiceViewModels = deviceViewModels[device.id]?.supportedServiceViewModels
             deviceViewModels[device.id]?.tearDown()
-            let viewModel = DeviceDetailsViewModel(cbPeripheral: peripheral, centralManager: centralManager, device: device)
+            let viewModel = DeviceDetailsViewModel(
+                cbPeripheral: peripheral,
+                centralManager: centralManager,
+                device: device,
+                previousServiceViewModels: previousServiceViewModels
+            )
             deviceViewModels[device.id] = viewModel
             
             Task {
@@ -278,12 +284,12 @@ extension ConnectedDevicesViewModel {
                 }
 
                 if disconnectedDevice.status.hashValue != Device.Status.userInitiatedDisconnection.hashValue {
-                    self.showUnexpectedDisconnectionAlert = true
-                    self.unexpectedDisconnectionMessage = "\(disconnectedDevice.name ?? "Unnamed Device") has disconnected."
-
                     if error != nil, self.centralManager.centralManager.state == .poweredOn {
                         self.log.info("Unexpected disconnection. Reconnecting to the device: \(disconnectedDevice.logName)")
                         Task { await self.reconnect(disconnectedDevice) }
+                    } else {
+                        self.showUnexpectedDisconnectionAlert = true
+                        self.unexpectedDisconnectionMessage = "\(disconnectedDevice.name ?? "Unnamed Device") has disconnected."
                     }
                 }
             }

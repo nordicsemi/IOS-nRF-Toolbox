@@ -42,9 +42,12 @@ final class DeviceDetailsViewModel {
     var device: Device
 
     private(set) var showReconnectScreen = true
+    private var reconnectScreenTask: Task<Void, Never>?
+    private static let reconnectScreenDelay: Duration = .seconds(4)
 
     private(set) var supportedServiceViewModels: [any SupportedServiceViewModel] = []
-    
+    private var previousServiceViewModels: [any SupportedServiceViewModel] = []
+
     private let log = NordicLog(category: "DeviceDetails.VM", subsystem: "com.nordicsemi.nrf-toolbox")
     
     // MARK: Properties
@@ -57,12 +60,17 @@ final class DeviceDetailsViewModel {
     
     // MARK: init
     
-    init(cbPeripheral: CBPeripheral, centralManager: CentralManager, device: Device) {
+    init(cbPeripheral: CBPeripheral, centralManager: CentralManager, device: Device, previousServiceViewModels: [any SupportedServiceViewModel]? = nil) {
         self.peripheral = Peripheral(peripheral: cbPeripheral, delegate: ReactivePeripheralDelegate())
         self.centralManager = centralManager
         self.device = device
-        
+
         listenForConnectionStatus()
+        if let previousServiceViewModels {
+            self.previousServiceViewModels = previousServiceViewModels
+            showReconnectScreen = false
+            scheduleReconnectScreen()
+        }
         log.debug("\(type(of: self)).\(#function)")
     }
     
@@ -90,6 +98,8 @@ extension DeviceDetailsViewModel {
         log.debug("\(type(of: self)).\(#function)")
         connectionCancellables.removeAll()
         serviceCancellables.removeAll()
+        reconnectScreenTask?.cancel()
+        reconnectScreenTask = nil
         signalViewModel?.stopTimer()
         signalViewModel = nil
         supportedServiceViewModels.removeAll()
@@ -105,7 +115,8 @@ extension DeviceDetailsViewModel {
     
     @ViewBuilder
     func supportedServiceViews() -> some View {
-        let includedViews = supportedServiceViewModels
+        let displayedViewModels = isInitialized ? supportedServiceViewModels : previousServiceViewModels
+        let includedViews = displayedViewModels
             .filter { !($0 is BatteryViewModel) }
             .map { viewModel in
                 Section(viewModel.description) {
@@ -232,13 +243,13 @@ extension DeviceDetailsViewModel {
                     }.store(in: &serviceCancellables)
             }
 
-            showReconnectScreen = false
+            hideReconnectScreen()
             isInitialized = true
             log.info("Successfully initialized connection with the peripheral.")
             
             return discoveredServiceBadges
         } catch {
-            showReconnectScreen = false
+            hideReconnectScreen()
             if case let serviceError as ServiceError = error {
                 errors.error = serviceError
             } else {
@@ -259,14 +270,34 @@ extension DeviceDetailsViewModel {
             .compactMap { $0.1 }
             .sink { [weak self] error in
                 guard let self else { return }
-                log.info("Connection lost: \(error.localizedDescription). Showing the reconnect screen.")
-                showReconnectScreen = true
+                log.info("Connection lost: \(error.localizedDescription). Showing the reconnect screen after a delay.")
+                scheduleReconnectScreen()
                 supportedServiceViewModels.forEach {
                     $0.onDisconnect()
                 }
                 signalViewModel?.stopTimer()
             }
             .store(in: &connectionCancellables)
+    }
+
+    // MARK: scheduleReconnectScreen()
+
+    private func scheduleReconnectScreen() {
+        reconnectScreenTask?.cancel()
+        reconnectScreenTask = Task { [weak self] in
+            try? await Task.sleep(for: Self.reconnectScreenDelay)
+            guard !Task.isCancelled else { return }
+            self?.showReconnectScreen = true
+        }
+    }
+
+    // MARK: hideReconnectScreen()
+
+    private func hideReconnectScreen() {
+        reconnectScreenTask?.cancel()
+        reconnectScreenTask = nil
+        previousServiceViewModels.removeAll()
+        showReconnectScreen = false
     }
 }
 
