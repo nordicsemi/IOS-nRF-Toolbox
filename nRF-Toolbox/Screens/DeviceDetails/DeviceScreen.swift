@@ -98,6 +98,20 @@ struct DeviceScreen: View {
                     }
                 }
                 
+                if deviceViewModel.mayHaveStaleCache {
+                    Section("Outdated attributes?") {
+                        Text("The device reconnected with the same attributes as before. If you installed new firmware, iOS may be showing cached ones. Turn Bluetooth off and on in Settings (not Control Center), then reconnect.")
+                            .font(.footnote)
+                            .foregroundStyle(Color.secondary)
+                        Button("Open Settings") {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        }
+                        .foregroundStyle(Color.universalAccentColor)
+                    }
+                }
+
                 Section("Troubleshooting") {
                     DisclosureGroup {
                         Text("Turn off and on Bluetooth from Settings (not Control Center) to clear the cache.")

@@ -56,16 +56,19 @@ final class DeviceDetailsViewModel {
     var deviceInfo: DeviceInformation?
     var signalViewModel: SignalChartViewModel?
     var isInitialized: Bool = false
-    
+    private(set) var mayHaveStaleCache = false
+    private let previousAttributeTable: AttributeTable?
+
     // MARK: init
     
-    init(cbPeripheral: CBPeripheral, centralManager: CentralManager, device: Device, previousServiceViewModels: [any SupportedServiceViewModel]? = nil) {
+    init(cbPeripheral: CBPeripheral, centralManager: CentralManager, device: Device, previousServiceViewModels: [any SupportedServiceViewModel]? = nil, previousAttributeTable: AttributeTable? = nil) {
         self.peripheral = Peripheral(peripheral: cbPeripheral, delegate: ReactivePeripheralDelegate())
         self.centralManager = centralManager
         self.device = device
+        self.previousAttributeTable = previousAttributeTable
 
         listenForConnectionStatus()
-        if let previousServiceViewModels {
+        if let previousServiceViewModels, !previousServiceViewModels.isEmpty {
             supportedServiceViewModels = previousServiceViewModels
             showReconnectScreen = false
             scheduleReconnectScreen()
@@ -216,7 +219,10 @@ extension DeviceDetailsViewModel {
             }
 
             attributeTable = table
-            
+            if let previousAttributeTable, !table.isEmpty {
+                mayHaveStaleCache = previousAttributeTable.signature == table.signature
+            }
+
             signalViewModel = SignalChartViewModel(peripheral: peripheral)
             signalViewModel?.startTimer()
             log.info("Initialised RSSI probing.")
@@ -245,6 +251,11 @@ extension DeviceDetailsViewModel {
             return discoveredServiceBadges
         } catch {
             supportedServiceViewModels.removeAll()
+            guard peripheral.peripheral.state == .connected else {
+                log.info("\(#function) interrupted by disconnection: \(error.localizedDescription)")
+                showReconnectScreen = true
+                return discoveredServiceBadges
+            }
             hideReconnectScreen()
             if case let serviceError as ServiceError = error {
                 errors.error = serviceError

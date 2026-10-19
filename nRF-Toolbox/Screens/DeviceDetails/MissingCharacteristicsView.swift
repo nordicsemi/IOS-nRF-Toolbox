@@ -36,6 +36,12 @@ struct MissingCharacteristicsView : View {
                 .font(.footnote)
                 .lineSpacing(10)
                 .padding(.bottom, 16)
+
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
         }.padding(.vertical, 16)
     }
 }

@@ -50,6 +50,7 @@ final class ConnectedDevicesViewModel {
     
     private var cancelledConnectionAttempts: Set<UUID> = []
     private var ongoingConnectionAttempts: Set<UUID> = []
+    private var autoReconnectedDevices: Set<UUID> = []
     private var deviceViewModels: [UUID: DeviceDetailsViewModel] = [:]
     private var cancellables = Set<AnyCancellable>()
     private var scannerCancellables = Set<AnyCancellable>()
@@ -127,8 +128,13 @@ extension ConnectedDevicesViewModel {
 
     // MARK: reconnect(:)
 
-    func reconnect(_ device: Device) async {
+    func reconnect(_ device: Device, automatic: Bool = false) async {
         log.debug("\(type(of: self)).\(#function)")
+        if automatic {
+            autoReconnectedDevices.insert(device.id)
+        } else {
+            autoReconnectedDevices.remove(device.id)
+        }
         guard let peripheral = centralManager.retrievePeripherals(withIdentifiers: [device.id]).first else { return }
 
         guard ongoingConnectionAttempts.insert(device.id).inserted else {
@@ -233,12 +239,14 @@ extension ConnectedDevicesViewModel {
         if let peripheral = centralManager.retrievePeripherals(withIdentifiers: [device.id]).first {
 
             let previousServiceViewModels = deviceViewModels[device.id]?.supportedServiceViewModels
+            let previousAttributeTable = deviceViewModels[device.id]?.attributeTable
             deviceViewModels[device.id]?.tearDown()
             let viewModel = DeviceDetailsViewModel(
                 cbPeripheral: peripheral,
                 centralManager: centralManager,
                 device: device,
-                previousServiceViewModels: previousServiceViewModels
+                previousServiceViewModels: previousServiceViewModels,
+                previousAttributeTable: previousAttributeTable
             )
             deviceViewModels[device.id] = viewModel
             
@@ -284,9 +292,11 @@ extension ConnectedDevicesViewModel {
                 }
 
                 if disconnectedDevice.status.hashValue != Device.Status.userInitiatedDisconnection.hashValue {
-                    if error != nil, self.centralManager.centralManager.state == .poweredOn {
+                    if error != nil,
+                       self.centralManager.centralManager.state == .poweredOn,
+                       !self.autoReconnectedDevices.contains(peripheral.identifier) {
                         self.log.info("Unexpected disconnection. Reconnecting to the device: \(disconnectedDevice.logName)")
-                        Task { await self.reconnect(disconnectedDevice) }
+                        Task { await self.reconnect(disconnectedDevice, automatic: true) }
                     } else {
                         self.showUnexpectedDisconnectionAlert = true
                         self.unexpectedDisconnectionMessage = "\(disconnectedDevice.name ?? "Unnamed Device") has disconnected."
@@ -336,6 +346,7 @@ extension ConnectedDevicesViewModel {
         }
         
         connectingDevice = device
+        autoReconnectedDevices.remove(device.id)
         
         // Get CBPeripheral's instance
         let peripheral = centralManager.retrievePeripherals(withIdentifiers: [device.id]).first!
