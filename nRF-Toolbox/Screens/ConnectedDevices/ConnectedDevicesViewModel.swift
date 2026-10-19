@@ -239,14 +239,12 @@ extension ConnectedDevicesViewModel {
         if let peripheral = centralManager.retrievePeripherals(withIdentifiers: [device.id]).first {
 
             let previousServiceViewModels = deviceViewModels[device.id]?.supportedServiceViewModels
-            let previousAttributeTable = deviceViewModels[device.id]?.attributeTable
             deviceViewModels[device.id]?.tearDown()
             let viewModel = DeviceDetailsViewModel(
                 cbPeripheral: peripheral,
                 centralManager: centralManager,
                 device: device,
-                previousServiceViewModels: previousServiceViewModels,
-                previousAttributeTable: previousAttributeTable
+                previousServiceViewModels: previousServiceViewModels
             )
             deviceViewModels[device.id] = viewModel
             

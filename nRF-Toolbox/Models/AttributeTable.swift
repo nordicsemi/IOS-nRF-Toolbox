@@ -18,14 +18,6 @@ protocol StringIdentifiable  {
 struct AttributeTable {
     private(set) var services: [Service] = []
     
-    var isEmpty: Bool { services.isEmpty }
-
-    var signature: Set<String> {
-        Set(services.flatMap { service in
-            [service.uuidString] + service.characteristics.map { "\(service.uuidString)/\($0.uuidString)" }
-        })
-    }
-
     mutating func addService(_ cbService: CBService) {
         let service = Service(cbService: cbService)
         if let i = services.firstIndex(where: {

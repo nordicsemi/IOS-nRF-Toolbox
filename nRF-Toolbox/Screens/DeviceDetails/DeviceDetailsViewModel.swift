@@ -56,16 +56,13 @@ final class DeviceDetailsViewModel {
     var deviceInfo: DeviceInformation?
     var signalViewModel: SignalChartViewModel?
     var isInitialized: Bool = false
-    private(set) var mayHaveStaleCache = false
-    private let previousAttributeTable: AttributeTable?
 
     // MARK: init
     
-    init(cbPeripheral: CBPeripheral, centralManager: CentralManager, device: Device, previousServiceViewModels: [any SupportedServiceViewModel]? = nil, previousAttributeTable: AttributeTable? = nil) {
+    init(cbPeripheral: CBPeripheral, centralManager: CentralManager, device: Device, previousServiceViewModels: [any SupportedServiceViewModel]? = nil) {
         self.peripheral = Peripheral(peripheral: cbPeripheral, delegate: ReactivePeripheralDelegate())
         self.centralManager = centralManager
         self.device = device
-        self.previousAttributeTable = previousAttributeTable
 
         listenForConnectionStatus()
         if let previousServiceViewModels, !previousServiceViewModels.isEmpty {
@@ -219,9 +216,6 @@ extension DeviceDetailsViewModel {
             }
 
             attributeTable = table
-            if let previousAttributeTable, !table.isEmpty {
-                mayHaveStaleCache = previousAttributeTable.signature == table.signature
-            }
 
             signalViewModel = SignalChartViewModel(peripheral: peripheral)
             signalViewModel?.startTimer()
