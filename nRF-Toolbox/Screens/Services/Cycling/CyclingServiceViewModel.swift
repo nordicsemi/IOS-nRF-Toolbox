@@ -188,19 +188,12 @@ final class CyclingServiceViewModel: SupportedServiceViewModel {
     
     // MARK: onConnect()
     @MainActor
-    func onConnect() async {
+    func onConnect() async throws {
         log.debug("\(type(of: self)).\(#function)")
-        do {
-            try await initializeCharacteristics()
-            try await readFeatures()
-            try await startListening()
-            log.info("Cycling service has set up successfully.")
-        }
-        catch let error {
-            log.error("Cycling service set up failed.")
-            log.error("Error \(error.localizedDescription)")
-            handleError(error)
-        }
+        try await initializeCharacteristics()
+        try await readFeatures()
+        try await startListening()
+        log.info("Cycling service has set up successfully.")
     }
     
     // MARK: onDisconnect()

@@ -82,16 +82,10 @@ final class HeartRateViewModel: @MainActor SupportedServiceViewModel {
     // MARK: onConnect()
     
     @MainActor
-    func onConnect() async {
+    func onConnect() async throws {
         log.debug("\(type(of: self)).\(#function)")
-        do {
-            try await initializeCharacteristics()
-            log.info("Heart Rate service has set up successfully.")
-        } catch {
-            log.error("Heart Rate service set up failed.")
-            log.error("Error \(error.localizedDescription)")
-            handleError(error)
-        }
+        try await initializeCharacteristics()
+        log.info("Heart Rate service has set up successfully.")
     }
     
     // MARK: onDisconnect()

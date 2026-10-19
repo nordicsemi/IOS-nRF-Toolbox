@@ -71,16 +71,10 @@ final class BlinkyViewModel: SupportedServiceViewModel {
     // MARK: onConnect()
     
     @MainActor
-    func onConnect() async {
+    func onConnect() async throws {
         log.debug("\(type(of: self)).\(#function)")
-        do {
-            try await initializeCharacteristics()
-            log.info("Blinky service has set up successfully.")
-        } catch {
-            log.error("Blinky service set up failed.")
-            log.error("Error \(error.localizedDescription)")
-            handleError(error)
-        }
+        try await initializeCharacteristics()
+        log.info("Blinky service has set up successfully.")
     }
     
     @MainActor

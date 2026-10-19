@@ -232,7 +232,12 @@ extension DeviceDetailsViewModel {
             }
 
             for supportedServiceViewModel in viewModels {
-                await supportedServiceViewModel.onConnect()
+                do {
+                    try await supportedServiceViewModel.onConnect()
+                } catch {
+                    log.error("\(supportedServiceViewModel.description) set up failed: \(error.localizedDescription)")
+                    throw ServiceError.noMandatoryCharacteristic
+                }
                 
                 supportedServiceViewModel.errors
                     .drop(while: { value in // Default values from other services may override an actual error.

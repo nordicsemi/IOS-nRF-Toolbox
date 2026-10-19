@@ -30,8 +30,7 @@ protocol SupportedServiceViewModel {
     @ViewBuilder
     var attachedView: any View { get }
     
-    // TODO: async throws for onConnect()
-    func onConnect() async
+    func onConnect() async throws
     func onDisconnect()
 }
 
