@@ -31,8 +31,9 @@ struct DeviceScreen: View {
         @Bindable var deviceViewModel = deviceViewModel
         List {
             let hasServiceDiscoveryFailed = (deviceViewModel.errors.error as? ServiceError) == .serviceDiscoveryFailed
+                || (deviceViewModel.errors.error as? DeviceDetailsViewModel.AlertError) == .servicesNotFound
             
-            if (deviceViewModel.showReconnectScreen) {
+            if (deviceViewModel.shouldShowReconnectScreen) {
                 DeviceDisconnectedView()
                 
                 

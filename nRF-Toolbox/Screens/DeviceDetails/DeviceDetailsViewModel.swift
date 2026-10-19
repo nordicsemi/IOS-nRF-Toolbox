@@ -42,6 +42,14 @@ final class DeviceDetailsViewModel {
     var device: Device
 
     private(set) var showReconnectScreen = true
+    var shouldShowReconnectScreen: Bool {
+        switch device.status {
+        case .error, .userInitiatedDisconnection:
+            return true
+        case .connected, .connecting:
+            return showReconnectScreen
+        }
+    }
     private var reconnectScreenTask: Task<Void, Never>?
     private static let reconnectScreenDelay: Duration = .seconds(4)
 
