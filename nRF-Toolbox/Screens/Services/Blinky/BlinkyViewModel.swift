@@ -88,11 +88,11 @@ final class BlinkyViewModel: SupportedServiceViewModel {
         
         guard let buttonCharacteristics = blinkyCharacteristics.first(where: \.uuid, isEqualsTo: Characteristic.nordicsemiBlinkyButtonState.uuid) else {
             log.error("Blinky button characteristic is missing.")
-            throw ServiceError.noMandatoryCharacteristic
+            throw ServiceError.serviceDiscoveryFailed
         }
         guard let ledCharacteristics = blinkyCharacteristics.first(where: \.uuid, isEqualsTo: Characteristic.nordicsemiBlinkyLedState.uuid) else {
             log.error("Blinky LED characteristic is missing.")
-            throw ServiceError.noMandatoryCharacteristic
+            throw ServiceError.serviceDiscoveryFailed
         }
         self.ledCharacteristics = ledCharacteristics
         

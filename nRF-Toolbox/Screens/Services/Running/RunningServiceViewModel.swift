@@ -103,12 +103,12 @@ private extension RunningServiceViewModel {
         
         guard rscMeasurement != nil else {
             log.error("Running Measurement characteristic is missing.")
-            throw ServiceError.noMandatoryCharacteristic
+            throw ServiceError.serviceDiscoveryFailed
         }
         
         guard rscFeature != nil else {
             log.error("Running Feature characteristic is missing.")
-            throw ServiceError.noMandatoryCharacteristic
+            throw ServiceError.serviceDiscoveryFailed
         }
     }
     

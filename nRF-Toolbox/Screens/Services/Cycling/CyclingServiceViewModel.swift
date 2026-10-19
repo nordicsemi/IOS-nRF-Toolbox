@@ -82,12 +82,12 @@ final class CyclingServiceViewModel: SupportedServiceViewModel {
         
         guard cscMeasurement != nil else {
             log.error("Cycling Measurement characteristic is missing.")
-            throw ServiceError.noMandatoryCharacteristic
+            throw ServiceError.serviceDiscoveryFailed
         }
         
         guard cscFeature != nil else {
             log.error("Cycling Feature characteristic is missing.")
-            throw ServiceError.noMandatoryCharacteristic
+            throw ServiceError.serviceDiscoveryFailed
         }
     }
     

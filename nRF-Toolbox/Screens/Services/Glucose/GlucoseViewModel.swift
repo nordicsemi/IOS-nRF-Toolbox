@@ -101,7 +101,7 @@ final class GlucoseViewModel: @MainActor SupportedServiceViewModel {
         cbRACP = cbCharacteristics.first(where: \.uuid, isEqualsTo: Characteristic.recordAccessControlPoint.uuid)
         guard cbGlucoseMeasurement != nil else {
             log.error("Glucose measurement characteristic is missing.")
-            throw ServiceError.noMandatoryCharacteristic
+            throw ServiceError.serviceDiscoveryFailed
         }
         
         requestRecords(.allRecords)

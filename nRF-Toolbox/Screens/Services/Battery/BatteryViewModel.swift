@@ -59,7 +59,7 @@ final class BatteryViewModel: SupportedServiceViewModel {
         
         // Check if `batteryLevel` characteristic was discovered
         guard let cbBatteryLevel = cbCharacteristics.first, cbBatteryLevel.uuid == Characteristic.batteryLevel.uuid else {
-            throw ServiceError.noMandatoryCharacteristic
+            throw ServiceError.serviceDiscoveryFailed
         }
         
         batteryLevelAvailable = true

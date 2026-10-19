@@ -30,7 +30,7 @@ struct DeviceScreen: View {
     var body: some View {
         @Bindable var deviceViewModel = deviceViewModel
         List {
-            let hasMissingCharacteristics = (deviceViewModel.errors.error as? ServiceError) == .noMandatoryCharacteristic
+            let hasServiceDiscoveryFailed = (deviceViewModel.errors.error as? ServiceError) == .serviceDiscoveryFailed
             
             if (deviceViewModel.showReconnectScreen) {
                 DeviceDisconnectedView()
@@ -62,8 +62,8 @@ struct DeviceScreen: View {
                             .id(UUID()) // This fix issue with loader not being displayed when appears for the second time.
                     }
                 }
-            } else if (hasMissingCharacteristics) {
-                MissingCharacteristicsView()
+            } else if (hasServiceDiscoveryFailed) {
+                ServiceDiscoveryErrorView()
                 
                 Section {
                     Button("Disconnect") {

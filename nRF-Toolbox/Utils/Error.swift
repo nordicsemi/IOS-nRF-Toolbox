@@ -12,7 +12,7 @@ import Foundation
 
 enum ServiceError: LocalizedError {
     case unknown
-    case noMandatoryCharacteristic
+    case serviceDiscoveryFailed
     case timeout
     case noData
     case notificationsNotEnabled
@@ -21,8 +21,8 @@ enum ServiceError: LocalizedError {
         switch self {
         case .unknown:
             return "An unknown error has occurred."
-        case .noMandatoryCharacteristic:
-            return "Mandatory characteristics are missing."
+        case .serviceDiscoveryFailed:
+            return "Service discovery failed."
         case .timeout:
             return "Timeout has occured."
         case .noData:

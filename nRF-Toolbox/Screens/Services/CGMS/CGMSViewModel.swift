@@ -167,17 +167,17 @@ final class CGMSViewModel: SupportedServiceViewModel {
         
         guard let cbCGMMeasurement else {
             log.error("CGM Measurement characteristic is missing.")
-            throw ServiceError.noMandatoryCharacteristic
+            throw ServiceError.serviceDiscoveryFailed
         }
         
         guard let cbSOCP else {
             log.error("SOCP characteristic is missing.")
-            throw ServiceError.noMandatoryCharacteristic
+            throw ServiceError.serviceDiscoveryFailed
         }
         
         guard let cbSST else {
             log.error("SST characteristic is missing.")
-            throw ServiceError.noMandatoryCharacteristic
+            throw ServiceError.serviceDiscoveryFailed
         }
         
         let now = Date.now

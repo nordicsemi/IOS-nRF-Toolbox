@@ -85,12 +85,12 @@ final class BloodPressureViewModel: @MainActor SupportedServiceViewModel {
         
         guard let bpsMeasurement else {
             log.error("Blood Presssure Measurement characteristic is missing.")
-            throw ServiceError.noMandatoryCharacteristic
+            throw ServiceError.serviceDiscoveryFailed
         }
         
         guard let bpsFlags else {
             log.error("Blood Presssure Feature characteristic is missing.")
-            throw ServiceError.noMandatoryCharacteristic
+            throw ServiceError.serviceDiscoveryFailed
         }
         
         if let initialValue = bpsMeasurement.value {

@@ -155,7 +155,7 @@ extension DeviceDetailsViewModel {
             let missingIds = ids.filter { !discoveredIds.contains($0) }
             if !missingIds.isEmpty {
                 missingIds.forEach { log.error("Missing required service: \($0.toServiceName())") }
-                throw ServiceError.noMandatoryCharacteristic
+                throw ServiceError.serviceDiscoveryFailed
             }
 
             var table = AttributeTable()
@@ -236,7 +236,7 @@ extension DeviceDetailsViewModel {
                     try await supportedServiceViewModel.onConnect()
                 } catch {
                     log.error("\(supportedServiceViewModel.description) set up failed: \(error.localizedDescription)")
-                    throw ServiceError.noMandatoryCharacteristic
+                    throw ServiceError.serviceDiscoveryFailed
                 }
                 
                 supportedServiceViewModel.errors

@@ -107,12 +107,12 @@ final class UARTViewModel: SupportedServiceViewModel {
         
         guard let uartTX else {
             log.error("Transmit characteristic is missing.")
-            throw ServiceError.noMandatoryCharacteristic
+            throw ServiceError.serviceDiscoveryFailed
         }
         
         guard uartRX != nil else {
             log.error("Receive characteristic is missing.")
-            throw ServiceError.noMandatoryCharacteristic
+            throw ServiceError.serviceDiscoveryFailed
         }
         
         listenToIncomingMessages(uartTX)

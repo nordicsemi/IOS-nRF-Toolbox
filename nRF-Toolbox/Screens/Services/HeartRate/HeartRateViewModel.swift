@@ -115,7 +115,7 @@ private extension HeartRateViewModel {
         hrMeasurement = heartRateCharacteristics.first(where: \.uuid, isEqualsTo: Characteristic.heartRateMeasurement.uuid)
         guard hrMeasurement != nil else {
             log.error("Heart Rate Measurement characteristic is missing.")
-            throw ServiceError.noMandatoryCharacteristic
+            throw ServiceError.serviceDiscoveryFailed
         }
         
         try await notifyHRMeasurement(true)

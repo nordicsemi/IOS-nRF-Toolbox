@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-struct MissingCharacteristicsView : View {
+struct ServiceDiscoveryErrorView : View {
     
     var body: some View {
         VStack {
@@ -41,5 +41,5 @@ struct MissingCharacteristicsView : View {
 }
 
 #Preview {
-    MissingCharacteristicsView()
+    ServiceDiscoveryErrorView()
 }

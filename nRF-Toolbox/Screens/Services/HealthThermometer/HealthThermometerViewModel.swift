@@ -78,7 +78,7 @@ final class HealthThermometerViewModel: SupportedServiceViewModel {
         
         guard let temperatureMeasurement = measurementCharacteristics.first(where: \.uuid, isEqualsTo: Characteristic.temperatureMeasurement.uuid) else {
             log.error("Health Thermometer Measurement characteristic is missing.")
-            throw ServiceError.noMandatoryCharacteristic
+            throw ServiceError.serviceDiscoveryFailed
         }
         listenTo(temperatureMeasurement)
         let isNotifyEnabled = try await peripheral.setNotifyValue(true, for: temperatureMeasurement).firstValue
