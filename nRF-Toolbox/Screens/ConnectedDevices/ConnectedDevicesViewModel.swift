@@ -159,9 +159,10 @@ extension ConnectedDevicesViewModel {
                 })
                 .first()
                 .firstValue
+            autoReconnectedDevices.remove(device.id)
         } catch {
             log.error("\(#function) Error: \(error.localizedDescription)")
-            
+
             cancelledConnectionAttempts.insert(peripheral.identifier)
             centralManager.centralManager.cancelPeripheralConnection(peripheral)
             if let i = connectedDevices.firstIndex(where: \.id, equals: device.id) {
