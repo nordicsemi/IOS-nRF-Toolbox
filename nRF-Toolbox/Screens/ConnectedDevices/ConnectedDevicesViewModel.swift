@@ -47,7 +47,7 @@ final class ConnectedDevicesViewModel {
     // MARK: Private Properties
     
     private let centralManager: CentralManager
-    
+
     private var cancelledConnectionAttempts: Set<UUID> = []
     private var ongoingConnectionAttempts: Set<UUID> = []
     private var autoReconnectBlockedDevices: Set<UUID> = []
@@ -249,14 +249,16 @@ extension ConnectedDevicesViewModel {
             
             Task {
                 let services = await viewModel.discoverSupportedServices()
-                if viewModel.isInitialized {
-                    autoReconnectBlockedDevices.remove(device.id)
-                }
                 if let i = connectedDevices.firstIndex(where: \.id, equals: device.id) {
                     var connectedDevice = connectedDevices[i]
                     connectedDevice.services.formUnion(Set(services))
                     connectedDevices[i] = connectedDevice
                     deviceViewModels[device.id]?.device = connectedDevices[i]
+                }
+                guard viewModel.isInitialized else { return }
+                try? await Task.sleep(for: .seconds(5)) // Wait before unlocking auto reconnect.
+                if deviceViewModels[device.id] === viewModel, viewModel.peripheral.peripheral.state == .connected {
+                    autoReconnectBlockedDevices.remove(device.id)
                 }
             }
         }
