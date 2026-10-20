@@ -267,7 +267,7 @@ extension ConnectedDevicesViewModel {
                     deviceViewModels[device.id]?.device = connectedDevices[i]
                 }
                 guard viewModel.isInitialized else { return }
-                try? await Task.sleep(for: .seconds(5)) // Wait before unlocking auto reconnect.
+                try? await Task.sleep(for: .seconds(2)) // Wait before unlocking auto reconnect.
                 if deviceViewModels[device.id] === viewModel, viewModel.peripheral.peripheral.state == .connected {
                     autoReconnectBlockedDevices.remove(device.id)
                     log.info("Auto reconnect unlocked: \(device.logName)")
