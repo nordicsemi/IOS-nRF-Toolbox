@@ -52,6 +52,7 @@ final class ConnectedDevicesViewModel {
     private var ongoingConnectionAttempts: Set<UUID> = []
     private var autoReconnectBlockedDevices: Set<UUID> = []
     private var deviceViewModels: [UUID: DeviceDetailsViewModel] = [:]
+    private var discoveryTasks: [UUID: Task<Void, Never>] = [:]
     private var cancellables = Set<AnyCancellable>()
     private var scannerCancellables = Set<AnyCancellable>()
     
@@ -122,6 +123,7 @@ extension ConnectedDevicesViewModel {
     func clearViewModel(_ device: Device) {
         log.debug("\(type(of: self)).\(#function)")
         connectedDevices.removeAll(where: { $0.id == device.id })
+        discoveryTasks.removeValue(forKey: device.id)?.cancel()
         deviceViewModels.removeValue(forKey: device.id)?.tearDown()
         log.info("Device successfully removed: \(device.logName)")
     }
@@ -130,7 +132,13 @@ extension ConnectedDevicesViewModel {
 
     func reconnect(_ device: Device) async {
         log.debug("\(type(of: self)).\(#function)")
-        guard let peripheral = centralManager.retrievePeripherals(withIdentifiers: [device.id]).first else { return }
+        guard let peripheral = centralManager.retrievePeripherals(withIdentifiers: [device.id]).first else {
+            if let i = connectedDevices.firstIndex(where: \.id, equals: device.id) {
+                connectedDevices[i].status = .error(ConnectionError.connectionLost)
+                deviceViewModels[device.id]?.device = connectedDevices[i]
+            }
+            return
+        }
 
         guard ongoingConnectionAttempts.insert(device.id).inserted else {
             log.info("Reconnection already in progress, ignoring: \(device.logName)")
@@ -238,6 +246,7 @@ extension ConnectedDevicesViewModel {
             let previousServiceViewModels = previousViewModel?.showReconnectScreen == false
                 ? previousViewModel?.supportedServiceViewModels
                 : nil
+            discoveryTasks[device.id]?.cancel()
             deviceViewModels[device.id]?.tearDown()
             let viewModel = DeviceDetailsViewModel(
                 cbPeripheral: peripheral,
@@ -247,8 +256,9 @@ extension ConnectedDevicesViewModel {
             )
             deviceViewModels[device.id] = viewModel
             
-            Task {
+            discoveryTasks[device.id] = Task {
                 let services = await viewModel.discoverSupportedServices()
+                guard !Task.isCancelled else { return }
                 if let i = connectedDevices.firstIndex(where: \.id, equals: device.id) {
                     var connectedDevice = connectedDevices[i]
                     connectedDevice.services.formUnion(Set(services))
@@ -282,28 +292,31 @@ extension ConnectedDevicesViewModel {
                 
                 let disconnectedDevice = self.connectedDevices[i]
                 self.log.debug("Disconnected Device Status: \(disconnectedDevice.status)")
+                let isUserInitiated = disconnectedDevice.status.hashValue == Device.Status.userInitiatedDisconnection.hashValue
+                let shouldAutoReconnect = !isUserInitiated
+                    && error != nil
+                    && self.centralManager.centralManager.state == .poweredOn
+                    && !self.autoReconnectBlockedDevices.contains(peripheral.identifier)
+
                 if let error {
-                    let device = connectedDevices[i]
-                    let statusError: Error = (error as? CBError)?.code == .connectionTimeout
-                        ? ConnectionError.connectionLost
-                        : error
-                    self.connectedDevices[i].status = .error(statusError)
-                    deviceViewModels[device.id]?.device = connectedDevices[i]
+                    if !shouldAutoReconnect {
+                        let statusError: Error = (error as? CBError)?.code == .connectionTimeout
+                            ? ConnectionError.connectionLost
+                            : error
+                        self.connectedDevices[i].status = .error(statusError)
+                        deviceViewModels[disconnectedDevice.id]?.device = connectedDevices[i]
+                    }
                 } else {
                     self.connectedDevices.remove(at: i)
                 }
 
-                if disconnectedDevice.status.hashValue != Device.Status.userInitiatedDisconnection.hashValue {
-                    if error != nil,
-                       self.centralManager.centralManager.state == .poweredOn,
-                       !self.autoReconnectBlockedDevices.contains(peripheral.identifier) {
-                        self.log.info("Unexpected disconnection. Reconnecting to the device: \(disconnectedDevice.logName)")
-                        Task { await self.reconnect(disconnectedDevice) }
-                    } else {
-                        self.deviceViewModels[peripheral.identifier]?.presentReconnectScreen()
-                        self.showUnexpectedDisconnectionAlert = true
-                        self.unexpectedDisconnectionMessage = "\(disconnectedDevice.name ?? "Unnamed Device") has disconnected."
-                    }
+                if shouldAutoReconnect {
+                    self.log.info("Unexpected disconnection. Reconnecting to the device: \(disconnectedDevice.logName)")
+                    Task { await self.reconnect(disconnectedDevice) }
+                } else if !isUserInitiated {
+                    self.deviceViewModels[peripheral.identifier]?.presentReconnectScreen()
+                    self.showUnexpectedDisconnectionAlert = true
+                    self.unexpectedDisconnectionMessage = "\(disconnectedDevice.name ?? "Unnamed Device") has disconnected."
                 }
             }
             .store(in: &cancellables)

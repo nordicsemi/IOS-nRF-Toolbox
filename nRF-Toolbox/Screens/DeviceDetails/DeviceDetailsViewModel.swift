@@ -44,12 +44,8 @@ final class DeviceDetailsViewModel {
     private(set) var showReconnectScreen = true
     var shouldShowReconnectScreen: Bool {
         switch device.status {
-        case .userInitiatedDisconnection:
+        case .error, .userInitiatedDisconnection:
             return true
-        case .error(let error):
-            return (error as? ConnectedDevicesViewModel.ConnectionError) == .connectionLost
-                ? showReconnectScreen
-                : true
         case .connected, .connecting:
             return showReconnectScreen
         }
@@ -157,6 +153,7 @@ extension DeviceDetailsViewModel {
             serviceCancellables.removeAll()
 
             discoveredServices = try await peripheral.discoverServices(serviceUUIDs: nil).firstValue
+            try Task.checkCancellation()
             discoveredServiceBadges = discoveredServices.compactMap { Service.extendedFind(by: $0.uuid.uuidString) }
 
             let ids = device.services.map { $0.uuid }.filter { $0.isSupported() }
@@ -169,6 +166,7 @@ extension DeviceDetailsViewModel {
 
             var table = AttributeTable()
             for service in discoveredServices {
+                try Task.checkCancellation()
                 table.addService(service)
 
                 let characteristics: [CBCharacteristic] = try await peripheral.discoverCharacteristics(nil, for: service).firstValue
@@ -238,6 +236,7 @@ extension DeviceDetailsViewModel {
             }
 
             for supportedServiceViewModel in viewModels {
+                try Task.checkCancellation()
                 do {
                     try await supportedServiceViewModel.onConnect()
                 } catch {
@@ -254,6 +253,10 @@ extension DeviceDetailsViewModel {
                     }.store(in: &serviceCancellables)
             }
 
+            guard peripheral.peripheral.state == .connected else {
+                throw ServiceError.serviceDiscoveryFailed
+            }
+
             supportedServiceViewModels = viewModels
             hideReconnectScreen()
             isInitialized = true
@@ -261,6 +264,7 @@ extension DeviceDetailsViewModel {
             
             return discoveredServiceBadges
         } catch {
+            guard !Task.isCancelled else { return discoveredServiceBadges }
             supportedServiceViewModels.removeAll()
             guard peripheral.peripheral.state == .connected else {
                 log.info("\(#function) interrupted by disconnection: \(error.localizedDescription)")
