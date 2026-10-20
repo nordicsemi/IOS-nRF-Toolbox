@@ -61,6 +61,7 @@ final class DeviceDetailsViewModel {
         }
         return supportedServiceViewModels.isEmpty ? .discovering : .ready
     }
+
     private static let disconnectionGracePeriod: Duration = .seconds(1)
 
     private(set) var supportedServiceViewModels: [any SupportedServiceViewModel] = []
@@ -270,13 +271,11 @@ extension DeviceDetailsViewModel {
             return discoveredServiceBadges
         } catch {
             guard !Task.isCancelled else { return discoveredServiceBadges }
-            supportedServiceViewModels.removeAll()
-            guard peripheral.peripheral.state == .connected else {
-                log.info("\(#function) interrupted by disconnection: \(error.localizedDescription)")
-                return discoveredServiceBadges
+            if peripheral.peripheral.state == .connected {
+                try? await Task.sleep(for: Self.disconnectionGracePeriod)
+                guard !Task.isCancelled else { return discoveredServiceBadges }
             }
-            try? await Task.sleep(for: Self.disconnectionGracePeriod)
-            guard !Task.isCancelled else { return discoveredServiceBadges }
+            supportedServiceViewModels.removeAll()
             guard peripheral.peripheral.state == .connected else {
                 log.info("\(#function) interrupted by disconnection: \(error.localizedDescription)")
                 return discoveredServiceBadges
