@@ -44,8 +44,12 @@ final class DeviceDetailsViewModel {
     private(set) var showReconnectScreen = true
     var shouldShowReconnectScreen: Bool {
         switch device.status {
-        case .error, .userInitiatedDisconnection:
+        case .userInitiatedDisconnection:
             return true
+        case .error(let error):
+            return (error as? ConnectedDevicesViewModel.ConnectionError) == .connectionLost
+                ? showReconnectScreen
+                : true
         case .connected, .connecting:
             return showReconnectScreen
         }
