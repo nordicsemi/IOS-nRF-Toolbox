@@ -266,10 +266,10 @@ extension DeviceDetailsViewModel {
             return discoveredServiceBadges
         } catch {
             guard !Task.isCancelled else { return discoveredServiceBadges }
+            presentReconnectScreen()
             supportedServiceViewModels.removeAll()
             guard peripheral.peripheral.state == .connected else {
                 log.info("\(#function) interrupted by disconnection: \(error.localizedDescription)")
-                showReconnectScreen = true
                 return discoveredServiceBadges
             }
             try? await Task.sleep(for: Self.disconnectionGracePeriod)
