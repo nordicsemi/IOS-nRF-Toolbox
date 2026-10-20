@@ -52,6 +52,7 @@ final class DeviceDetailsViewModel {
     }
     private var reconnectScreenTask: Task<Void, Never>?
     private static let reconnectScreenDelay: Duration = .seconds(4)
+    private static let disconnectionGracePeriod: Duration = .seconds(1)
 
     private(set) var supportedServiceViewModels: [any SupportedServiceViewModel] = []
 
@@ -266,6 +267,13 @@ extension DeviceDetailsViewModel {
         } catch {
             guard !Task.isCancelled else { return discoveredServiceBadges }
             supportedServiceViewModels.removeAll()
+            guard peripheral.peripheral.state == .connected else {
+                log.info("\(#function) interrupted by disconnection: \(error.localizedDescription)")
+                showReconnectScreen = true
+                return discoveredServiceBadges
+            }
+            try? await Task.sleep(for: Self.disconnectionGracePeriod)
+            guard !Task.isCancelled else { return discoveredServiceBadges }
             guard peripheral.peripheral.state == .connected else {
                 log.info("\(#function) interrupted by disconnection: \(error.localizedDescription)")
                 showReconnectScreen = true
