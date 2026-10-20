@@ -41,17 +41,26 @@ final class DeviceDetailsViewModel {
     
     var device: Device
 
-    private(set) var showReconnectScreen = true
-    var shouldShowReconnectScreen: Bool {
+    enum ScreenState {
+        case discovering
+        case ready
+        case discoveryFailed
+        case disconnected
+    }
+
+    var screenState: ScreenState {
         switch device.status {
         case .error, .userInitiatedDisconnection:
-            return true
+            return .disconnected
         case .connected, .connecting:
-            return showReconnectScreen
+            break
         }
+        if (errors.error as? ServiceError) == .serviceDiscoveryFailed
+            || (errors.error as? AlertError) == .servicesNotFound {
+            return .discoveryFailed
+        }
+        return supportedServiceViewModels.isEmpty ? .discovering : .ready
     }
-    private var reconnectScreenTask: Task<Void, Never>?
-    private static let reconnectScreenDelay: Duration = .seconds(4)
     private static let disconnectionGracePeriod: Duration = .seconds(1)
 
     private(set) var supportedServiceViewModels: [any SupportedServiceViewModel] = []
@@ -76,8 +85,6 @@ final class DeviceDetailsViewModel {
         listenForConnectionStatus()
         if let previousServiceViewModels, !previousServiceViewModels.isEmpty {
             supportedServiceViewModels = previousServiceViewModels
-            showReconnectScreen = false
-            scheduleReconnectScreen()
         }
         log.debug("\(type(of: self)).\(#function)")
     }
@@ -106,8 +113,6 @@ extension DeviceDetailsViewModel {
         log.debug("\(type(of: self)).\(#function)")
         connectionCancellables.removeAll()
         serviceCancellables.removeAll()
-        reconnectScreenTask?.cancel()
-        reconnectScreenTask = nil
         signalViewModel?.stopTimer()
         signalViewModel = nil
         supportedServiceViewModels.removeAll()
@@ -259,14 +264,12 @@ extension DeviceDetailsViewModel {
             }
 
             supportedServiceViewModels = viewModels
-            hideReconnectScreen()
             isInitialized = true
             log.info("Successfully initialized connection with the peripheral.")
             
             return discoveredServiceBadges
         } catch {
             guard !Task.isCancelled else { return discoveredServiceBadges }
-            presentReconnectScreen()
             supportedServiceViewModels.removeAll()
             guard peripheral.peripheral.state == .connected else {
                 log.info("\(#function) interrupted by disconnection: \(error.localizedDescription)")
@@ -276,10 +279,8 @@ extension DeviceDetailsViewModel {
             guard !Task.isCancelled else { return discoveredServiceBadges }
             guard peripheral.peripheral.state == .connected else {
                 log.info("\(#function) interrupted by disconnection: \(error.localizedDescription)")
-                showReconnectScreen = true
                 return discoveredServiceBadges
             }
-            hideReconnectScreen()
             if case let serviceError as ServiceError = error {
                 errors.error = serviceError
             } else {
@@ -300,41 +301,13 @@ extension DeviceDetailsViewModel {
             .compactMap { $0.1 }
             .sink { [weak self] error in
                 guard let self else { return }
-                log.info("Connection lost: \(error.localizedDescription). Showing the reconnect screen after a delay.")
-                scheduleReconnectScreen()
+                log.info("Connection lost: \(error.localizedDescription). Waiting for reconnection.")
                 supportedServiceViewModels.forEach {
                     $0.onDisconnect()
                 }
                 signalViewModel?.stopTimer()
             }
             .store(in: &connectionCancellables)
-    }
-
-    // MARK: scheduleReconnectScreen()
-
-    private func scheduleReconnectScreen() {
-        reconnectScreenTask?.cancel()
-        reconnectScreenTask = Task { [weak self] in
-            try? await Task.sleep(for: Self.reconnectScreenDelay)
-            guard !Task.isCancelled else { return }
-            self?.showReconnectScreen = true
-        }
-    }
-
-    // MARK: presentReconnectScreen()
-
-    func presentReconnectScreen() {
-        reconnectScreenTask?.cancel()
-        reconnectScreenTask = nil
-        showReconnectScreen = true
-    }
-
-    // MARK: hideReconnectScreen()
-
-    private func hideReconnectScreen() {
-        reconnectScreenTask?.cancel()
-        reconnectScreenTask = nil
-        showReconnectScreen = false
     }
 }
 

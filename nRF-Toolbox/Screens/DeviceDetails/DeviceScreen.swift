@@ -30,13 +30,13 @@ struct DeviceScreen: View {
     var body: some View {
         @Bindable var deviceViewModel = deviceViewModel
         List {
-            let hasServiceDiscoveryFailed = (deviceViewModel.errors.error as? ServiceError) == .serviceDiscoveryFailed
-                || (deviceViewModel.errors.error as? DeviceDetailsViewModel.AlertError) == .servicesNotFound
-            
-            if (deviceViewModel.shouldShowReconnectScreen) {
+            switch deviceViewModel.screenState {
+            case .disconnected:
                 DeviceDisconnectedView()
-                
-                
+                    .onAppear {
+                        log.info("Disconnected screen displayed: \(deviceViewModel.device.logName).")
+                    }
+
                 switch deviceViewModel.device.status {
                 case .error(let error):
                     if (error as? ConnectedDevicesViewModel.ConnectionError) != .connectionLost {
@@ -55,16 +55,15 @@ struct DeviceScreen: View {
                         .accessibilityIdentifier("reconnect_button")
                     }
                 default:
-                    Section {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .centered()
-                            .tint(.nordicBlue)
-                            .id(UUID()) // This fix issue with loader not being displayed when appears for the second time.
-                    }
+                    progressSection
                 }
-            } else if (hasServiceDiscoveryFailed) {
+            case .discovering:
+                progressSection
+            case .discoveryFailed:
                 ServiceDiscoveryErrorView()
+                    .onAppear {
+                        log.info("Service discovery failed screen displayed: \(deviceViewModel.device.logName).")
+                    }
                 
                 Section {
                     Button("Disconnect") {
@@ -74,7 +73,7 @@ struct DeviceScreen: View {
                     .centered()
                     .accessibilityIdentifier("disconnect_button")
                 }
-            } else {
+            case .ready:
                 deviceViewModel.supportedServiceViews()
                     .disabled(deviceViewModel.device.status.hashValue != Device.Status.connected.hashValue)
                     .disabled(!deviceViewModel.isInitialized)
@@ -156,6 +155,18 @@ struct DeviceScreen: View {
             dismiss()
         }
         .toolbar { LogsToolbarItem() }
+    }
+    
+    // MARK: progressSection
+    
+    private var progressSection: some View {
+        Section {
+            ProgressView()
+                .progressViewStyle(.circular)
+                .centered()
+                .tint(.nordicBlue)
+                .id(UUID()) // This fix issue with loader not being displayed when appears for the second time.
+        }
     }
     
     // MARK: reconnect()
