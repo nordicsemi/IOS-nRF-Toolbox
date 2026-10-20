@@ -309,6 +309,14 @@ extension DeviceDetailsViewModel {
         }
     }
 
+    // MARK: presentReconnectScreen()
+
+    func presentReconnectScreen() {
+        reconnectScreenTask?.cancel()
+        reconnectScreenTask = nil
+        showReconnectScreen = true
+    }
+
     // MARK: hideReconnectScreen()
 
     private func hideReconnectScreen() {

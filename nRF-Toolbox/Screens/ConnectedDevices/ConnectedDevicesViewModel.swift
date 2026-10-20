@@ -300,6 +300,7 @@ extension ConnectedDevicesViewModel {
                         self.log.info("Unexpected disconnection. Reconnecting to the device: \(disconnectedDevice.logName)")
                         Task { await self.reconnect(disconnectedDevice) }
                     } else {
+                        self.deviceViewModels[peripheral.identifier]?.presentReconnectScreen()
                         self.showUnexpectedDisconnectionAlert = true
                         self.unexpectedDisconnectionMessage = "\(disconnectedDevice.name ?? "Unnamed Device") has disconnected."
                     }
