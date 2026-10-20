@@ -149,6 +149,7 @@ extension ConnectedDevicesViewModel {
 
         log.info("Reconnecting to the device: \(device.logName)")
         autoReconnectBlockedDevices.insert(device.id)
+        log.info("Auto reconnect blocked: \(device.logName)")
 
         if let i = connectedDevices.firstIndex(where: \.id, equals: device.id) {
             connectedDevices[i].status = .connecting
@@ -269,6 +270,7 @@ extension ConnectedDevicesViewModel {
                 try? await Task.sleep(for: .seconds(5)) // Wait before unlocking auto reconnect.
                 if deviceViewModels[device.id] === viewModel, viewModel.peripheral.peripheral.state == .connected {
                     autoReconnectBlockedDevices.remove(device.id)
+                    log.info("Auto reconnect unlocked: \(device.logName)")
                 }
             }
         }
@@ -308,6 +310,10 @@ extension ConnectedDevicesViewModel {
                     }
                 } else {
                     self.connectedDevices.remove(at: i)
+                }
+
+                if !isUserInitiated, error != nil, self.autoReconnectBlockedDevices.contains(peripheral.identifier) {
+                    self.log.info("Auto reconnect skipped, it is blocked: \(disconnectedDevice.logName)")
                 }
 
                 if shouldAutoReconnect {
@@ -362,8 +368,10 @@ extension ConnectedDevicesViewModel {
         }
         
         connectingDevice = device
-        autoReconnectBlockedDevices.remove(device.id)
-        
+        if autoReconnectBlockedDevices.remove(device.id) != nil {
+            log.info("Auto reconnect unlocked: \(device.id)")
+        }
+
         // Get CBPeripheral's instance
         let peripheral = centralManager.retrievePeripherals(withIdentifiers: [device.id]).first!
         do {
