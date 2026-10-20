@@ -260,6 +260,7 @@ extension ConnectedDevicesViewModel {
                 previousServiceViewModels: previousServiceViewModels
             )
             viewModel.isManualReconnect = isManualReconnect
+            viewModel.validatesAdvertisedServices = previousViewModel == nil
             deviceViewModels[device.id] = viewModel
             
             if autoReconnectBlockedDevices.insert(device.id).inserted {

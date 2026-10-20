@@ -80,6 +80,7 @@ final class DeviceDetailsViewModel {
     var signalViewModel: SignalChartViewModel?
     var isInitialized: Bool = false
     var isManualReconnect: Bool = false
+    var validatesAdvertisedServices: Bool = true
 
     // MARK: init
     
@@ -178,7 +179,7 @@ extension DeviceDetailsViewModel {
             let ids = device.services.map { $0.uuid }.filter { $0.isSupported() }
             let discoveredIds = discoveredServices.map { $0.uuid }
             let missingIds = ids.filter { !discoveredIds.contains($0) }
-            if !missingIds.isEmpty {
+            if validatesAdvertisedServices, !missingIds.isEmpty {
                 missingIds.forEach { log.error("Missing required service: \($0.toServiceName())") }
                 throw ServiceError.serviceDiscoveryFailed
             }
