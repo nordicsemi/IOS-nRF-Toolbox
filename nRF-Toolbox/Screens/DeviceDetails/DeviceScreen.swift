@@ -33,9 +33,7 @@ struct DeviceScreen: View {
             switch deviceViewModel.screenState {
             case .disconnected:
                 DeviceDisconnectedView()
-                    .onAppear {
-                        log.info("Disconnected screen displayed: \(deviceViewModel.device.logName).")
-                    }
+                    .logAppearance("DeviceDisconnectedView", log)
 
                 switch deviceViewModel.device.status {
                 case .error(let error):
@@ -43,6 +41,7 @@ struct DeviceScreen: View {
                         Section("Error") {
                             Label(error.localizedDescription, systemImage: "exclamationmark.circle")
                                 .foregroundStyle(Color.nordicRed)
+                                .logAppearance("Disconnected error label", log)
                         }
                     }
                     
@@ -53,17 +52,16 @@ struct DeviceScreen: View {
                         .foregroundStyle(Color.universalAccentColor)
                         .centered()
                         .accessibilityIdentifier("reconnect_button")
+                        .logAppearance("Reconnect button", log)
                     }
                 default:
-                    progressSection
+                    progressSection("Disconnected progress")
                 }
             case .discovering:
-                progressSection
+                progressSection("Discovering progress")
             case .discoveryFailed:
                 ServiceDiscoveryErrorView()
-                    .onAppear {
-                        log.info("Service discovery failed screen displayed: \(deviceViewModel.device.logName).")
-                    }
+                    .logAppearance("ServiceDiscoveryErrorView", log)
                 
                 Section {
                     Button("Disconnect") {
@@ -72,16 +70,19 @@ struct DeviceScreen: View {
                     .foregroundStyle(Color.red)
                     .centered()
                     .accessibilityIdentifier("disconnect_button")
+                    .logAppearance("Disconnect button (discovery failed)", log)
                 }
             case .ready:
                 deviceViewModel.supportedServiceViews()
                     .disabled(deviceViewModel.device.status.hashValue != Device.Status.connected.hashValue)
                     .disabled(!deviceViewModel.isInitialized)
+                    .logAppearance("Supported service views", log)
                 
                 if let error = deviceViewModel.errors.warning {
                     Section("Warning") {
                         Text(error.errorDescription ?? "An unknown problem has occurred.")
                             .foregroundStyle(Color.nordicSun)
+                            .logAppearance("Warning", log)
                     }
                 }
                 
@@ -89,6 +90,7 @@ struct DeviceScreen: View {
                     Section("Error") {
                         Text(error.errorDescription ?? "An unknown error has occurred.")
                             .foregroundStyle(Color.nordicRed)
+                            .logAppearance("Error", log)
                     }
                 }
                 
@@ -96,6 +98,7 @@ struct DeviceScreen: View {
                     NavigationStyledButton(title: "Open Inspector", systemImage: "info.circle") {
                         deviceViewModel.showDeviceSheet = true
                     }
+                    .logAppearance("Open Inspector button", log)
                 }
                 
                 Section("Troubleshooting") {
@@ -106,6 +109,7 @@ struct DeviceScreen: View {
                         Label("Can't find your service?", systemImage: "exclamationmark.magnifyingglass")
                     }
                     .accentColor(.universalAccentColor)
+                    .logAppearance("Troubleshooting", log)
                 }
                 
                 Section("Connection") {
@@ -117,6 +121,7 @@ struct DeviceScreen: View {
                                 .centered()
                                 .tint(.nordicBlue)
                                 .id(UUID()) // This fix issue with loader not being displayed when appears for the second time.
+                                .logAppearance("Connection progress", log)
                         }
                     case .connected:
                         Button("Disconnect") {
@@ -125,9 +130,11 @@ struct DeviceScreen: View {
                         .foregroundStyle(Color.red)
                         .centered()
                         .accessibilityIdentifier("disconnect_button")
+                        .logAppearance("Disconnect button", log)
                     case .error(let error):
                         Label(error.localizedDescription, systemImage: "exclamationmark.circle")
                             .foregroundStyle(Color.nordicRed)
+                            .logAppearance("Connection error label", log)
                     }
                 }
             }
@@ -159,13 +166,14 @@ struct DeviceScreen: View {
     
     // MARK: progressSection
     
-    private var progressSection: some View {
+    private func progressSection(_ name: String) -> some View {
         Section {
             ProgressView()
                 .progressViewStyle(.circular)
                 .centered()
                 .tint(.nordicBlue)
                 .id(UUID()) // This fix issue with loader not being displayed when appears for the second time.
+                .logAppearance(name, log)
         }
     }
     
@@ -174,7 +182,7 @@ struct DeviceScreen: View {
     func reconnect() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
             Task { @MainActor in
-                await connectedDevicesViewModel.reconnect(deviceViewModel.device)
+                await connectedDevicesViewModel.reconnect(deviceViewModel.device, userInitiated: true)
             }
         }
     }
@@ -187,6 +195,17 @@ struct DeviceScreen: View {
                 try await connectedDevicesViewModel.disconnectAndRemoveViewModel(deviceViewModel.device)
                 dismiss()
             }
+        }
+    }
+}
+
+// MARK: - logAppearance
+
+private extension View {
+
+    func logAppearance(_ name: String, _ log: NordicLog) -> some View {
+        onAppear {
+            log.info("\(name) displayed.")
         }
     }
 }

@@ -59,10 +59,14 @@ final class DeviceDetailsViewModel {
             || (errors.error as? AlertError) == .servicesNotFound {
             return .discoveryFailed
         }
+        if isManualReconnect && !isInitialized {
+            return .disconnected
+        }
         return supportedServiceViewModels.isEmpty ? .discovering : .ready
     }
 
     private static let disconnectionGracePeriod: Duration = .seconds(1)
+    private static let connectionStabilityPeriod: Duration = .seconds(2)
 
     private(set) var supportedServiceViewModels: [any SupportedServiceViewModel] = []
 
@@ -75,6 +79,7 @@ final class DeviceDetailsViewModel {
     var deviceInfo: DeviceInformation?
     var signalViewModel: SignalChartViewModel?
     var isInitialized: Bool = false
+    var isManualReconnect: Bool = false
 
     // MARK: init
     
@@ -108,6 +113,12 @@ extension DeviceDetailsViewModel {
             $0.onDisconnect()
         }
         peripheral.peripheral.delegate = nil
+    }
+
+    func prepareForManualReconnect() {
+        log.debug("\(type(of: self)).\(#function)")
+        isManualReconnect = true
+        isInitialized = false
     }
 
     func tearDown() {
@@ -260,12 +271,15 @@ extension DeviceDetailsViewModel {
                     }.store(in: &serviceCancellables)
             }
 
+            try? await Task.sleep(for: Self.connectionStabilityPeriod)
+            try Task.checkCancellation()
             guard peripheral.peripheral.state == .connected else {
                 throw ServiceError.serviceDiscoveryFailed
             }
 
             supportedServiceViewModels = viewModels
             isInitialized = true
+            isManualReconnect = false
             log.info("Successfully initialized connection with the peripheral.")
             
             return discoveredServiceBadges

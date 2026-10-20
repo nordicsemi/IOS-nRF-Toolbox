@@ -130,7 +130,7 @@ extension ConnectedDevicesViewModel {
 
     // MARK: reconnect(:)
 
-    func reconnect(_ device: Device) async {
+    func reconnect(_ device: Device, userInitiated: Bool = false) async {
         log.debug("\(type(of: self)).\(#function)")
         guard let peripheral = centralManager.retrievePeripherals(withIdentifiers: [device.id]).first else {
             if let i = connectedDevices.firstIndex(where: \.id, equals: device.id) {
@@ -155,6 +155,9 @@ extension ConnectedDevicesViewModel {
             connectedDevices[i].status = .connecting
             deviceViewModels[device.id]?.device = connectedDevices[i]
             deviceViewModels[device.id]?.errors = ErrorsHolder()
+            if userInitiated {
+                deviceViewModels[device.id]?.prepareForManualReconnect()
+            }
         }
 
         do {
@@ -244,6 +247,7 @@ extension ConnectedDevicesViewModel {
         if let peripheral = centralManager.retrievePeripherals(withIdentifiers: [device.id]).first {
 
             let previousViewModel = deviceViewModels[device.id]
+            let isManualReconnect = previousViewModel?.isManualReconnect == true
             let previousServiceViewModels = previousViewModel?.screenState == .ready
                 ? previousViewModel?.supportedServiceViewModels
                 : nil
@@ -255,6 +259,7 @@ extension ConnectedDevicesViewModel {
                 device: device,
                 previousServiceViewModels: previousServiceViewModels
             )
+            viewModel.isManualReconnect = isManualReconnect
             deviceViewModels[device.id] = viewModel
             
             if autoReconnectBlockedDevices.insert(device.id).inserted {
@@ -270,7 +275,6 @@ extension ConnectedDevicesViewModel {
                     deviceViewModels[device.id]?.device = connectedDevices[i]
                 }
                 guard viewModel.isInitialized else { return }
-                try? await Task.sleep(for: .seconds(2)) // Wait before unlocking auto reconnect.
                 if deviceViewModels[device.id] === viewModel, viewModel.peripheral.peripheral.state == .connected {
                     autoReconnectBlockedDevices.remove(device.id)
                     log.info("Auto reconnect unlocked: \(device.logName)")
@@ -299,7 +303,7 @@ extension ConnectedDevicesViewModel {
                 self.log.debug("Disconnected Device Status: \(disconnectedDevice.status)")
                 let isUserInitiated = disconnectedDevice.status.hashValue == Device.Status.userInitiatedDisconnection.hashValue
                 let shouldAutoReconnect = !isUserInitiated
-                    && error != nil
+                    && (error as? CBError)?.code == .connectionTimeout
                     && self.centralManager.centralManager.state == .poweredOn
                     && !self.autoReconnectBlockedDevices.contains(peripheral.identifier)
 
@@ -315,7 +319,9 @@ extension ConnectedDevicesViewModel {
                     self.connectedDevices.remove(at: i)
                 }
 
-                if !isUserInitiated, error != nil, self.autoReconnectBlockedDevices.contains(peripheral.identifier) {
+                if !isUserInitiated, let error, (error as? CBError)?.code != .connectionTimeout {
+                    self.log.info("Auto reconnect skipped, the device terminated the connection: \(disconnectedDevice.logName)")
+                } else if !isUserInitiated, error != nil, self.autoReconnectBlockedDevices.contains(peripheral.identifier) {
                     self.log.info("Auto reconnect skipped, it is blocked: \(disconnectedDevice.logName)")
                 }
 
