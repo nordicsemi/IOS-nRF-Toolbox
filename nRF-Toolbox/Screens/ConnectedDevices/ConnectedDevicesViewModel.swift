@@ -140,6 +140,7 @@ extension ConnectedDevicesViewModel {
         defer { ongoingConnectionAttempts.remove(device.id) }
 
         log.info("Reconnecting to the device: \(device.logName)")
+        autoReconnectBlockedDevices.insert(device.id)
 
         if let i = connectedDevices.firstIndex(where: \.id, equals: device.id) {
             connectedDevices[i].status = .connecting
@@ -154,11 +155,9 @@ extension ConnectedDevicesViewModel {
                 })
                 .first()
                 .firstValue
-            autoReconnectBlockedDevices.remove(device.id)
         } catch {
             log.error("\(#function) Error: \(error.localizedDescription)")
 
-            autoReconnectBlockedDevices.insert(device.id)
             cancelledConnectionAttempts.insert(peripheral.identifier)
             centralManager.centralManager.cancelPeripheralConnection(peripheral)
             if let i = connectedDevices.firstIndex(where: \.id, equals: device.id) {
@@ -250,6 +249,9 @@ extension ConnectedDevicesViewModel {
             
             Task {
                 let services = await viewModel.discoverSupportedServices()
+                if viewModel.isInitialized {
+                    autoReconnectBlockedDevices.remove(device.id)
+                }
                 if let i = connectedDevices.firstIndex(where: \.id, equals: device.id) {
                     var connectedDevice = connectedDevices[i]
                     connectedDevice.services.formUnion(Set(services))
