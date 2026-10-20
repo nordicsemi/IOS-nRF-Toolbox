@@ -238,7 +238,10 @@ extension ConnectedDevicesViewModel {
 
         if let peripheral = centralManager.retrievePeripherals(withIdentifiers: [device.id]).first {
 
-            let previousServiceViewModels = deviceViewModels[device.id]?.supportedServiceViewModels
+            let previousViewModel = deviceViewModels[device.id]
+            let previousServiceViewModels = previousViewModel?.showReconnectScreen == false
+                ? previousViewModel?.supportedServiceViewModels
+                : nil
             deviceViewModels[device.id]?.tearDown()
             let viewModel = DeviceDetailsViewModel(
                 cbPeripheral: peripheral,
