@@ -146,6 +146,7 @@ extension DeviceDetailsViewModel {
                 Section(viewModel.description) {
                     AnyView(viewModel.attachedView)
                 }
+                .id(ObjectIdentifier(viewModel as AnyObject))
             }
 
         ForEach(0..<includedViews.count, id: \.self) { index in
@@ -281,6 +282,10 @@ extension DeviceDetailsViewModel {
             isInitialized = true
             isManualReconnect = false
             log.info("Successfully initialized connection with the peripheral.")
+
+            for viewModel in viewModels {
+                await viewModel.onInitialized()
+            }
             
             return discoveredServiceBadges
         } catch {

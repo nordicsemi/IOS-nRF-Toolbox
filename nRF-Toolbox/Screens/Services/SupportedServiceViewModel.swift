@@ -31,10 +31,13 @@ protocol SupportedServiceViewModel {
     var attachedView: any View { get }
     
     func onConnect() async throws
+    func onInitialized() async
     func onDisconnect()
 }
 
 extension SupportedServiceViewModel {
+    
+    func onInitialized() async {}
     
     func handleError(_ error: Error) {
         if case let serviceError as ServiceError = error {

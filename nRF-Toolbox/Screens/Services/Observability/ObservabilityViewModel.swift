@@ -65,8 +65,14 @@ final class ObservabilityViewModel: SupportedServiceViewModel {
 
     // MARK: onConnect()
 
-    @MainActor
     func onConnect() async {
+        log.debug("\(type(of: self)).\(#function)")
+    }
+
+    // MARK: onInitialized()
+
+    @MainActor
+    func onInitialized() async {
         log.debug("\(type(of: self)).\(#function)")
         pathMonitor.pathUpdateHandler = { [weak self] path in
             let isAvailable = path.status == .satisfied
