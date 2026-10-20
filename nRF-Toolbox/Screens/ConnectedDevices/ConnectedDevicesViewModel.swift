@@ -257,6 +257,9 @@ extension ConnectedDevicesViewModel {
             )
             deviceViewModels[device.id] = viewModel
             
+            if autoReconnectBlockedDevices.insert(device.id).inserted {
+                log.info("Auto reconnect blocked: \(device.logName)")
+            }
             discoveryTasks[device.id] = Task {
                 let services = await viewModel.discoverSupportedServices()
                 guard !Task.isCancelled else { return }
