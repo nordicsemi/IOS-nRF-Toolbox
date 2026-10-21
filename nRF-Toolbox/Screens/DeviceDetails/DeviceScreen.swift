@@ -205,7 +205,7 @@ private extension View {
 
     func logAppearance(_ name: String, _ log: NordicLog) -> some View {
         onAppear {
-            log.info("\(name) displayed.")
+            log.debug("\(name) displayed.")
         }
     }
 }
