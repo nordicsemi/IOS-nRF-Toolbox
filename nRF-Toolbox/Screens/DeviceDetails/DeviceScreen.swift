@@ -58,7 +58,8 @@ struct DeviceScreen: View {
                     progressSection("Disconnected progress")
                 }
             case .discovering:
-                progressSection("Discovering progress")
+                ServiceDiscoveryProgressView()
+                    .logAppearance("ServiceDiscoveryProgressView", log)
             case .discoveryFailed:
                 ServiceDiscoveryErrorView()
                     .logAppearance("ServiceDiscoveryErrorView", log)
