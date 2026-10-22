@@ -115,14 +115,9 @@ struct DeviceScreen: View {
                 Section("Connection") {
                     switch deviceViewModel.device.status {
                     case .userInitiatedDisconnection, .connecting:
-                        Section {
-                            ProgressView()
-                                .progressViewStyle(.circular)
-                                .centered()
-                                .tint(.nordicBlue)
-                                .id(UUID()) // This fix issue with loader not being displayed when appears for the second time.
-                                .logAppearance("Connection progress", log)
-                        }
+                        connectionProgress
+                    case .connected where !deviceViewModel.isInitialized:
+                        connectionProgress
                     case .connected:
                         Button("Disconnect") {
                             disconnect()
@@ -164,6 +159,19 @@ struct DeviceScreen: View {
         .toolbar { LogsToolbarItem() }
     }
     
+    // MARK: connectionProgress
+
+    private var connectionProgress: some View {
+        Section {
+            ProgressView()
+                .progressViewStyle(.circular)
+                .centered()
+                .tint(.nordicBlue)
+                .id(UUID()) // This fix issue with loader not being displayed when appears for the second time.
+                .logAppearance("Connection progress", log)
+        }
+    }
+
     // MARK: progressSection
     
     private func progressSection(_ name: String) -> some View {
