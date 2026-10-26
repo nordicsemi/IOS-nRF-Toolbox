@@ -25,7 +25,10 @@ enum MyNordicConfiguration {
         "https://graph.microsoft.com/User.Read"
     ]
     
-    static let authorizeURL = URL(string: "https://mynordic.nordicsemi.com/en/sign-up/create-account")!
-    static let tokenURL = URL(string: "https://mynordic.nordicsemi.com/oauth2/v2.0/token")!
+    static let tenantID = "1fb18d84-2f00-4d3e-a795-e45655386b44"
+    static let authority = "https://nordicsemiextprod.ciamlogin.com/\(tenantID)"
+    
+    static let authorizeURL = URL(string: "\(authority)/oauth2/v2.0/authorize")!
+    static let tokenURL = URL(string: "\(authority)/oauth2/v2.0/token")!
     static let graphMeURL = URL(string: "https://graph.microsoft.com/v1.0/me")!
 }
