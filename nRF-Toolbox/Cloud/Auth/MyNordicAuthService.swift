@@ -16,6 +16,7 @@ enum MyNordicAuthError: LocalizedError {
     case stateMismatch
     case server(String)
     case invalidResponse
+    case notSignedIn
     
     var errorDescription: String? {
         switch self {
@@ -24,6 +25,7 @@ enum MyNordicAuthError: LocalizedError {
         case .stateMismatch: "The sign in response did not match the request."
         case .server(let message): message
         case .invalidResponse: "Unexpected response from the server."
+        case .notSignedIn: "Sign in to myNordic first."
         }
     }
 }
@@ -40,12 +42,31 @@ final class MyNordicAuthService: NSObject {
         let state = UUID().uuidString
         let code = try await authorize(pkce: pkce, state: state)
         let tokens = try await exchange(code: code, verifier: pkce.verifier)
+        return try await account(from: tokens)
+    }
+    
+    
+    func refresh(refreshToken: String) async throws -> MyNordicAccount {
+        var request = tokenRequest()
+        request.httpBody = form([
+            URLQueryItem(name: "client_id", value: MyNordicConfiguration.clientID),
+            URLQueryItem(name: "grant_type", value: "refresh_token"),
+            URLQueryItem(name: "refresh_token", value: refreshToken),
+            URLQueryItem(name: "scope", value: MyNordicConfiguration.scopes.joined(separator: " "))
+        ])
+        let tokens = try await send(request, fallbackRefreshToken: refreshToken)
+        return try await account(from: tokens)
+    }
+    
+    
+    private func account(from tokens: Tokens) async throws -> MyNordicAccount {
         let claims = tokens.idToken.flatMap(IDTokenClaims.init)
         let userName = try? await fetchUserName(accessToken: tokens.accessToken)
         guard let name = userName ?? claims?.name ?? claims?.preferredUsername else {
             throw MyNordicAuthError.invalidResponse
         }
-        return MyNordicAccount(userName: name, accessToken: tokens.accessToken, idToken: tokens.idToken, claims: claims)
+        return MyNordicAccount(userName: name, accessToken: tokens.accessToken, idToken: tokens.idToken,
+                               refreshToken: tokens.refreshToken, claims: claims)
     }
     
     
@@ -99,27 +120,42 @@ final class MyNordicAuthService: NSObject {
     
     
     private func exchange(code: String, verifier: String) async throws -> Tokens {
-        var request = URLRequest(url: MyNordicConfiguration.tokenURL)
-        request.httpMethod = "POST"
-        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-        
-        var body = URLComponents()
-        body.queryItems = [
+        var request = tokenRequest()
+        request.httpBody = form([
             URLQueryItem(name: "client_id", value: MyNordicConfiguration.clientID),
             URLQueryItem(name: "grant_type", value: "authorization_code"),
             URLQueryItem(name: "code", value: code),
             URLQueryItem(name: "redirect_uri", value: MyNordicConfiguration.redirectURI),
             URLQueryItem(name: "code_verifier", value: verifier),
             URLQueryItem(name: "scope", value: MyNordicConfiguration.scopes.joined(separator: " "))
-        ]
-        request.httpBody = body.percentEncodedQuery?.data(using: .utf8)
-        
+        ])
+        return try await send(request, fallbackRefreshToken: nil)
+    }
+    
+    
+    private func tokenRequest() -> URLRequest {
+        var request = URLRequest(url: MyNordicConfiguration.tokenURL)
+        request.httpMethod = "POST"
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        return request
+    }
+    
+    
+    private func form(_ items: [URLQueryItem]) -> Data? {
+        var body = URLComponents()
+        body.queryItems = items
+        return body.percentEncodedQuery?.data(using: .utf8)
+    }
+    
+    
+    private func send(_ request: URLRequest, fallbackRefreshToken: String?) async throws -> Tokens {
         let (data, _) = try await URLSession.shared.data(for: request)
         let response = try JSONDecoder().decode(TokenResponse.self, from: data)
         guard let accessToken = response.accessToken else {
             throw MyNordicAuthError.server(response.errorDescription ?? "Token request failed.")
         }
-        return Tokens(accessToken: accessToken, idToken: response.idToken)
+        return Tokens(accessToken: accessToken, idToken: response.idToken,
+                      refreshToken: response.refreshToken ?? fallbackRefreshToken)
     }
     
     
@@ -155,11 +191,13 @@ private struct TokenResponse: Decodable {
     
     let accessToken: String?
     let idToken: String?
+    let refreshToken: String?
     let errorDescription: String?
     
     enum CodingKeys: String, CodingKey {
         case accessToken = "access_token"
         case idToken = "id_token"
+        case refreshToken = "refresh_token"
         case errorDescription = "error_description"
     }
 }
@@ -168,6 +206,7 @@ private struct Tokens {
     
     let accessToken: String
     let idToken: String?
+    let refreshToken: String?
 }
 
 private struct GraphUser: Decodable {

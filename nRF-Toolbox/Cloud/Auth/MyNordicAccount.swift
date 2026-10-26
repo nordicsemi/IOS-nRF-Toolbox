@@ -14,6 +14,7 @@ struct MyNordicAccount {
     let userName: String
     let accessToken: String
     let idToken: String?
+    let refreshToken: String?
     let claims: IDTokenClaims?
 }
 
@@ -25,9 +26,15 @@ struct IDTokenClaims: Decodable {
     let email: String?
     let subject: String?
     let objectID: String?
+    let expiration: TimeInterval?
+    
+    var expirationDate: Date? {
+        expiration.map { Date(timeIntervalSince1970: $0) }
+    }
     
     enum CodingKeys: String, CodingKey {
         case name, email
+        case expiration = "exp"
         case preferredUsername = "preferred_username"
         case subject = "sub"
         case objectID = "oid"

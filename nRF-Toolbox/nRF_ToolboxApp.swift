@@ -37,7 +37,7 @@ struct nRF_ToolboxApp: App {
                 .environment(viewModel)
                 .environment(cloudViewModel)
                 .task {
-                    await cloudViewModel.refresh()
+                    await cloudViewModel.start()
                 }
                 .environment(connectedDevicesViewModel)
         }

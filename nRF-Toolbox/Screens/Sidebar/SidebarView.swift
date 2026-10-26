@@ -22,8 +22,7 @@ struct SidebarView: View {
     
     @State private var showFirebasePermissionDialog = NordicAnalytics.needsPermission()
     @State private var showFirebaseSettingsDialog = false
-    @State private var account = MyNordicAccountViewModel()
-    @State private var showCloudKeySheet = false
+    @State private var showCloudProjectSheet = false
     
     // MARK: view
     
@@ -76,28 +75,29 @@ struct SidebarView: View {
             }
             
             Section("myNordic") {
-                if let userName = account.userName {
+                if let userName = cloud.account.userName {
                     Label(userName, systemImage: "person.crop.circle.fill")
                     
                     Button("Sign Out", role: .destructive) {
-                        account.signOut()
+                        cloud.signOut()
                     }
                 } else {
                     Button {
-                        Task { await account.signIn() }
+                        Task { await cloud.signIn() }
                     } label: {
-                        Label(account.isSigningIn ? "Signing in…" : "Sign in to myNordic", systemImage: "person.crop.circle")
+                        Label(cloud.account.isSigningIn ? "Signing in…" : "Sign in to myNordic", systemImage: "person.crop.circle")
                     }
-                    .disabled(account.isSigningIn)
+                    .disabled(cloud.account.isSigningIn)
                 }
             }
             
             Section("nRF Cloud") {
                 Button {
-                    showCloudKeySheet = true
+                    showCloudProjectSheet = true
                 } label: {
-                    Label(cloud.isConfigured ? "Credentials saved" : "Add credentials", systemImage: "key")
+                    Label(cloud.selection.map { "\($0.organization) / \($0.project)" } ?? "Select project", systemImage: "cloud")
                 }
+                .disabled(!cloud.account.isSignedIn)
             }
             
             Section {
@@ -148,16 +148,16 @@ struct SidebarView: View {
         .tint(Color.universalAccentColor)
         .listStyle(.insetGrouped)
         .alert("Sign in failed", isPresented: Binding(
-            get: { account.errorMessage != nil },
-            set: { if !$0 { account.errorMessage = nil } }
+            get: { cloud.account.errorMessage != nil },
+            set: { if !$0 { cloud.account.errorMessage = nil } }
         )) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text(account.errorMessage ?? "")
+            Text(cloud.account.errorMessage ?? "")
         }
-        .sheet(isPresented: $showCloudKeySheet) {
+        .sheet(isPresented: $showCloudProjectSheet) {
             NavigationStack {
-                NRFCloudKeySheet()
+                NRFCloudProjectSheet()
             }
             .setupTranslucentBackground()
         }
