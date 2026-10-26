@@ -102,7 +102,9 @@ struct DeviceScreen: View {
                     .logAppearance("Open Inspector button", log)
                 }
                 
-                CrashesSection(identifiers: [deviceViewModel.deviceInfo?.serialNumber, deviceViewModel.device.name])
+                CrashesSection(identifiers: [deviceViewModel.deviceInfo?.serialNumber, deviceViewModel.device.name],
+                               isConnected: deviceViewModel.device.status.hashValue == Device.Status.connected.hashValue
+                                   && deviceViewModel.isInitialized)
                 
                 Section("Troubleshooting") {
                     DisclosureGroup {

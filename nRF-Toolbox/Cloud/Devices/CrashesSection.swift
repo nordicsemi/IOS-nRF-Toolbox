@@ -15,6 +15,7 @@ struct CrashesSection: View {
     @Environment(NRFCloudViewModel.self) private var cloud
     
     let identifiers: [String?]
+    let isConnected: Bool
     
     @State private var cloudDevice: NRFCloudDevice?
     @State private var lookupFinished = false
@@ -30,7 +31,8 @@ struct CrashesSection: View {
                     reboots
                 }
             }
-            .task(id: identifiers.compactMap { $0 }) {
+            .task(id: LoadTrigger(identifiers: identifiers.compactMap { $0 }, isConnected: isConnected)) {
+                guard isConnected else { return }
                 await load()
             }
         }
@@ -122,11 +124,13 @@ struct CrashesSection: View {
         }
     }
     
+    private struct LoadTrigger: Hashable {
+        let identifiers: [String]
+        let isConnected: Bool
+    }
+    
     private func load() async {
-        lookupFinished = false
-        if cloud.devices.isEmpty {
-            await cloud.refresh()
-        }
+        await cloud.refresh()
         cloudDevice = cloud.cloudDevice(matching: identifiers)
         lookupFinished = true
         if let cloudDevice {

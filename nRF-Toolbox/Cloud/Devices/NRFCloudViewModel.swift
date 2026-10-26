@@ -92,7 +92,9 @@ final class NRFCloudViewModel {
     
     func loadCrashes(for device: NRFCloudDevice) async {
         guard let credentials else { return }
-        crashStates[device.id] = .loading
+        if case .loaded = crashStates[device.id] {} else {
+            crashStates[device.id] = .loading
+        }
         do {
             let crashes = try await service.listCrashes(credentials: credentials, serial: device.id)
             crashStates[device.id] = .loaded(crashes.sorted { ($0.capturedDate ?? .distantPast) > ($1.capturedDate ?? .distantPast) })
@@ -104,7 +106,9 @@ final class NRFCloudViewModel {
     
     func loadReboots(for device: NRFCloudDevice) async {
         guard let credentials else { return }
-        rebootStates[device.id] = .loading
+        if case .loaded = rebootStates[device.id] {} else {
+            rebootStates[device.id] = .loading
+        }
         do {
             let reboots = try await service.listReboots(credentials: credentials, serial: device.id)
             rebootStates[device.id] = .loaded(reboots.sorted { ($0.time ?? .distantPast) > ($1.time ?? .distantPast) })
