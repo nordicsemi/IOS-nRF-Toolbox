@@ -38,12 +38,17 @@ final class MyNordicAuthService: NSObject {
     
     // MARK: signIn
     
-    func signIn() async throws -> String {
+    func signIn() async throws -> MyNordicAccount {
         let pkce = PKCE()
         let state = UUID().uuidString
         let code = try await authorize(pkce: pkce, state: state)
-        let accessToken = try await exchange(code: code, verifier: pkce.verifier)
-        return try await fetchUserName(accessToken: accessToken)
+        let tokens = try await exchange(code: code, verifier: pkce.verifier)
+        let claims = tokens.idToken.flatMap(IDTokenClaims.init)
+        let userName = try? await fetchUserName(accessToken: tokens.accessToken)
+        guard let name = userName ?? claims?.name ?? claims?.preferredUsername else {
+            throw MyNordicAuthError.invalidResponse
+        }
+        return MyNordicAccount(userName: name, idToken: tokens.idToken, claims: claims)
     }
     
     // MARK: authorize
@@ -98,7 +103,7 @@ final class MyNordicAuthService: NSObject {
     
     // MARK: exchange
     
-    private func exchange(code: String, verifier: String) async throws -> String {
+    private func exchange(code: String, verifier: String) async throws -> Tokens {
         var request = URLRequest(url: MyNordicConfiguration.tokenURL)
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
@@ -116,10 +121,10 @@ final class MyNordicAuthService: NSObject {
         
         let (data, _) = try await URLSession.shared.data(for: request)
         let response = try JSONDecoder().decode(TokenResponse.self, from: data)
-        guard let token = response.accessToken else {
+        guard let accessToken = response.accessToken else {
             throw MyNordicAuthError.server(response.errorDescription ?? "Token request failed.")
         }
-        return token
+        return Tokens(accessToken: accessToken, idToken: response.idToken)
     }
     
     // MARK: fetchUserName
@@ -157,12 +162,20 @@ extension MyNordicAuthService: ASWebAuthenticationPresentationContextProviding {
 private struct TokenResponse: Decodable {
     
     let accessToken: String?
+    let idToken: String?
     let errorDescription: String?
     
     enum CodingKeys: String, CodingKey {
         case accessToken = "access_token"
+        case idToken = "id_token"
         case errorDescription = "error_description"
     }
+}
+
+private struct Tokens {
+    
+    let accessToken: String
+    let idToken: String?
 }
 
 private struct GraphUser: Decodable {

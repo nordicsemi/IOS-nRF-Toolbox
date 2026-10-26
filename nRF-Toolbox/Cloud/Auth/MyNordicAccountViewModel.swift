@@ -14,7 +14,8 @@ import Foundation
 @Observable
 final class MyNordicAccountViewModel {
     
-    private(set) var userName: String?
+    private(set) var account: MyNordicAccount?
+    var userName: String? { account?.userName }
     private(set) var isSigningIn = false
     var errorMessage: String?
     
@@ -24,7 +25,7 @@ final class MyNordicAccountViewModel {
         isSigningIn = true
         defer { isSigningIn = false }
         do {
-            userName = try await service.signIn()
+            account = try await service.signIn()
         } catch MyNordicAuthError.cancelled {
         } catch {
             errorMessage = error.localizedDescription
@@ -32,6 +33,6 @@ final class MyNordicAccountViewModel {
     }
     
     func signOut() {
-        userName = nil
+        account = nil
     }
 }
