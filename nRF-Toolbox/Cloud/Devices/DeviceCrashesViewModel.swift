@@ -27,10 +27,28 @@ final class DeviceCrashesViewModel {
     private(set) var isLoading = false
     var selectedCrash: NRFCloudCrash?
     
+    @ObservationIgnored private var didRequestOnFirstConnection = false
     @ObservationIgnored private var pending: Request?
     @ObservationIgnored private var worker: Task<Void, Never>?
     @ObservationIgnored private var lastStart: ContinuousClock.Instant?
     @ObservationIgnored private let log = NordicLog(category: "DeviceCrashesViewModel", subsystem: "com.nordicsemi.nrf-toolbox")
+    
+    func deviceConnected(identifiers: [String?], cloud: NRFCloudViewModel) {
+        cloudDevice = cloud.cloudDevice(matching: identifiers)
+        if let cloudDevice {
+            lookupFinished = true
+            if cloud.crashStates[cloudDevice.id] != nil {
+                log.info("Reconnected. Crashes for \(cloudDevice.id) are already loaded.")
+                return
+            }
+        }
+        guard !didRequestOnFirstConnection else {
+            log.info("Reconnected. Not reloading crashes.")
+            return
+        }
+        didRequestOnFirstConnection = true
+        request(identifiers: identifiers, cloud: cloud, reason: "first connection")
+    }
     
     func request(identifiers: [String?], cloud: NRFCloudViewModel, reason: String) {
         if pending != nil {

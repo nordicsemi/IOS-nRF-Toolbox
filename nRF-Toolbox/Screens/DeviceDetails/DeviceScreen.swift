@@ -151,7 +151,7 @@ struct DeviceScreen: View {
         .navigationBarTitleDisplayMode(.inline)
         .task(id: crashLoadTrigger) {
             guard crashLoadTrigger.isConnected else { return }
-            crashes.request(identifiers: crashIdentifiers, cloud: cloudViewModel, reason: "device connected")
+            crashes.deviceConnected(identifiers: crashIdentifiers, cloud: cloudViewModel)
         }
         .onChange(of: deviceViewModel.observabilityViewModel?.largeUploadsCompleted) { _, completed in
             guard let completed, completed > 0 else { return }
