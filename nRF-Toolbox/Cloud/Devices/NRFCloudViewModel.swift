@@ -20,7 +20,15 @@ final class NRFCloudViewModel {
         let inRangeCloudCount: Int
     }
     
+    enum LoadState<Value: Equatable>: Equatable {
+        case loading
+        case loaded(Value)
+        case failed(String)
+    }
+    
     private(set) var devices: [NRFCloudDevice] = []
+    private(set) var crashStates: [String: LoadState<[NRFCloudCrash]>] = [:]
+    private(set) var rebootStates: [String: LoadState<[NRFCloudReboot]>] = [:]
     private(set) var isLoading = false
     private(set) var errorMessage: String?
     private(set) var credentials: NRFCloudCredentials?
@@ -45,6 +53,8 @@ final class NRFCloudViewModel {
         keychain.save(trimmed)
         credentials = trimmed
         devices = []
+        crashStates = [:]
+        rebootStates = [:]
         await refresh()
     }
     
@@ -53,6 +63,8 @@ final class NRFCloudViewModel {
         keychain.delete()
         credentials = nil
         devices = []
+        crashStates = [:]
+        rebootStates = [:]
         errorMessage = nil
     }
     
@@ -68,6 +80,37 @@ final class NRFCloudViewModel {
         } catch {
             log.error("Refreshing devices failed: \(error.localizedDescription)")
             errorMessage = error.localizedDescription
+        }
+    }
+    
+    func cloudDevice(matching identifiers: [String?]) -> NRFCloudDevice? {
+        let keys = Set(identifiers.compactMap { $0?.trimmed.lowercased() }.filter { !$0.isEmpty })
+        let match = devices.first { !$0.matchKeys.isDisjoint(with: keys) }
+        log.info("Matching \(keys.sorted()) against cloud devices: \(match.map { "found \($0.id)" } ?? "no match")")
+        return match
+    }
+    
+    func loadCrashes(for device: NRFCloudDevice) async {
+        guard let credentials else { return }
+        crashStates[device.id] = .loading
+        do {
+            let crashes = try await service.listCrashes(credentials: credentials, serial: device.id)
+            crashStates[device.id] = .loaded(crashes.sorted { ($0.capturedDate ?? .distantPast) > ($1.capturedDate ?? .distantPast) })
+        } catch {
+            log.error("Loading crashes for \(device.id) failed: \(error.localizedDescription)")
+            crashStates[device.id] = .failed(error.localizedDescription)
+        }
+    }
+    
+    func loadReboots(for device: NRFCloudDevice) async {
+        guard let credentials else { return }
+        rebootStates[device.id] = .loading
+        do {
+            let reboots = try await service.listReboots(credentials: credentials, serial: device.id)
+            rebootStates[device.id] = .loaded(reboots.sorted { ($0.time ?? .distantPast) > ($1.time ?? .distantPast) })
+        } catch {
+            log.error("Loading reboots for \(device.id) failed: \(error.localizedDescription)")
+            rebootStates[device.id] = .failed(error.localizedDescription)
         }
     }
     

@@ -102,6 +102,8 @@ struct DeviceScreen: View {
                     .logAppearance("Open Inspector button", log)
                 }
                 
+                CrashesSection(identifiers: [deviceViewModel.deviceInfo?.serialNumber, deviceViewModel.device.name])
+                
                 Section("Troubleshooting") {
                     DisclosureGroup {
                         Text("Turn off and on Bluetooth from Settings (not Control Center) to clear the cache.")
