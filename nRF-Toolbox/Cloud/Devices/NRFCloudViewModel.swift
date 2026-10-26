@@ -75,11 +75,11 @@ final class NRFCloudViewModel {
         guard isConfigured, !devices.isEmpty else {
             return Grouping(inRange: [], other: scanned, offline: [], inRangeCloudCount: 0)
         }
-        let cloudKeys = Set(devices.map(\.matchKey))
+        let cloudKeys = devices.reduce(into: Set<String>()) { $0.formUnion($1.matchKeys) }
         let scannedNames = Set(scanned.compactMap { $0.name?.trimmed.lowercased() })
         let inRange = scanned.filter { $0.name.map { cloudKeys.contains($0.trimmed.lowercased()) } ?? false }
         let other = scanned.filter { !inRange.contains($0) }
-        let offline = devices.filter { !scannedNames.contains($0.matchKey) }
+        let offline = devices.filter { $0.matchKeys.isDisjoint(with: scannedNames) }
         logGrouping(scanned: scanned, inRange: inRange, offline: offline)
         return Grouping(inRange: inRange, other: other, offline: offline,
                         inRangeCloudCount: devices.count - offline.count)
@@ -92,7 +92,7 @@ final class NRFCloudViewModel {
         let signature = "\(scannedNames)|\(devices.map(\.id))"
         guard signature != lastGroupingSignature else { return }
         lastGroupingSignature = signature
-        log.info("Cloud serials (\(devices.count)): \(devices.map(\.id).sorted().joined(separator: ", "))")
+        log.info("Cloud devices (\(devices.count)): \(devices.map { "\($0.id) [\($0.nickname ?? "no nickname")]" }.sorted().joined(separator: ", "))")
         log.info("Scanned names (\(scanned.count)): \(scannedNames.joined(separator: ", "))")
         log.info("Matched (\(inRange.count)): \(inRange.map { $0.name ?? "<no name>" }.joined(separator: ", "))")
         log.info("Offline (\(offline.count)): \(offline.map(\.id).joined(separator: ", "))")

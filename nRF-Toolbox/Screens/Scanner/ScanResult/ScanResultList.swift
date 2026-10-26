@@ -77,8 +77,19 @@ struct ScanResultList: View {
             if !groups.offline.isEmpty {
                 Section("nRF Cloud · Offline") {
                     ForEach(groups.offline) { device in
-                        Label(device.displayName, systemImage: "cloud")
-                            .foregroundStyle(.secondary)
+                        Label {
+                            VStack(alignment: .leading) {
+                                Text(device.displayName)
+                                
+                                if device.displayName != device.id {
+                                    Text(device.id)
+                                        .font(.caption)
+                                }
+                            }
+                        } icon: {
+                            Image(systemName: "cloud")
+                        }
+                        .foregroundStyle(.secondary)
                     }
                 }
             }

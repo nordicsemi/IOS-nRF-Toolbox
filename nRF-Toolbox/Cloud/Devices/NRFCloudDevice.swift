@@ -11,16 +11,18 @@ import Foundation
 struct NRFCloudDevice: Identifiable, Decodable, Equatable {
     
     let id: String
+    let nickname: String?
     
     var displayName: String {
-        id
+        nickname.flatMap { $0.trimmed.isEmpty ? nil : $0 } ?? id
     }
     
-    var matchKey: String {
-        id.trimmed.lowercased()
+    var matchKeys: Set<String> {
+        Set([id, nickname].compactMap { $0?.trimmed.lowercased() }.filter { !$0.isEmpty })
     }
     
     enum CodingKeys: String, CodingKey {
         case id = "device_serial"
+        case nickname
     }
 }

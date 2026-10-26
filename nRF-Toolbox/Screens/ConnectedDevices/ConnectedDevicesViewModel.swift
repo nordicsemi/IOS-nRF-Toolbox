@@ -55,6 +55,7 @@ final class ConnectedDevicesViewModel {
     private var discoveryTasks: [UUID: Task<Void, Never>] = [:]
     private var cancellables = Set<AnyCancellable>()
     private var scannerCancellables = Set<AnyCancellable>()
+    private let seenAdvertisements = SeenAdvertisements()
     
     private let log = NordicLog(category: "ConnectedDevicesViewModel", subsystem: "com.nordicsemi.nrf-toolbox")
 
@@ -445,6 +446,11 @@ extension ConnectedDevicesViewModel {
             guard (try? await centralManager.isPoweredOn()) != nil else { return }
 
             centralManager.scanForPeripherals(withServices: nil)
+                .handleEvents(receiveOutput: { [log, seenAdvertisements] result in
+                    seenAdvertisements.logIfNew(id: result.peripheral.identifier,
+                                                name: result.advertisementData.localName ?? result.name,
+                                                advertisement: result.advertisementData, to: log)
+                })
                 .filter {
                     // Filter unconnectable devices
                     return $0.advertisementData.isConnectable == true
