@@ -7,10 +7,12 @@
 //
 
 import SwiftUI
+import iOS_Common_Libraries
 
 struct CrashesSection: View {
     
     private static let displayLimit = 20
+    private static let showsReboots = false
     
     @Environment(NRFCloudViewModel.self) private var cloud
     
@@ -28,8 +30,10 @@ struct CrashesSection: View {
                     crashes
                 }
                 
-                Section("nRF Cloud Reboots") {
-                    reboots
+                if Self.showsReboots {
+                    Section("nRF Cloud Reboots") {
+                        reboots
+                    }
                 }
             }
             .sheet(item: $selectedCrash) { crash in
@@ -58,9 +62,10 @@ struct CrashesSection: View {
                 }
             case .loaded(let items) where items.isEmpty:
                 Label("No crashes reported", systemImage: "checkmark.circle")
-                    .foregroundStyle(.secondary)
+                    .setAccent(Color.universalAccentColor)
             case .loaded(let items):
                 Label("\(items.count) crash\(items.count == 1 ? "" : "es") reported", systemImage: "exclamationmark.octagon")
+                    .setAccent(Color.universalAccentColor)
                 
                 ForEach(items.prefix(Self.displayLimit)) { crash in
                     Button {
@@ -144,6 +149,11 @@ struct CrashesSection: View {
         }
     }
     
+    private func loadRebootsIfShown(for device: NRFCloudDevice) async {
+        guard Self.showsReboots else { return }
+        await cloud.loadReboots(for: device)
+    }
+    
     private struct LoadTrigger: Hashable {
         let identifiers: [String]
         let isConnected: Bool
@@ -155,7 +165,7 @@ struct CrashesSection: View {
         lookupFinished = true
         if let cloudDevice {
             async let crashes: Void = cloud.loadCrashes(for: cloudDevice)
-            async let reboots: Void = cloud.loadReboots(for: cloudDevice)
+            async let reboots: Void = loadRebootsIfShown(for: cloudDevice)
             _ = await (crashes, reboots)
         }
     }

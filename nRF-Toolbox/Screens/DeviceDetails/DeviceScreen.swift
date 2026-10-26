@@ -74,7 +74,7 @@ struct DeviceScreen: View {
                     .logAppearance("Disconnect button (discovery failed)", log)
                 }
             case .ready:
-                deviceViewModel.supportedServiceViews()
+                deviceViewModel.supportedServiceViews(afterObservability: crashesSection)
                     .disabled(deviceViewModel.device.status.hashValue != Device.Status.connected.hashValue)
                     .disabled(!deviceViewModel.isInitialized)
                     .logAppearance("Supported service views", log)
@@ -101,10 +101,6 @@ struct DeviceScreen: View {
                     }
                     .logAppearance("Open Inspector button", log)
                 }
-                
-                CrashesSection(identifiers: [deviceViewModel.deviceInfo?.serialNumber, deviceViewModel.device.name],
-                               isConnected: deviceViewModel.device.status.hashValue == Device.Status.connected.hashValue
-                                   && deviceViewModel.isInitialized)
                 
                 Section("Troubleshooting") {
                     DisclosureGroup {
@@ -162,6 +158,14 @@ struct DeviceScreen: View {
             dismiss()
         }
         .toolbar { LogsToolbarItem() }
+    }
+    
+    // MARK: crashesSection
+    
+    private var crashesSection: some View {
+        CrashesSection(identifiers: [deviceViewModel.deviceInfo?.serialNumber, deviceViewModel.device.name],
+                       isConnected: deviceViewModel.device.status.hashValue == Device.Status.connected.hashValue
+                           && deviceViewModel.isInitialized)
     }
     
     // MARK: connectionProgress

@@ -140,18 +140,20 @@ extension DeviceDetailsViewModel {
     // MARK: supportedServiceViews
     
     @ViewBuilder
-    func supportedServiceViews() -> some View {
-        let includedViews = supportedServiceViewModels
-            .filter { !($0 is BatteryViewModel) }
-            .map { viewModel in
+    func supportedServiceViews<Extra: View>(afterObservability extra: Extra) -> some View {
+        let viewModels = supportedServiceViewModels.filter { !($0 is BatteryViewModel) }
+        let items = ServiceItem.items(for: viewModels)
+
+        ForEach(items) { item in
+            switch item {
+            case .service(let viewModel):
                 Section(viewModel.description) {
                     AnyView(viewModel.attachedView)
                 }
                 .id(ObjectIdentifier(viewModel as AnyObject))
+            case .extra:
+                extra
             }
-
-        ForEach(0..<includedViews.count, id: \.self) { index in
-            includedViews[index]
         }
     }
     
@@ -410,5 +412,32 @@ extension CBUUID {
         default:
             false
         }
+    }
+}
+
+private enum ServiceItem: Identifiable {
+    
+    case service(any SupportedServiceViewModel)
+    case extra
+    
+    var id: AnyHashable {
+        switch self {
+        case .service(let viewModel): ObjectIdentifier(viewModel as AnyObject)
+        case .extra: "extra"
+        }
+    }
+    
+    static func items(for viewModels: [any SupportedServiceViewModel]) -> [ServiceItem] {
+        var items: [ServiceItem] = []
+        for viewModel in viewModels {
+            items.append(.service(viewModel))
+            if viewModel is ObservabilityViewModel {
+                items.append(.extra)
+            }
+        }
+        if !viewModels.contains(where: { $0 is ObservabilityViewModel }) {
+            items.append(.extra)
+        }
+        return items
     }
 }
