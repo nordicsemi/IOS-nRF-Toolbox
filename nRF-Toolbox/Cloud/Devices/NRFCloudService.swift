@@ -55,6 +55,14 @@ struct NRFCloudService {
         return reboots
     }
     
+    func crashDetail(credentials: NRFCloudCredentials, traceID: Int) async throws -> NRFCloudCrashDetail {
+        log.info("Loading crash detail \(traceID)")
+        let data = try await send(credentials: credentials, resource: "traces/\(traceID)", query: [])
+        let detail = try NRFCloudCrashDetail.decode(from: data)
+        log.info("Crash \(traceID): \(detail.threads.count) thread(s), \(detail.logs.count) log line(s), \(detail.faultRegisters.count) fault register(s)")
+        return detail
+    }
+    
     private func fetchAll<T: Decodable>(credentials: NRFCloudCredentials, resource: String,
                                         query: [URLQueryItem], maxPages: Int = .max) async throws -> [T] {
         var items: [T] = []
@@ -72,14 +80,21 @@ struct NRFCloudService {
     
     private func fetchPage<T: Decodable>(credentials: NRFCloudCredentials, resource: String,
                                          query: [URLQueryItem], page: Int) async throws -> Page<T> {
+        let paging = [
+            URLQueryItem(name: "page", value: String(page)),
+            URLQueryItem(name: "per_page", value: String(Self.perPage))
+        ]
+        let data = try await send(credentials: credentials, resource: resource, query: query + paging)
+        logFirstItem(in: data, resource: resource, page: page)
+        return try JSONDecoder().decode(Page<T>.self, from: data)
+    }
+    
+    private func send(credentials: NRFCloudCredentials, resource: String, query: [URLQueryItem]) async throws -> Data {
         var components = URLComponents()
         components.scheme = "https"
         components.host = Self.host
         components.path = "/api/v0/organizations/\(credentials.organization)/projects/\(credentials.project)/\(resource)"
-        components.queryItems = query + [
-            URLQueryItem(name: "page", value: String(page)),
-            URLQueryItem(name: "per_page", value: String(Self.perPage))
-        ]
+        components.queryItems = query.isEmpty ? nil : query
         guard let url = components.url else { throw NRFCloudError.notFound("invalid URL") }
         
         let basic = Data("\(credentials.email):\(credentials.apiKey)".utf8).base64EncodedString()
@@ -90,11 +105,9 @@ struct NRFCloudService {
         let (data, response) = try await URLSession.shared.data(for: request)
         let status = (response as? HTTPURLResponse)?.statusCode ?? -1
         let body = String(data: data.prefix(500), encoding: .utf8) ?? "<binary>"
-        log.info("Responded HTTP \(status): \(body)")
+        log.info("Responded HTTP \(status) (\(data.count) bytes): \(body)")
         switch status {
-        case 200:
-            logFirstItem(in: data, resource: resource, page: page)
-            return try JSONDecoder().decode(Page<T>.self, from: data)
+        case 200: return data
         case 401, 403: throw NRFCloudError.rejected(status: status, details: body)
         case 404: throw NRFCloudError.notFound(Self.apiMessage(in: data) ?? url.path)
         default: throw NRFCloudError.http(status)

@@ -104,6 +104,11 @@ final class NRFCloudViewModel {
         }
     }
     
+    func crashDetail(for crash: NRFCloudCrash) async throws -> NRFCloudCrashDetail {
+        guard let credentials else { throw NRFCloudError.notFound("no credentials") }
+        return try await service.crashDetail(credentials: credentials, traceID: crash.id)
+    }
+    
     func loadReboots(for device: NRFCloudDevice) async {
         guard let credentials else { return }
         if case .loaded = rebootStates[device.id] {} else {

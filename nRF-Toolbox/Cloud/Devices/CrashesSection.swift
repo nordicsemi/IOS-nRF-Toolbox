@@ -19,6 +19,7 @@ struct CrashesSection: View {
     
     @State private var cloudDevice: NRFCloudDevice?
     @State private var lookupFinished = false
+    @State private var selectedCrash: NRFCloudCrash?
     
     var body: some View {
         if cloud.isConfigured {
@@ -30,6 +31,12 @@ struct CrashesSection: View {
                 Section("nRF Cloud Reboots") {
                     reboots
                 }
+            }
+            .sheet(item: $selectedCrash) { crash in
+                NavigationStack {
+                    CrashDetailScreen(crash: crash)
+                }
+                .setupTranslucentBackground()
             }
             .task(id: LoadTrigger(identifiers: identifiers.compactMap { $0 }, isConnected: isConnected)) {
                 guard isConnected else { return }
@@ -56,8 +63,21 @@ struct CrashesSection: View {
                 Label("\(items.count) crash\(items.count == 1 ? "" : "es") reported", systemImage: "exclamationmark.octagon")
                 
                 ForEach(items.prefix(Self.displayLimit)) { crash in
-                    ReportRow(title: crash.title ?? crash.reason ?? "Crash",
-                              date: crash.capturedDate, release: crash.release)
+                    Button {
+                        selectedCrash = crash
+                    } label: {
+                        HStack {
+                            ReportRow(title: crash.title ?? crash.reason ?? "Crash",
+                                      date: crash.capturedDate, release: crash.release)
+                            
+                            Spacer()
+                            
+                            Image(systemName: "chevron.right")
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+                    .tint(.primary)
                 }
                 
                 overflow(items.count)
