@@ -65,12 +65,29 @@ struct NRFCloudService {
         let status = (response as? HTTPURLResponse)?.statusCode ?? -1
         let body = String(data: data.prefix(500), encoding: .utf8) ?? "<binary>"
         log.info("Responded HTTP \(status): \(body)")
+        if status == 200 { logFirstDevice(in: data, page: page) }
         switch status {
         case 200: return try JSONDecoder().decode(Page.self, from: data)
         case 401, 403: throw NRFCloudError.rejected(status: status, details: body)
         case 404: throw NRFCloudError.notFound
         default: throw NRFCloudError.http(status)
         }
+    }
+}
+
+extension NRFCloudService {
+    
+    fileprivate func logFirstDevice(in data: Data, page: Int) {
+        guard let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let items = root["data"] as? [[String: Any]] else {
+            log.error("Page \(page): response is not in the expected {data: [...]} shape")
+            return
+        }
+        log.info("Page \(page): \(items.count) device(s), top-level keys: \(root.keys.sorted().joined(separator: ", "))")
+        guard let first = items.first,
+              let json = try? JSONSerialization.data(withJSONObject: first, options: [.sortedKeys]) else { return }
+        log.info("Page \(page): first device fields: \(first.keys.sorted().joined(separator: ", "))")
+        log.info("Page \(page): first device JSON: \(String(data: json, encoding: .utf8) ?? "")")
     }
 }
 

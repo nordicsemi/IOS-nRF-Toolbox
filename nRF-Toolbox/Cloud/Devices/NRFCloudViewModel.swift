@@ -29,6 +29,8 @@ final class NRFCloudViewModel {
         credentials != nil
     }
     
+    @ObservationIgnored private var lastGroupingSignature = ""
+    
     private let keychain = NRFCloudKeychain()
     private let service = NRFCloudService()
     private let log = NordicLog(category: "NRFCloudViewModel", subsystem: "com.nordicsemi.nrf-toolbox")
@@ -78,7 +80,21 @@ final class NRFCloudViewModel {
         let inRange = scanned.filter { $0.name.map { cloudKeys.contains($0.trimmed.lowercased()) } ?? false }
         let other = scanned.filter { !inRange.contains($0) }
         let offline = devices.filter { !scannedNames.contains($0.matchKey) }
+        logGrouping(scanned: scanned, inRange: inRange, offline: offline)
         return Grouping(inRange: inRange, other: other, offline: offline,
                         inRangeCloudCount: devices.count - offline.count)
+    }
+    
+    private func logGrouping(scanned: [ConnectedDevicesViewModel.ScanResult],
+                             inRange: [ConnectedDevicesViewModel.ScanResult],
+                             offline: [NRFCloudDevice]) {
+        let scannedNames = scanned.map { $0.name ?? "<no name>" }.sorted()
+        let signature = "\(scannedNames)|\(devices.map(\.id))"
+        guard signature != lastGroupingSignature else { return }
+        lastGroupingSignature = signature
+        log.info("Cloud serials (\(devices.count)): \(devices.map(\.id).sorted().joined(separator: ", "))")
+        log.info("Scanned names (\(scanned.count)): \(scannedNames.joined(separator: ", "))")
+        log.info("Matched (\(inRange.count)): \(inRange.map { $0.name ?? "<no name>" }.joined(separator: ", "))")
+        log.info("Offline (\(offline.count)): \(offline.map(\.id).joined(separator: ", "))")
     }
 }
