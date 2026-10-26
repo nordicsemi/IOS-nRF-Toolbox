@@ -41,7 +41,7 @@ struct ScanResultList: View {
             }
             
             if !groups.inRange.isEmpty {
-                Section("nRF Cloud") {
+                Section("nRF Cloud - online devices") {
                     ForEach(groups.inRange) { device in
                         deviceRow(device, index: ordered.firstIndex(where: { $0.id == device.id }) ?? 0)
                     }
@@ -75,7 +75,7 @@ struct ScanResultList: View {
             }
             
             if !groups.offline.isEmpty {
-                Section("nRF Cloud · Offline") {
+                Section("nRF Cloud - offline devices") {
                     ForEach(groups.offline) { device in
                         Label {
                             VStack(alignment: .leading) {
