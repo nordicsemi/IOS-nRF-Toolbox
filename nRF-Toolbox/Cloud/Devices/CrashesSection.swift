@@ -12,16 +12,14 @@ import iOS_Common_Libraries
 struct CrashesSection: View {
     
     private static let displayLimit = 20
-    private static let showsReboots = false
     
     @Environment(NRFCloudViewModel.self) private var cloud
     
-    let identifiers: [String?]
-    let isConnected: Bool
+    let viewModel: DeviceCrashesViewModel
     
-    @State private var cloudDevice: NRFCloudDevice?
-    @State private var lookupFinished = false
-    @State private var selectedCrash: NRFCloudCrash?
+    private var cloudDevice: NRFCloudDevice? {
+        viewModel.cloudDevice
+    }
     
     var body: some View {
         if cloud.isConfigured {
@@ -30,21 +28,11 @@ struct CrashesSection: View {
                     crashes
                 }
                 
-                if Self.showsReboots {
+                if DeviceCrashesViewModel.showsReboots {
                     Section("nRF Cloud Reboots") {
                         reboots
                     }
                 }
-            }
-            .sheet(item: $selectedCrash) { crash in
-                NavigationStack {
-                    CrashDetailScreen(crash: crash)
-                }
-                .setupTranslucentBackground()
-            }
-            .task(id: LoadTrigger(identifiers: identifiers.compactMap { $0 }, isConnected: isConnected)) {
-                guard isConnected else { return }
-                await load()
             }
         }
     }
@@ -69,7 +57,7 @@ struct CrashesSection: View {
                 
                 ForEach(items.prefix(Self.displayLimit)) { crash in
                     Button {
-                        selectedCrash = crash
+                        viewModel.selectedCrash = crash
                     } label: {
                         HStack {
                             ReportRow(title: crash.title ?? crash.reason ?? "Crash",
@@ -122,7 +110,7 @@ struct CrashesSection: View {
     
     @ViewBuilder
     private var notRegistered: some View {
-        if lookupFinished {
+        if viewModel.lookupFinished {
             Label("This device is not registered in the nRF Cloud project", systemImage: "questionmark.circle")
                 .foregroundStyle(.secondary)
         } else {
@@ -146,27 +134,6 @@ struct CrashesSection: View {
         
         Button("Retry") {
             Task { await retry() }
-        }
-    }
-    
-    private func loadRebootsIfShown(for device: NRFCloudDevice) async {
-        guard Self.showsReboots else { return }
-        await cloud.loadReboots(for: device)
-    }
-    
-    private struct LoadTrigger: Hashable {
-        let identifiers: [String]
-        let isConnected: Bool
-    }
-    
-    private func load() async {
-        await cloud.refresh()
-        cloudDevice = cloud.cloudDevice(matching: identifiers)
-        lookupFinished = true
-        if let cloudDevice {
-            async let crashes: Void = cloud.loadCrashes(for: cloudDevice)
-            async let reboots: Void = loadRebootsIfShown(for: cloudDevice)
-            _ = await (crashes, reboots)
         }
     }
 }

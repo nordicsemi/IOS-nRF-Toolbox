@@ -20,8 +20,11 @@ struct DeviceScreen: View {
     @Environment(DeviceDetailsViewModel.self) private var deviceViewModel: DeviceDetailsViewModel
     @Environment(RootNavigationViewModel.self) var navigationViewModel: RootNavigationViewModel
     @Environment(ConnectedDevicesViewModel.self) private var connectedDevicesViewModel: ConnectedDevicesViewModel
+    @Environment(NRFCloudViewModel.self) private var cloudViewModel: NRFCloudViewModel
     
     // MARK: Properties
+    
+    @State private var crashes = DeviceCrashesViewModel()
     
     private let log = NordicLog(category: "DeviceScreen", subsystem: "com.nordicsemi.nrf-toolbox")
     
@@ -29,6 +32,7 @@ struct DeviceScreen: View {
 
     var body: some View {
         @Bindable var deviceViewModel = deviceViewModel
+        @Bindable var crashes = crashes
         List {
             switch deviceViewModel.screenState {
             case .disconnected:
@@ -145,6 +149,16 @@ struct DeviceScreen: View {
         .listStyle(.insetGrouped)
         .navigationTitle(deviceViewModel.device.name ?? "Unnamed")
         .navigationBarTitleDisplayMode(.inline)
+        .task(id: crashLoadTrigger) {
+            guard crashLoadTrigger.isConnected else { return }
+            await crashes.load(identifiers: crashIdentifiers, cloud: cloudViewModel)
+        }
+        .sheet(item: $crashes.selectedCrash) { crash in
+            NavigationStack {
+                CrashDetailScreen(crash: crash)
+            }
+            .setupTranslucentBackground()
+        }
         .sheet(isPresented: $deviceViewModel.showDeviceSheet) {
             NavigationStack {
                 InspectorScreen(deviceViewModel.device)
@@ -163,9 +177,17 @@ struct DeviceScreen: View {
     // MARK: crashesSection
     
     private var crashesSection: some View {
-        CrashesSection(identifiers: [deviceViewModel.deviceInfo?.serialNumber, deviceViewModel.device.name],
-                       isConnected: deviceViewModel.device.status.hashValue == Device.Status.connected.hashValue
-                           && deviceViewModel.isInitialized)
+        CrashesSection(viewModel: crashes)
+    }
+    
+    private var crashIdentifiers: [String?] {
+        [deviceViewModel.deviceInfo?.serialNumber, deviceViewModel.device.name]
+    }
+    
+    private var crashLoadTrigger: CrashLoadTrigger {
+        CrashLoadTrigger(identifiers: crashIdentifiers.compactMap { $0 },
+                         isConnected: deviceViewModel.device.status.hashValue == Device.Status.connected.hashValue
+                             && deviceViewModel.isInitialized)
     }
     
     // MARK: connectionProgress
@@ -214,6 +236,14 @@ struct DeviceScreen: View {
             }
         }
     }
+}
+
+// MARK: - CrashLoadTrigger
+
+private struct CrashLoadTrigger: Hashable {
+    
+    let identifiers: [String]
+    let isConnected: Bool
 }
 
 // MARK: - logAppearance
