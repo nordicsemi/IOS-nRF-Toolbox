@@ -163,6 +163,12 @@ extension DeviceDetailsViewModel {
         supportedServiceViewModels.firstOfType(type: BatteryViewModel.self)
     }
     
+    // MARK: observabilityViewModel
+    
+    var observabilityViewModel: ObservabilityViewModel? {
+        supportedServiceViewModels.firstOfType(type: ObservabilityViewModel.self)
+    }
+    
     // MARK: discoverSupportedServices()
     
     func discoverSupportedServices() async -> [Service] {

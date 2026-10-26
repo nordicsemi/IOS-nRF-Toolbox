@@ -22,6 +22,7 @@ final class ObservabilityViewModel: SupportedServiceViewModel {
 
     private(set) var status: ObservabilityServiceStatus = .connecting
     private(set) var chunksInfo = ObservabilityChunksInfo()
+    private(set) var largeUploadsCompleted = 0
 
     var errors: CurrentValueSubject<ErrorsHolder, Never> = CurrentValueSubject<ErrorsHolder, Never>(ErrorsHolder())
 
@@ -37,6 +38,11 @@ final class ObservabilityViewModel: SupportedServiceViewModel {
     private let pathMonitorQueue = DispatchQueue(label: "com.nordicsemi.nrf-toolbox.observability.path-monitor")
     private var isNetworkAvailable = true
     private var isBLEConnected = false
+
+    private static let largeUploadChunkThreshold = 10
+    private static let uploadBurstQuietPeriod: Duration = .seconds(5)
+    private var burstUploadedCount = 0
+    private var burstTask: Task<Void, Never>?
 
     // MARK: init
 
@@ -105,6 +111,9 @@ final class ObservabilityViewModel: SupportedServiceViewModel {
         streamTask = nil
         suspensionTask?.cancel()
         suspensionTask = nil
+        burstTask?.cancel()
+        burstTask = nil
+        burstUploadedCount = 0
         observabilityManager.disconnect(from: peripheralIdentifier)
         isBLEConnected = false
         status = .disconnected
@@ -132,8 +141,12 @@ final class ObservabilityViewModel: SupportedServiceViewModel {
             isBLEConnected = false
             recomputeStatus()
         case .updatedChunks(let chunks):
+            let uploadedBefore = chunksInfo.uploadedCount
             chunks.forEach { chunksInfo.processChunk($0) }
             recomputeStatus()
+            if chunksInfo.uploadedCount > uploadedBefore {
+                trackUploadBurst()
+            }
         }
     }
 
@@ -170,6 +183,34 @@ final class ObservabilityViewModel: SupportedServiceViewModel {
             try? observabilityManager.continuePendingUploads(for: peripheralIdentifier)
         }
         status = .uploading
+    }
+
+    // MARK: trackUploadBurst()
+
+    @MainActor
+    private func trackUploadBurst() {
+        burstUploadedCount += 1
+        burstTask?.cancel()
+        burstTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: Self.uploadBurstQuietPeriod)
+                guard let self, !Task.isCancelled else { return }
+                guard chunksInfo.pendingCount == 0 else { continue }
+                finishUploadBurst()
+                return
+            }
+        }
+    }
+
+    // MARK: finishUploadBurst()
+
+    @MainActor
+    private func finishUploadBurst() {
+        let uploaded = burstUploadedCount
+        burstUploadedCount = 0
+        guard uploaded >= Self.largeUploadChunkThreshold else { return }
+        log.info("Large upload completed (\(uploaded) chunks).")
+        largeUploadsCompleted += 1
     }
 
     // MARK: startSuspension()

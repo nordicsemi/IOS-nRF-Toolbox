@@ -16,6 +16,7 @@ struct CrashesSection: View {
     @Environment(NRFCloudViewModel.self) private var cloud
     
     let viewModel: DeviceCrashesViewModel
+    let onRefresh: () -> Void
     
     private var cloudDevice: NRFCloudDevice? {
         viewModel.cloudDevice
@@ -24,8 +25,15 @@ struct CrashesSection: View {
     var body: some View {
         if cloud.isConfigured {
             Group {
-                Section("nRF Cloud Crashes") {
+                Section {
+                    if viewModel.isLoading {
+                        IndeterminateProgressView()
+                            .accentColor(.universalAccentColor)
+                    }
+                    
                     crashes
+                } header: {
+                    Text("nRF Cloud Crashes")
                 }
                 
                 if DeviceCrashesViewModel.showsReboots {
@@ -42,18 +50,30 @@ struct CrashesSection: View {
         if let cloudDevice {
             switch cloud.crashStates[cloudDevice.id] {
             case .none, .loading:
-                ProgressView()
-                    .centered()
+                Text("Downloading crashes…")
+                    .foregroundStyle(.secondary)
             case .failed(let message):
                 failure(message) {
-                    await cloud.loadCrashes(for: cloudDevice)
+                    onRefresh()
                 }
             case .loaded(let items) where items.isEmpty:
-                Label("No crashes reported", systemImage: "checkmark.circle")
-                    .setAccent(Color.universalAccentColor)
+                HStack {
+                    Label("No crashes reported", systemImage: "checkmark.circle")
+                        .setAccent(Color.universalAccentColor)
+                    
+                    Spacer()
+                    
+                    refreshButton
+                }
             case .loaded(let items):
-                Label("\(items.count) crash\(items.count == 1 ? "" : "es") reported", systemImage: "exclamationmark.octagon")
-                    .setAccent(Color.universalAccentColor)
+                HStack {
+                    Label("\(items.count) crash\(items.count == 1 ? "" : "es") reported", systemImage: "exclamationmark.octagon")
+                        .setAccent(Color.universalAccentColor)
+                    
+                    Spacer()
+                    
+                    refreshButton
+                }
                 
                 ForEach(items.prefix(Self.displayLimit)) { crash in
                     Button {
@@ -108,11 +128,28 @@ struct CrashesSection: View {
         }
     }
     
+    private var refreshButton: some View {
+        Button {
+            onRefresh()
+        } label: {
+            Image(systemName: "arrow.clockwise")
+        }
+        .buttonStyle(.borderless)
+        .disabled(viewModel.isLoading)
+        .accessibilityLabel("Refresh crashes")
+    }
+    
     @ViewBuilder
     private var notRegistered: some View {
         if viewModel.lookupFinished {
-            Label("This device is not registered in the nRF Cloud project", systemImage: "questionmark.circle")
-                .foregroundStyle(.secondary)
+            HStack {
+                Label("This device is not registered in the nRF Cloud project", systemImage: "questionmark.circle")
+                    .foregroundStyle(.secondary)
+                
+                Spacer()
+                
+                refreshButton
+            }
         } else {
             ProgressView()
                 .centered()

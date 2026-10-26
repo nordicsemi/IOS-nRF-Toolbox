@@ -151,7 +151,12 @@ struct DeviceScreen: View {
         .navigationBarTitleDisplayMode(.inline)
         .task(id: crashLoadTrigger) {
             guard crashLoadTrigger.isConnected else { return }
-            await crashes.load(identifiers: crashIdentifiers, cloud: cloudViewModel)
+            crashes.request(identifiers: crashIdentifiers, cloud: cloudViewModel, reason: "device connected")
+        }
+        .onChange(of: deviceViewModel.observabilityViewModel?.largeUploadsCompleted) { _, completed in
+            guard let completed, completed > 0 else { return }
+            log.info("Large Observability upload completed. Reloading crashes.")
+            crashes.request(identifiers: crashIdentifiers, cloud: cloudViewModel, reason: "large upload completed")
         }
         .sheet(item: $crashes.selectedCrash) { crash in
             NavigationStack {
@@ -177,7 +182,9 @@ struct DeviceScreen: View {
     // MARK: crashesSection
     
     private var crashesSection: some View {
-        CrashesSection(viewModel: crashes)
+        CrashesSection(viewModel: crashes) {
+            crashes.request(identifiers: crashIdentifiers, cloud: cloudViewModel, reason: "manual refresh")
+        }
     }
     
     private var crashIdentifiers: [String?] {
