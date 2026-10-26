@@ -8,7 +8,6 @@
 
 import Foundation
 
-// MARK: - MyNordicConfiguration
 
 enum MyNordicConfiguration {
     

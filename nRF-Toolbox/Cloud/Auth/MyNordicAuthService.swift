@@ -9,7 +9,6 @@
 import AuthenticationServices
 import Foundation
 
-// MARK: - MyNordicAuthError
 
 enum MyNordicAuthError: LocalizedError {
     case cancelled
@@ -29,14 +28,12 @@ enum MyNordicAuthError: LocalizedError {
     }
 }
 
-// MARK: - MyNordicAuthService
 
 @MainActor
 final class MyNordicAuthService: NSObject {
     
     private var session: ASWebAuthenticationSession?
     
-    // MARK: signIn
     
     func signIn() async throws -> MyNordicAccount {
         let pkce = PKCE()
@@ -48,10 +45,9 @@ final class MyNordicAuthService: NSObject {
         guard let name = userName ?? claims?.name ?? claims?.preferredUsername else {
             throw MyNordicAuthError.invalidResponse
         }
-        return MyNordicAccount(userName: name, idToken: tokens.idToken, claims: claims)
+        return MyNordicAccount(userName: name, accessToken: tokens.accessToken, idToken: tokens.idToken, claims: claims)
     }
     
-    // MARK: authorize
     
     private func authorize(pkce: PKCE, state: String) async throws -> String {
         var components = URLComponents(url: MyNordicConfiguration.authorizeURL, resolvingAgainstBaseURL: false)!
@@ -101,7 +97,6 @@ final class MyNordicAuthService: NSObject {
         return code
     }
     
-    // MARK: exchange
     
     private func exchange(code: String, verifier: String) async throws -> Tokens {
         var request = URLRequest(url: MyNordicConfiguration.tokenURL)
@@ -127,7 +122,6 @@ final class MyNordicAuthService: NSObject {
         return Tokens(accessToken: accessToken, idToken: response.idToken)
     }
     
-    // MARK: fetchUserName
     
     private func fetchUserName(accessToken: String) async throws -> String {
         var request = URLRequest(url: MyNordicConfiguration.graphMeURL)
@@ -145,7 +139,6 @@ final class MyNordicAuthService: NSObject {
     }
 }
 
-// MARK: - ASWebAuthenticationPresentationContextProviding
 
 extension MyNordicAuthService: ASWebAuthenticationPresentationContextProviding {
     
@@ -157,7 +150,6 @@ extension MyNordicAuthService: ASWebAuthenticationPresentationContextProviding {
     }
 }
 
-// MARK: - Responses
 
 private struct TokenResponse: Decodable {
     

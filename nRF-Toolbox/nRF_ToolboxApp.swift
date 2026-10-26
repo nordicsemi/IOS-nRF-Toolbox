@@ -20,6 +20,7 @@ struct nRF_ToolboxApp: App {
     private static let centralManager = CentralManager()
     
     @State var viewModel = AppViewModel()
+    @State var cloudViewModel = NRFCloudViewModel()
     @State var connectedDevicesViewModel: ConnectedDevicesViewModel = ConnectedDevicesViewModel(centralManager: centralManager)
     
     init() {
@@ -34,6 +35,7 @@ struct nRF_ToolboxApp: App {
             RootNavigationView()
                 .setupTranslucentBackground()
                 .environment(viewModel)
+                .environment(cloudViewModel)
                 .environment(connectedDevicesViewModel)
         }
     }

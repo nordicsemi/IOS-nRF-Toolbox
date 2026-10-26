@@ -16,6 +16,7 @@ struct PeripheralScannerScreen: View {
     // MARK: Properties
     
     @Environment(ConnectedDevicesViewModel.self) private var viewModel: ConnectedDevicesViewModel
+    @Environment(NRFCloudViewModel.self) private var cloud: NRFCloudViewModel
     
     // MARK: view
     
@@ -25,7 +26,7 @@ struct PeripheralScannerScreen: View {
             case .disabled:
                 StateViews.Disabled()
             case .scanning:
-                if viewModel.devices.isEmpty {
+                if viewModel.devices.isEmpty && cloud.devices.isEmpty {
                     StateViews.EmptyResults()
                 } else {
                     ScanResultList()
@@ -40,11 +41,13 @@ struct PeripheralScannerScreen: View {
         .navigationBarTitleDisplayMode(.inline)
         .refreshable {
             viewModel.refresh()
+            await cloud.refresh()
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     viewModel.refresh()
+                    Task { await cloud.refresh() }
                 } label: {
                     Image(systemName: "arrow.circlepath")
                 }
@@ -52,6 +55,9 @@ struct PeripheralScannerScreen: View {
         }
         .onAppear {
             viewModel.refresh()
+        }
+        .task {
+            await cloud.refresh()
         }
         .onDisappear {
             viewModel.stopScanning()

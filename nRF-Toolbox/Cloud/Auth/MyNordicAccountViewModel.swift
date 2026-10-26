@@ -8,7 +8,6 @@
 
 import Foundation
 
-// MARK: - MyNordicAccountViewModel
 
 @MainActor
 @Observable

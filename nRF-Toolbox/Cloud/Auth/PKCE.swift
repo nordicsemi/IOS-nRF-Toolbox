@@ -9,7 +9,6 @@
 import CryptoKit
 import Foundation
 
-// MARK: - PKCE
 
 struct PKCE {
     
@@ -24,7 +23,6 @@ struct PKCE {
     }
 }
 
-// MARK: - Data
 
 private extension Data {
     

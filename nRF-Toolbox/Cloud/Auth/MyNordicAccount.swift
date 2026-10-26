@@ -8,16 +8,15 @@
 
 import Foundation
 
-// MARK: - MyNordicAccount
 
 struct MyNordicAccount {
     
     let userName: String
+    let accessToken: String
     let idToken: String?
     let claims: IDTokenClaims?
 }
 
-// MARK: - IDTokenClaims
 
 struct IDTokenClaims: Decodable {
     

@@ -18,10 +18,12 @@ struct SidebarView: View {
     
     @Environment(RootNavigationViewModel.self) var rootViewModel: RootNavigationViewModel
     @Environment(ConnectedDevicesViewModel.self) var viewModel: ConnectedDevicesViewModel
+    @Environment(NRFCloudViewModel.self) var cloud: NRFCloudViewModel
     
     @State private var showFirebasePermissionDialog = NordicAnalytics.needsPermission()
     @State private var showFirebaseSettingsDialog = false
     @State private var account = MyNordicAccountViewModel()
+    @State private var showCloudKeySheet = false
     
     // MARK: view
     
@@ -90,6 +92,14 @@ struct SidebarView: View {
                 }
             }
             
+            Section("nRF Cloud") {
+                Button {
+                    showCloudKeySheet = true
+                } label: {
+                    Label(cloud.isConfigured ? "Credentials saved" : "Add credentials", systemImage: "key")
+                }
+            }
+            
             Section {
                 Button {
                     rootViewModel.showAboutView = true
@@ -144,6 +154,12 @@ struct SidebarView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(account.errorMessage ?? "")
+        }
+        .sheet(isPresented: $showCloudKeySheet) {
+            NavigationStack {
+                NRFCloudKeySheet()
+            }
+            .setupTranslucentBackground()
         }
         .sheet(isPresented: $showFirebasePermissionDialog) {
             NavigationStack {
