@@ -36,6 +36,9 @@ struct nRF_ToolboxApp: App {
                 .setupTranslucentBackground()
                 .environment(viewModel)
                 .environment(cloudViewModel)
+                .task {
+                    await cloudViewModel.refresh()
+                }
                 .environment(connectedDevicesViewModel)
         }
     }
