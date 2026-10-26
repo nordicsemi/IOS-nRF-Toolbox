@@ -158,6 +158,9 @@ struct DeviceScreen: View {
             log.info("Large Observability upload completed. Reloading crashes.")
             crashes.request(identifiers: crashIdentifiers, cloud: cloudViewModel, reason: "large upload completed")
         }
+        .navigationDestination(isPresented: $crashes.showsAllCrashes) {
+            CrashListScreen(viewModel: crashes)
+        }
         .sheet(item: $crashes.selectedCrash) { crash in
             NavigationStack {
                 CrashDetailScreen(crash: crash)

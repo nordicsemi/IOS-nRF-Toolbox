@@ -25,6 +25,7 @@ final class DeviceCrashesViewModel {
     private(set) var cloudDevice: NRFCloudDevice?
     private(set) var lookupFinished = false
     private(set) var isLoading = false
+    var showsAllCrashes = false
     var selectedCrash: NRFCloudCrash?
     
     @ObservationIgnored private var didRequestOnFirstConnection = false

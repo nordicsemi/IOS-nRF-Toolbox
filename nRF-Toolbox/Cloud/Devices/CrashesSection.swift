@@ -75,25 +75,18 @@ struct CrashesSection: View {
                     refreshButton
                 }
                 
-                ForEach(items.prefix(Self.displayLimit)) { crash in
-                    Button {
-                        viewModel.selectedCrash = crash
-                    } label: {
-                        HStack {
-                            ReportRow(title: crash.title ?? crash.reason ?? "Crash",
-                                      date: crash.capturedDate, release: crash.release)
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.footnote.weight(.semibold))
-                                .foregroundStyle(.tertiary)
-                        }
+                if let latest = items.first {
+                    CrashRow(crash: latest) {
+                        viewModel.selectedCrash = latest
                     }
-                    .tint(.primary)
                 }
                 
-                overflow(items.count)
+                if items.count > 1 {
+                    Button("See more") {
+                        viewModel.showsAllCrashes = true
+                    }
+                    .foregroundStyle(Color.universalAccentColor)
+                }
             }
         } else {
             notRegistered
@@ -175,7 +168,7 @@ struct CrashesSection: View {
     }
 }
 
-private struct ReportRow: View {
+struct ReportRow: View {
     
     let title: String
     let date: Date?
@@ -202,5 +195,27 @@ private struct ReportRow: View {
             parts.append("v\(release)")
         }
         return parts.joined(separator: " · ")
+    }
+}
+
+struct CrashRow: View {
+    
+    let crash: NRFCloudCrash
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                ReportRow(title: crash.title ?? crash.reason ?? "Crash",
+                          date: crash.capturedDate, release: crash.release)
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .tint(.primary)
     }
 }
