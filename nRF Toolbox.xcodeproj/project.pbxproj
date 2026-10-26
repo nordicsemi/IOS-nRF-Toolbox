@@ -443,6 +443,7 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A76A45252E7D638E00E0E19C /* nRF-ToolboxTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "nRF-ToolboxTests"; sourceTree = "<group>"; };
 		A7F11BA8302476AD0079DA29 /* Analytics */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (A7F11CB13025BB230079DA29 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Analytics; sourceTree = "<group>"; };
+		A7C10D0A30AB00010079DA29 /* Cloud */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Cloud; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -629,6 +630,7 @@
 			isa = PBXGroup;
 			children = (
 				A7F11BA8302476AD0079DA29 /* Analytics */,
+				A7C10D0A30AB00010079DA29 /* Cloud */,
 				A70A61FA2F0D46C000C341AB /* Persistent */,
 				AA8DF2152DE9B08E00D49141 /* Info.plist */,
 				019E77792ACC289500760124 /* Screens */,
@@ -1136,6 +1138,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				A7F11BA8302476AD0079DA29 /* Analytics */,
+				A7C10D0A30AB00010079DA29 /* Cloud */,
 			);
 			name = "nRF-Toolbox";
 			packageProductDependencies = (

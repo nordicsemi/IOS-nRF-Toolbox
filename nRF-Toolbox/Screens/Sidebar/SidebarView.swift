@@ -21,6 +21,7 @@ struct SidebarView: View {
     
     @State private var showFirebasePermissionDialog = NordicAnalytics.needsPermission()
     @State private var showFirebaseSettingsDialog = false
+    @State private var account = MyNordicAccountViewModel()
     
     // MARK: view
     
@@ -72,6 +73,23 @@ struct SidebarView: View {
                 .accessibilityIdentifier("scannerButton")
             }
             
+            Section("myNordic") {
+                if let userName = account.userName {
+                    Label(userName, systemImage: "person.crop.circle.fill")
+                    
+                    Button("Sign Out", role: .destructive) {
+                        account.signOut()
+                    }
+                } else {
+                    Button {
+                        Task { await account.signIn() }
+                    } label: {
+                        Label(account.isSigningIn ? "Signing in…" : "Sign in to myNordic", systemImage: "person.crop.circle")
+                    }
+                    .disabled(account.isSigningIn)
+                }
+            }
+            
             Section {
                 Button {
                     rootViewModel.showAboutView = true
@@ -119,6 +137,14 @@ struct SidebarView: View {
         }
         .tint(Color.universalAccentColor)
         .listStyle(.insetGrouped)
+        .alert("Sign in failed", isPresented: Binding(
+            get: { account.errorMessage != nil },
+            set: { if !$0 { account.errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(account.errorMessage ?? "")
+        }
         .sheet(isPresented: $showFirebasePermissionDialog) {
             NavigationStack {
                 AnalyticsPermissionRequestDialog()
