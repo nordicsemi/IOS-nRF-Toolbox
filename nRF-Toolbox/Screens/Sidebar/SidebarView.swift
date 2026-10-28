@@ -155,6 +155,11 @@ struct SidebarView: View {
         } message: {
             Text(cloud.account.errorMessage ?? "")
         }
+        .onChange(of: cloud.account.isSigningIn) { wasSigningIn, isSigningIn in
+            if wasSigningIn, !isSigningIn, cloud.account.isSignedIn, cloud.selection == nil {
+                showCloudProjectSheet = true
+            }
+        }
         .sheet(isPresented: $showCloudProjectSheet) {
             NavigationStack {
                 NRFCloudProjectSheet()

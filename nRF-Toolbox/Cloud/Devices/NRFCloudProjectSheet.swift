@@ -34,12 +34,6 @@ struct NRFCloudProjectSheet: View {
                 }
             }
             
-            if cloud.isLoadingProjects {
-                Section {
-                    ProgressView()
-                }
-            }
-            
             if let message = cloud.projectsErrorMessage {
                 Section {
                     Text(message)
@@ -47,6 +41,15 @@ struct NRFCloudProjectSheet: View {
                     Button("Retry") {
                         Task { await cloud.loadOrganizations() }
                     }
+                }
+            }
+        }
+        .overlay {
+            if cloud.isLoadingProjects && cloud.projects.isEmpty {
+                VStack(spacing: 12) {
+                    ProgressView()
+                    Text("Loading projects…")
+                        .foregroundStyle(.secondary)
                 }
             }
         }
@@ -66,6 +69,9 @@ struct NRFCloudProjectSheet: View {
             if organization.isEmpty {
                 organization = organizations.first?.slug ?? ""
             }
+        }
+        .onChange(of: cloud.selection) { _, selection in
+            if selection != nil { dismiss() }
         }
         .onChange(of: organization) { _, newValue in
             guard !newValue.isEmpty, newValue != cloud.selection?.organization || cloud.projects.isEmpty else { return }
