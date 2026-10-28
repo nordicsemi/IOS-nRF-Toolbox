@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A7C10D0B30AB00030079DA29 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C10D0B30AB00020079DA29 /* SplashView.swift */; };
 		0108E87B2AF140D800C8B096 /* ChartTimeData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0108E87A2AF140D800C8B096 /* ChartTimeData.swift */; };
 		0108E87E2AF1654D00C8B096 /* BatteryChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0108E87D2AF1654D00C8B096 /* BatteryChart.swift */; };
 		0126B53F2A5EA8B70033BCC3 /* AttributeTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0126B53E2A5EA8B70033BCC3 /* AttributeTable.swift */; };
@@ -222,6 +223,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A7C10D0B30AB00020079DA29 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		0108E87A2AF140D800C8B096 /* ChartTimeData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartTimeData.swift; sourceTree = "<group>"; };
 		0108E87D2AF1654D00C8B096 /* BatteryChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryChart.swift; sourceTree = "<group>"; };
 		0126B53E2A5EA8B70033BCC3 /* AttributeTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributeTable.swift; sourceTree = "<group>"; };
@@ -498,6 +500,7 @@
 				A7F11C122ED05A4F00D1862B /* Effects */,
 				013E5D992AE0545100B9C475 /* Modifiers */,
 				0129F2272A684059002FB3F5 /* LabeledValueView.swift */,
+				A7C10D0B30AB00020079DA29 /* SplashView.swift */,
 				0164A4802AD8330E0093E501 /* ServiceBadgeGroup.swift */,
 				013E5D8E2ADFDDC600B9C475 /* NumberedColumnGrid.swift */,
 			);
@@ -1384,6 +1387,7 @@
 				AA5539202D00AAD200F589F5 /* BatteryViewModel.swift in Sources */,
 				AAE967342E38D09A00A7B93B /* RSCSFeature.swift in Sources */,
 				0129F2282A684059002FB3F5 /* LabeledValueView.swift in Sources */,
+				A7C10D0B30AB00030079DA29 /* SplashView.swift in Sources */,
 				0164A4792AD741200093E501 /* ConnectedDevicesViewModel.swift in Sources */,
 				A7D657C42EA2470E00CA7D63 /* UARTCBMPeripheralSpecDelegate.swift in Sources */,
 				A70A621C2F0FB56E00C341AB /* LogsScreen.swift in Sources */,
