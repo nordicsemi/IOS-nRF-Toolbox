@@ -61,8 +61,11 @@ struct SplashView: View {
 
 struct SplashContainer<Content: View>: View {
     
+    private static var minimumDuration: Duration { .seconds(1.8) }
+    
     @State private var isSplashShowing = true
     
+    let preload: () async -> Void
     @ViewBuilder let content: () -> Content
     
     var body: some View {
@@ -76,7 +79,9 @@ struct SplashContainer<Content: View>: View {
             }
         }
         .task {
-            try? await Task.sleep(for: .seconds(1.8))
+            async let minimum: () = Task.sleep(for: Self.minimumDuration)
+            await preload()
+            try? await minimum
             withAnimation(.easeInOut(duration: 0.5)) {
                 isSplashShowing = false
             }

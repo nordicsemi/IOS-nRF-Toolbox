@@ -32,14 +32,11 @@ struct nRF_ToolboxApp: App {
     
     var body: some Scene {
         WindowGroup {
-            SplashContainer {
+            SplashContainer(preload: { await cloudViewModel.start() }) {
                 RootNavigationView()
                     .setupTranslucentBackground()
                     .environment(viewModel)
                     .environment(cloudViewModel)
-                    .task {
-                        await cloudViewModel.start()
-                    }
                     .environment(connectedDevicesViewModel)
             }
         }

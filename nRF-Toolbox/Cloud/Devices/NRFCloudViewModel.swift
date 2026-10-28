@@ -61,7 +61,15 @@ final class NRFCloudViewModel {
     func start() async {
         await account.restore()
         guard account.isSignedIn else { return }
-        await refresh()
+        do {
+            _ = try await accessToken()
+        } catch {
+            log.error("Preloading cloud token failed: \(error.localizedDescription)")
+            return
+        }
+        async let devicesLoad: () = refresh()
+        async let projectsLoad: () = loadOrganizations()
+        _ = await (devicesLoad, projectsLoad)
     }
     
     func signIn() async {
