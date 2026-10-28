@@ -24,6 +24,8 @@ struct NRFCloudProjectSheet: View {
                         Text(item.name).tag(item.slug)
                     }
                 }
+                .pickerStyle(.menu)
+                .id(cloud.organizations.map(\.slug))
             }
             
             Section("Project") {
@@ -32,6 +34,8 @@ struct NRFCloudProjectSheet: View {
                         Text(item.name).tag(item.slug)
                     }
                 }
+                .pickerStyle(.menu)
+                .id(cloud.projects.map(\.slug))
             }
             
             if let message = cloud.projectsErrorMessage {
