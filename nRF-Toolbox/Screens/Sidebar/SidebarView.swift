@@ -74,8 +74,6 @@ struct SidebarView: View {
                 .accessibilityIdentifier("scannerButton")
             }
             
-            MyNordicSection()
-            
             NRFCloudSection(showProjectSheet: $showCloudProjectSheet)
             
             Section {

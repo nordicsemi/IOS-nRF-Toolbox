@@ -8,14 +8,21 @@
 
 import SwiftUI
 
-struct MyNordicSection: View {
+struct NRFCloudSection: View {
     
     @Environment(NRFCloudViewModel.self) private var cloud
     
+    @Binding var showProjectSheet: Bool
+    
+    private var isSignedIn: Bool {
+        cloud.account.isSignedIn
+    }
+    
     var body: some View {
-        Section("myNordic") {
+        Section("nRF Cloud") {
             if let userName = cloud.account.userName {
                 signedIn(userName)
+                projectRow
             } else {
                 signedOut
             }
@@ -74,7 +81,7 @@ struct MyNordicSection: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Not signed in")
                         .font(.headline)
-                    Text("Sign in to see crashes and reboots of your devices.")
+                    Text("Sign in with myNordic to pick an nRF Cloud project and see crashes and reboots of your devices.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -106,59 +113,44 @@ struct MyNordicSection: View {
             .compactMap(\.first)
         return letters.isEmpty ? "?" : String(letters).uppercased()
     }
-}
-
-struct NRFCloudSection: View {
     
-    @Environment(NRFCloudViewModel.self) private var cloud
-    
-    @Binding var showProjectSheet: Bool
-    
-    private var isSignedIn: Bool {
-        cloud.account.isSignedIn
-    }
-    
-    var body: some View {
-        Section("nRF Cloud") {
-            Button {
-                showProjectSheet = true
-            } label: {
-                HStack(spacing: 14) {
-                    Image(systemName: "cloud.fill")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .frame(width: 38, height: 38)
-                        .background(isSignedIn ? Color.accentColor : Color.secondary.opacity(0.5),
-                                    in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+    private var projectRow: some View {
+        Button {
+            showProjectSheet = true
+        } label: {
+            HStack(spacing: 14) {
+                Image(systemName: "cloud.fill")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(title)
+                        .font(.headline)
+                        .foregroundStyle(cloud.selection == nil ? .secondary : .primary)
+                        .lineLimit(1)
                     
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(title)
-                            .font(.headline)
-                            .foregroundStyle(cloud.selection == nil ? .secondary : .primary)
-                            .lineLimit(1)
-                        
-                        Text(subtitle)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                    }
-                    
-                    Spacer()
-                    
-                    if cloud.isLoading {
-                        ProgressView()
-                    } else if isSignedIn {
-                        Image(systemName: "chevron.right")
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(.tertiary)
-                    }
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
-                .padding(.vertical, 4)
-                .contentShape(Rectangle())
+                
+                Spacer()
+                
+                if cloud.isLoading {
+                    ProgressView()
+                } else {
+                    Image(systemName: "chevron.right")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                }
             }
-            .buttonStyle(.plain)
-            .disabled(!isSignedIn)
+            .padding(.vertical, 4)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
     }
     
     private var title: String {
@@ -166,7 +158,6 @@ struct NRFCloudSection: View {
     }
     
     private var subtitle: String {
-        guard isSignedIn else { return "Sign in to choose a project" }
         guard let selection = cloud.selection else { return "Tap to choose a project" }
         guard !cloud.devices.isEmpty else { return selection.organization }
         let count = cloud.devices.count
