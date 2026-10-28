@@ -29,12 +29,19 @@ struct NRFCloudProjectSheet: View {
             }
             
             Section("Project") {
-                Picker("Project", selection: $project) {
-                    ForEach(cloud.projects) { item in
-                        Text(item.name).tag(item.slug)
+                LabeledContent("Project") {
+                    Menu {
+                        Picker("Project", selection: $project) {
+                            ForEach(cloud.projects) { item in
+                                Text(item.name).tag(item.slug)
+                            }
+                        }
+                    } label: {
+                        let name = cloud.projects.first { $0.slug == project }?.name
+                        Text(name ?? "Select project")
+                            .foregroundStyle(name == nil ? .secondary : .primary)
                     }
                 }
-                .pickerStyle(.menu)
                 .id(cloud.projects.map(\.slug))
             }
             
@@ -78,8 +85,11 @@ struct NRFCloudProjectSheet: View {
             if selection != nil { dismiss() }
         }
         .onChange(of: organization) { _, newValue in
-            guard !newValue.isEmpty, newValue != cloud.selection?.organization || cloud.projects.isEmpty else { return }
-            project = ""
+            guard !newValue.isEmpty else { return }
+            if newValue != cloud.selection?.organization {
+                project = ""
+            }
+            guard newValue != cloud.selection?.organization || cloud.projects.isEmpty else { return }
             Task { await cloud.loadProjects(organization: newValue) }
         }
         .toolbar {
