@@ -74,31 +74,9 @@ struct SidebarView: View {
                 .accessibilityIdentifier("scannerButton")
             }
             
-            Section("myNordic") {
-                if let userName = cloud.account.userName {
-                    Label(userName, systemImage: "person.crop.circle.fill")
-                    
-                    Button("Sign Out", role: .destructive) {
-                        cloud.signOut()
-                    }
-                } else {
-                    Button {
-                        Task { await cloud.signIn() }
-                    } label: {
-                        Label(cloud.account.isSigningIn ? "Signing in…" : "Sign in to myNordic", systemImage: "person.crop.circle")
-                    }
-                    .disabled(cloud.account.isSigningIn)
-                }
-            }
+            MyNordicSection()
             
-            Section("nRF Cloud") {
-                Button {
-                    showCloudProjectSheet = true
-                } label: {
-                    Label(cloud.selection.map { "\($0.organization) / \($0.project)" } ?? "Select project", systemImage: "cloud")
-                }
-                .disabled(!cloud.account.isSignedIn)
-            }
+            NRFCloudSection(showProjectSheet: $showCloudProjectSheet)
             
             Section {
                 Button {
