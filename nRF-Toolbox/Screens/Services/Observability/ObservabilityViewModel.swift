@@ -131,8 +131,8 @@ final class ObservabilityViewModel: SupportedServiceViewModel {
         case .disconnected:
             isBLEConnected = false
             recomputeStatus()
-        case .updatedChunk(let chunk):
-            chunksInfo.processChunk(chunk)
+        case .updatedChunks(let chunks):
+            chunks.forEach { chunksInfo.processChunk($0) }
             recomputeStatus()
         }
     }
