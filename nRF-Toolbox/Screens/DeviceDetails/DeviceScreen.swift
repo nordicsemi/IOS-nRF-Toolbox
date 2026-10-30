@@ -25,6 +25,7 @@ struct DeviceScreen: View {
     // MARK: Properties
     
     @State private var crashes = DeviceCrashesViewModel()
+    @State private var ota = DeviceOTAViewModel()
     
     private let log = NordicLog(category: "DeviceScreen", subsystem: "com.nordicsemi.nrf-toolbox")
     
@@ -185,8 +186,14 @@ struct DeviceScreen: View {
     // MARK: crashesSection
     
     private var crashesSection: some View {
-        CrashesSection(viewModel: crashes) {
-            crashes.request(identifiers: crashIdentifiers, cloud: cloudViewModel, reason: "manual refresh")
+        Group {
+            if deviceViewModel.supportsSMP {
+                OTASection(viewModel: ota, peripheral: deviceViewModel.id)
+            }
+            
+            CrashesSection(viewModel: crashes) {
+                crashes.request(identifiers: crashIdentifiers, cloud: cloudViewModel, reason: "manual refresh")
+            }
         }
     }
     

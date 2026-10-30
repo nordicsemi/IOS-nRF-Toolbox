@@ -169,6 +169,10 @@ extension DeviceDetailsViewModel {
         supportedServiceViewModels.firstOfType(type: ObservabilityViewModel.self)
     }
     
+    var supportsSMP: Bool {
+        discoveredServices.contains { $0.uuid == CBUUID(string: "8D53DC1D-1DB7-4CD3-868B-8A527460AA84") }
+    }
+    
     // MARK: discoverSupportedServices()
     
     func discoverSupportedServices() async -> [Service] {
