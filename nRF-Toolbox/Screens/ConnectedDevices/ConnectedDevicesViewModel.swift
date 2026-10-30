@@ -61,7 +61,7 @@ final class ConnectedDevicesViewModel {
 
     // MARK: init
     
-    init(centralManager: CentralManager) {
+    init(centralManager: CentralManager, restoredPeripherals: CurrentValueSubject<[CBPeripheral], Never>? = nil) {
         self.centralManager = centralManager
         self.connectedDevices = []
         self.selectedDevice = nil
@@ -71,6 +71,9 @@ final class ConnectedDevicesViewModel {
         observeStateChange()
         observeConnections()
         observeDisconnections()
+        if let restoredPeripherals {
+            observeRestoredPeripherals(restoredPeripherals)
+        }
         log.debug("\(type(of: self)).\(#function)")
     }
 }
@@ -283,6 +286,39 @@ extension ConnectedDevicesViewModel {
                 }
             }
         }
+    }
+    
+    // MARK: observeRestoredPeripherals(:)
+    
+    private func observeRestoredPeripherals(_ subject: CurrentValueSubject<[CBPeripheral], Never>) {
+        subject
+            .filter { !$0.isEmpty }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] peripherals in
+                guard let self else { return }
+                for peripheral in peripherals {
+                    log.info("Restored peripheral: \(peripheral.identifier)")
+                    switch peripheral.state {
+                    case .connected:
+                        handleConnection(device: Device(
+                            name: peripheral.name,
+                            id: peripheral.identifier,
+                            services: [],
+                            status: .connected
+                        ))
+                    case .connecting:
+                        break
+                    default:
+                        Task { await self.reconnect(Device(
+                            name: peripheral.name,
+                            id: peripheral.identifier,
+                            services: [],
+                            status: .connecting
+                        )) }
+                    }
+                }
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: observeDisconnections()

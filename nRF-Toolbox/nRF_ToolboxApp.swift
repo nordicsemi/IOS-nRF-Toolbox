@@ -17,11 +17,15 @@ struct nRF_ToolboxApp: App {
     
     @UIApplicationDelegateAdaptor(AnalyticsAppDelegate.self) var delegate
     
-    private static let centralManager = CentralManager()
+    private static let centralDelegate = RestoringCentralManagerDelegate()
+    private static let centralManager = CentralManager(
+        centralManagerDelegate: centralDelegate,
+        options: [CBCentralManagerOptionRestoreIdentifierKey: RestoringCentralManagerDelegate.restoreIdentifier]
+    )
     
     @State var viewModel = AppViewModel()
     @State var cloudViewModel = NRFCloudViewModel()
-    @State var connectedDevicesViewModel: ConnectedDevicesViewModel = ConnectedDevicesViewModel(centralManager: centralManager)
+    @State var connectedDevicesViewModel: ConnectedDevicesViewModel = ConnectedDevicesViewModel(centralManager: centralManager, restoredPeripherals: centralDelegate.restoredPeripheralsSubject)
     
     init() {
         BluetoothEmulation.shared.simulateState()

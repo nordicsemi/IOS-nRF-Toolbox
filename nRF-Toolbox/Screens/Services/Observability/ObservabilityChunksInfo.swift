@@ -14,10 +14,20 @@ struct ObservabilityChunksInfo {
 
     // MARK: Properties
 
-    private(set) var pendingCount: Int = 0
-    private(set) var pendingBytes: Int = 0
+    fileprivate struct Key: Hashable {
+        let sequenceNumber: UInt8
+        let timestamp: Date
+        let data: Data
+    }
+
+    private var pendingChunks: [Key: Int] = [:]
+    private var uploadedKeys: Set<Key> = []
+
     private(set) var uploadedCount: Int = 0
     private(set) var uploadedBytes: Int = 0
+
+    var pendingCount: Int { pendingChunks.count }
+    var pendingBytes: Int { pendingChunks.values.reduce(0, +) }
 
     // MARK: processChunk()
 
@@ -35,15 +45,17 @@ struct ObservabilityChunksInfo {
     // MARK: pending()
 
     mutating func pending(_ chunk: ObservabilityChunk) {
-        pendingCount += 1
-        pendingBytes += chunk.data.count
+        let key = Key(chunk)
+        guard !uploadedKeys.contains(key) else { return }
+        pendingChunks[key] = chunk.data.count
     }
 
     // MARK: uploaded()
 
     mutating func uploaded(_ chunk: ObservabilityChunk) {
-        pendingCount -= 1
-        pendingBytes -= chunk.data.count
+        let key = Key(chunk)
+        pendingChunks.removeValue(forKey: key)
+        guard uploadedKeys.insert(key).inserted else { return }
 
         uploadedCount += 1
         uploadedBytes += chunk.data.count
@@ -70,5 +82,12 @@ struct ObservabilityChunksInfo {
         } else {
             return "\(bytes) bytes"
         }
+    }
+}
+
+extension ObservabilityChunksInfo.Key {
+
+    fileprivate init(_ chunk: ObservabilityChunk) {
+        self.init(sequenceNumber: chunk.sequenceNumber, timestamp: chunk.timestamp, data: chunk.data)
     }
 }

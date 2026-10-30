@@ -145,7 +145,7 @@ final class ObservabilityViewModel: SupportedServiceViewModel {
             chunks.forEach { chunksInfo.processChunk($0) }
             recomputeStatus()
             if chunksInfo.uploadedCount > uploadedBefore {
-                trackUploadBurst()
+                trackUploadBurst(newlyUploaded: chunksInfo.uploadedCount - uploadedBefore)
             }
         }
     }
@@ -188,8 +188,8 @@ final class ObservabilityViewModel: SupportedServiceViewModel {
     // MARK: trackUploadBurst()
 
     @MainActor
-    private func trackUploadBurst() {
-        burstUploadedCount += 1
+    private func trackUploadBurst(newlyUploaded: Int) {
+        burstUploadedCount += newlyUploaded
         burstTask?.cancel()
         burstTask = Task { [weak self] in
             while !Task.isCancelled {
