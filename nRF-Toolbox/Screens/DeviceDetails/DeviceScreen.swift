@@ -152,6 +152,9 @@ struct DeviceScreen: View {
         .navigationBarTitleDisplayMode(.inline)
         .task(id: crashLoadTrigger) {
             guard crashLoadTrigger.isConnected else { return }
+            if deviceViewModel.supportsSMP {
+                await crashes.resolveMemfaultIdentity(peripheral: deviceViewModel.id)
+            }
             crashes.deviceConnected(identifiers: crashIdentifiers, cloud: cloudViewModel)
         }
         .onChange(of: deviceViewModel.observabilityViewModel?.largeUploadsCompleted) { _, completed in
@@ -198,21 +201,28 @@ struct DeviceScreen: View {
     }
     
     private var crashIdentifiers: [String?] {
+        [crashes.memfaultIdentity?.deviceSerialNumber] + baseIdentifiers
+    }
+    
+    private var baseIdentifiers: [String?] {
         [deviceViewModel.deviceInfo?.serialNumber, deviceViewModel.device.name]
     }
     
     private func addDeviceToCloud() async {
-        guard let serial = deviceViewModel.deviceInfo?.serialNumber?.trimmed.nonEmpty
+        let identity = crashes.memfaultIdentity
+        guard let serial = identity?.deviceSerialNumber.trimmed.nonEmpty
+                ?? deviceViewModel.deviceInfo?.serialNumber?.trimmed.nonEmpty
                 ?? deviceViewModel.device.name?.trimmed.nonEmpty else { return }
         let name = deviceViewModel.device.name?.trimmed.nonEmpty
         await crashes.addDevice(serial: serial,
-                                hardwareVersion: deviceViewModel.deviceInfo?.hardwareRevision?.trimmed.nonEmpty ?? "unknown",
+                                hardwareVersion: identity?.hardwareVersion.trimmed.nonEmpty
+                                    ?? deviceViewModel.deviceInfo?.hardwareRevision?.trimmed.nonEmpty ?? "unknown",
                                 nickname: name == serial ? nil : name,
                                 identifiers: crashIdentifiers, cloud: cloudViewModel)
     }
     
     private var crashLoadTrigger: CrashLoadTrigger {
-        CrashLoadTrigger(identifiers: crashIdentifiers.compactMap { $0 },
+        CrashLoadTrigger(identifiers: baseIdentifiers.compactMap { $0 },
                          isConnected: deviceViewModel.device.status.hashValue == Device.Status.connected.hashValue
                              && deviceViewModel.isInitialized)
     }

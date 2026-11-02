@@ -7,6 +7,8 @@
 //
 
 import Foundation
+import iOSMcuManagerLibrary
+import iOSOtaLibrary
 import iOS_Common_Libraries
 
 @MainActor
@@ -25,6 +27,7 @@ final class DeviceCrashesViewModel {
     private(set) var cloudDevice: NRFCloudDevice?
     private(set) var lookupFinished = false
     private(set) var isLoading = false
+    private(set) var memfaultIdentity: DeviceInfoToken?
     private(set) var isAddingDevice = false
     private(set) var addDeviceError: String?
     var showsAllCrashes = false
@@ -35,6 +38,18 @@ final class DeviceCrashesViewModel {
     @ObservationIgnored private var worker: Task<Void, Never>?
     @ObservationIgnored private var lastStart: ContinuousClock.Instant?
     @ObservationIgnored private let log = NordicLog(category: "DeviceCrashesViewModel", subsystem: "com.nordicsemi.nrf-toolbox")
+    
+    func resolveMemfaultIdentity(peripheral: UUID) async {
+        guard memfaultIdentity == nil else { return }
+        let transport = McuMgrBleTransport(peripheral)
+        do {
+            let token = try await OTAManager().getDeviceInfoToken(via: transport)
+            log.info("Memfault identity: serial \(token.deviceSerialNumber), hardware \(token.hardwareVersion), firmware \(token.currentVersion)")
+            memfaultIdentity = token
+        } catch {
+            log.error("Reading Memfault identity failed: \(error.localizedDescription)")
+        }
+    }
     
     func deviceConnected(identifiers: [String?], cloud: NRFCloudViewModel) {
         cloudDevice = cloud.cloudDevice(matching: identifiers)
