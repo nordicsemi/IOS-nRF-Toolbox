@@ -63,6 +63,19 @@ struct NRFCloudService {
         return devices
     }
     
+    func addDevice(access: NRFCloudAccess, serial: String, hardwareVersion: String, nickname: String?) async throws {
+        log.info("Adding device \(serial) to \(access.selection.organization)/\(access.selection.project)")
+        var body: [String: String] = ["device_serial": serial, "hardware_version": hardwareVersion]
+        if let nickname { body["nickname"] = nickname }
+        let url = try projectURL(access: access, resource: "devices", query: [])
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(access.token)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(body)
+        _ = try await perform(request)
+    }
+    
     func listCrashes(access: NRFCloudAccess, serial: String) async throws -> [NRFCloudCrash] {
         log.info("Listing crashes for device \(serial)")
         let crashes: [NRFCloudCrash] = try await fetchAll(access: access, resource: "traces",
@@ -131,14 +144,18 @@ struct NRFCloudService {
     }
     
     private func send(access: NRFCloudAccess, resource: String, query: [URLQueryItem]) async throws -> Data {
+        let url = try projectURL(access: access, resource: resource, query: query)
+        return try await get(url: url, token: access.token)
+    }
+    
+    private func projectURL(access: NRFCloudAccess, resource: String, query: [URLQueryItem]) throws -> URL {
         var components = URLComponents()
         components.scheme = "https"
         components.host = Self.host
         components.path = "/api/v0/organizations/\(access.selection.organization)/projects/\(access.selection.project)/\(resource)"
         components.queryItems = query.isEmpty ? nil : query
         guard let url = components.url else { throw NRFCloudError.notFound("invalid URL") }
-        
-        return try await get(url: url, token: access.token)
+        return url
     }
     
     private func get(url: URL, token: String) async throws -> Data {

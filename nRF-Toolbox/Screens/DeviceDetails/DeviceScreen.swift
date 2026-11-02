@@ -191,14 +191,24 @@ struct DeviceScreen: View {
                 OTASection(viewModel: ota, peripheral: deviceViewModel.id)
             }
             
-            CrashesSection(viewModel: crashes) {
+            CrashesSection(viewModel: crashes, onRefresh: {
                 crashes.request(identifiers: crashIdentifiers, cloud: cloudViewModel, reason: "manual refresh")
-            }
+            }, onAddDevice: crashLoadTrigger.isConnected ? { await addDeviceToCloud() } : nil)
         }
     }
     
     private var crashIdentifiers: [String?] {
         [deviceViewModel.deviceInfo?.serialNumber, deviceViewModel.device.name]
+    }
+    
+    private func addDeviceToCloud() async {
+        guard let serial = deviceViewModel.deviceInfo?.serialNumber?.trimmed.nonEmpty
+                ?? deviceViewModel.device.name?.trimmed.nonEmpty else { return }
+        let name = deviceViewModel.device.name?.trimmed.nonEmpty
+        await crashes.addDevice(serial: serial,
+                                hardwareVersion: deviceViewModel.deviceInfo?.hardwareRevision?.trimmed.nonEmpty ?? "unknown",
+                                nickname: name == serial ? nil : name,
+                                identifiers: crashIdentifiers, cloud: cloudViewModel)
     }
     
     private var crashLoadTrigger: CrashLoadTrigger {

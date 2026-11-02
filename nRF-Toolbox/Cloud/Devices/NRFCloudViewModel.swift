@@ -147,6 +147,14 @@ final class NRFCloudViewModel {
         }
     }
     
+    func addDevice(serial: String, hardwareVersion: String, nickname: String?) async throws {
+        guard let selection else { throw NRFCloudError.notFound("no project selected") }
+        try await withAccess(selection) {
+            try await service.addDevice(access: $0, serial: serial, hardwareVersion: hardwareVersion, nickname: nickname)
+        }
+        await refresh()
+    }
+    
     func cloudDevice(matching identifiers: [String?]) -> NRFCloudDevice? {
         let keys = Set(identifiers.compactMap { $0?.trimmed.lowercased() }.filter { !$0.isEmpty })
         let match = devices.first { !$0.matchKeys.isDisjoint(with: keys) }

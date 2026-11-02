@@ -45,4 +45,8 @@ extension String {
     var trimmed: String {
         trimmingCharacters(in: .whitespacesAndNewlines)
     }
+    
+    var nonEmpty: String? {
+        isEmpty ? nil : self
+    }
 }

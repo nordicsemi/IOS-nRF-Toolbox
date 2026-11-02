@@ -17,6 +17,7 @@ struct CrashesSection: View {
     
     let viewModel: DeviceCrashesViewModel
     let onRefresh: () -> Void
+    let onAddDevice: (() async -> Void)?
     
     private var cloudDevice: NRFCloudDevice? {
         viewModel.cloudDevice
@@ -142,6 +143,28 @@ struct CrashesSection: View {
                 Spacer()
                 
                 refreshButton
+            }
+            
+            if let onAddDevice {
+                Button {
+                    Task { await onAddDevice() }
+                } label: {
+                    HStack {
+                        Label("Add to Project", systemImage: "plus.circle")
+                        
+                        if viewModel.isAddingDevice {
+                            Spacer()
+                            ProgressView()
+                        }
+                    }
+                }
+                .foregroundStyle(Color.universalAccentColor)
+                .disabled(viewModel.isAddingDevice)
+            }
+            
+            if let error = viewModel.addDeviceError {
+                Label(error, systemImage: "exclamationmark.triangle")
+                    .foregroundStyle(.red)
             }
         } else {
             ProgressView()

@@ -25,6 +25,8 @@ final class DeviceCrashesViewModel {
     private(set) var cloudDevice: NRFCloudDevice?
     private(set) var lookupFinished = false
     private(set) var isLoading = false
+    private(set) var isAddingDevice = false
+    private(set) var addDeviceError: String?
     var showsAllCrashes = false
     var selectedCrash: NRFCloudCrash?
     
@@ -49,6 +51,25 @@ final class DeviceCrashesViewModel {
         }
         didRequestOnFirstConnection = true
         request(identifiers: identifiers, cloud: cloud, reason: "first connection")
+    }
+    
+    func addDevice(serial: String, hardwareVersion: String, nickname: String?,
+                   identifiers: [String?], cloud: NRFCloudViewModel) async {
+        guard !isAddingDevice else { return }
+        isAddingDevice = true
+        addDeviceError = nil
+        defer { isAddingDevice = false }
+        do {
+            try await cloud.addDevice(serial: serial, hardwareVersion: hardwareVersion, nickname: nickname)
+        } catch {
+            log.error("Adding device \(serial) failed: \(error.localizedDescription)")
+            addDeviceError = error.localizedDescription
+            return
+        }
+        cloudDevice = cloud.cloudDevice(matching: identifiers)
+        lookupFinished = true
+        guard let cloudDevice else { return }
+        await cloud.loadCrashes(for: cloudDevice)
     }
     
     func request(identifiers: [String?], cloud: NRFCloudViewModel, reason: String) {

@@ -32,7 +32,6 @@
 		0164A4712AD593B40093E501 /* ScanResultList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0164A4702AD593B40093E501 /* ScanResultList.swift */; };
 		0164A4742AD5A4630093E501 /* StateViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0164A4732AD5A4630093E501 /* StateViews.swift */; };
 		0164A4762AD698650093E501 /* NumberDatabase+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0164A4752AD698650093E501 /* NumberDatabase+Ext.swift */; };
-		A7D0BE0130B100010079DA29 /* RestoringCentralManagerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D0BE0230B100010079DA29 /* RestoringCentralManagerDelegate.swift */; };
 		0164A4792AD741200093E501 /* ConnectedDevicesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0164A4782AD741200093E501 /* ConnectedDevicesViewModel.swift */; };
 		0164A4812AD8330E0093E501 /* ServiceBadgeGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0164A4802AD8330E0093E501 /* ServiceBadgeGroup.swift */; };
 		0164A4862AD84A170093E501 /* DeviceDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0164A4852AD84A170093E501 /* DeviceDetailsViewModel.swift */; };
@@ -114,6 +113,7 @@
 		A7CB67222E967C0D007E1311 /* CGMSWarningOctet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7CB67212E967C08007E1311 /* CGMSWarningOctet.swift */; };
 		A7CB67242E9680E3007E1311 /* UnitGlucoseTrend.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7CB67232E9680E2007E1311 /* UnitGlucoseTrend.swift */; };
 		A7CF97B42E8BBE5500C1E1B3 /* CaloriesResetState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7CF97B32E8BBE5400C1E1B3 /* CaloriesResetState.swift */; };
+		A7D0BE0130B100010079DA29 /* RestoringCentralManagerDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D0BE0230B100010079DA29 /* RestoringCentralManagerDelegate.swift */; };
 		A7D2C8E52E7D414700C93C28 /* CGMSFeatureEnvelope.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D2C8E42E7D414300C93C28 /* CGMSFeatureEnvelope.swift */; };
 		A7D657C42EA2470E00CA7D63 /* UARTCBMPeripheralSpecDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D657C32EA2470300CA7D63 /* UARTCBMPeripheralSpecDelegate.swift */; };
 		A7D7B0D62EBA0254009B69CE /* UARTPresetsXmlParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D7B0D52EBA024F009B69CE /* UARTPresetsXmlParser.swift */; };
@@ -250,7 +250,6 @@
 		0164A4702AD593B40093E501 /* ScanResultList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanResultList.swift; sourceTree = "<group>"; };
 		0164A4732AD5A4630093E501 /* StateViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateViews.swift; sourceTree = "<group>"; };
 		0164A4752AD698650093E501 /* NumberDatabase+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NumberDatabase+Ext.swift"; sourceTree = "<group>"; };
-		A7D0BE0230B100010079DA29 /* RestoringCentralManagerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoringCentralManagerDelegate.swift; sourceTree = "<group>"; };
 		0164A4782AD741200093E501 /* ConnectedDevicesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectedDevicesViewModel.swift; sourceTree = "<group>"; };
 		0164A4802AD8330E0093E501 /* ServiceBadgeGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceBadgeGroup.swift; sourceTree = "<group>"; };
 		0164A4852AD84A170093E501 /* DeviceDetailsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceDetailsViewModel.swift; sourceTree = "<group>"; };
@@ -347,6 +346,7 @@
 		A7CB67212E967C08007E1311 /* CGMSWarningOctet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGMSWarningOctet.swift; sourceTree = "<group>"; };
 		A7CB67232E9680E2007E1311 /* UnitGlucoseTrend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnitGlucoseTrend.swift; sourceTree = "<group>"; };
 		A7CF97B32E8BBE5400C1E1B3 /* CaloriesResetState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaloriesResetState.swift; sourceTree = "<group>"; };
+		A7D0BE0230B100010079DA29 /* RestoringCentralManagerDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoringCentralManagerDelegate.swift; sourceTree = "<group>"; };
 		A7D2C8E42E7D414300C93C28 /* CGMSFeatureEnvelope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGMSFeatureEnvelope.swift; sourceTree = "<group>"; };
 		A7D657C32EA2470300CA7D63 /* UARTCBMPeripheralSpecDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UARTCBMPeripheralSpecDelegate.swift; sourceTree = "<group>"; };
 		A7D7B0D52EBA024F009B69CE /* UARTPresetsXmlParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UARTPresetsXmlParser.swift; sourceTree = "<group>"; };
