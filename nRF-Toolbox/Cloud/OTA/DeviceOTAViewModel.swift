@@ -11,6 +11,17 @@ import iOSMcuManagerLibrary
 import iOSOtaLibrary
 import iOS_Common_Libraries
 
+enum OTACheckError: LocalizedError {
+    case projectKeyUnavailable(String)
+    
+    var errorDescription: String? {
+        switch self {
+        case .projectKeyUnavailable(let reason):
+            "The device could not provide its Memfault project key (\(reason)). Check that the firmware has a project key configured."
+        }
+    }
+}
+
 @MainActor
 @Observable
 final class DeviceOTAViewModel: NSObject {
@@ -27,6 +38,7 @@ final class DeviceOTAViewModel: NSObject {
     }
 
     private(set) var state: State = .idle
+    private(set) var installedVersion: String?
 
     var isBusy: Bool {
         switch state {
@@ -79,7 +91,15 @@ final class DeviceOTAViewModel: NSObject {
         do {
             log.info("Reading device info and project key")
             let deviceInfo = try await otaManager.getDeviceInfoToken(via: transport)
-            let projectKey = try await otaManager.getProjectKey(via: transport)
+            installedVersion = deviceInfo.currentVersion
+            log.info("Installed firmware \(deviceInfo.currentVersion) (\(deviceInfo.softwareType), \(deviceInfo.hardwareVersion), serial \(deviceInfo.deviceSerialNumber))")
+            let projectKey: ProjectKey
+            do {
+                projectKey = try await otaManager.getProjectKey(via: transport)
+            } catch {
+                log.error("Reading project key failed: \(error.localizedDescription)")
+                throw OTACheckError.projectKeyUnavailable(error.localizedDescription)
+            }
             let release = try await otaManager.getLatestReleaseInfo(deviceInfo: deviceInfo, projectKey: projectKey)
             try Task.checkCancellation()
             log.info("Release \(release.version) is available")

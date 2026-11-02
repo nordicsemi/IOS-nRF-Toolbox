@@ -17,6 +17,10 @@ struct OTASection: View {
 
     var body: some View {
         Section("Firmware Update") {
+            if let installed = viewModel.installedVersion {
+                LabeledContent("Installed", value: installed)
+            }
+            
             switch viewModel.state {
             case .idle:
                 checkButton
