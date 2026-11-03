@@ -33,16 +33,19 @@ final class DeviceOTAViewModel: NSObject {
         case available(CatalogRelease)
         case downloading(CatalogRelease)
         case updating(step: String, progress: Double?)
-        case completed
+        case verifying
         case failed(String)
     }
 
     private(set) var state: State = .idle
     private(set) var installedVersion: String?
+    private(set) var updatedFromVersion: String?
+    private(set) var updatedToVersion: String?
+    private(set) var lastCheckedDate: Date?
 
     var isBusy: Bool {
         switch state {
-        case .checking, .downloading, .updating: true
+        case .checking, .downloading, .updating, .verifying: true
         default: false
         }
     }
@@ -51,11 +54,22 @@ final class DeviceOTAViewModel: NSObject {
     @ObservationIgnored private var upgradeManager: FirmwareUpgradeManager?
     @ObservationIgnored private var upgradeController: FirmwareUpgradeController?
     @ObservationIgnored private var task: Task<Void, Never>?
+    @ObservationIgnored private var pendingRelease: CatalogRelease?
+    @ObservationIgnored private var currentPeripheral: UUID?
+    @ObservationIgnored private weak var currentCloud: NRFCloudViewModel?
     @ObservationIgnored private let otaManager = OTAManager()
     @ObservationIgnored private let log = NordicLog(category: "DeviceOTAViewModel", subsystem: "com.nordicsemi.nrf-toolbox")
 
+    func autoCheck(peripheral identifier: UUID, cloud: NRFCloudViewModel) {
+        guard !isBusy, cloud.isConfigured else { return }
+        if let last = lastCheckedDate, Date().timeIntervalSince(last) < 20 { return }
+        checkForUpdate(peripheral: identifier, cloud: cloud)
+    }
+
     func checkForUpdate(peripheral identifier: UUID, cloud: NRFCloudViewModel) {
         guard !isBusy else { return }
+        currentPeripheral = identifier
+        currentCloud = cloud
         state = .checking
         task = Task { [weak self] in
             await self?.performCheck(peripheral: identifier, cloud: cloud)
@@ -64,6 +78,7 @@ final class DeviceOTAViewModel: NSObject {
 
     func install(_ release: CatalogRelease) {
         guard !isBusy, let transport else { return }
+        pendingRelease = release
         state = .downloading(release)
         task = Task { [weak self] in
             await self?.performInstall(release: release, transport: transport)
@@ -100,8 +115,10 @@ final class DeviceOTAViewModel: NSObject {
             }
             try Task.checkCancellation()
             log.info("Release \(release.version) is available")
+            lastCheckedDate = Date()
             state = .available(release)
         } catch OTAManagerError.deviceIsUpToDate {
+            lastCheckedDate = Date()
             state = .upToDate
         } catch is CancellationError {
             state = .idle
@@ -129,6 +146,24 @@ final class DeviceOTAViewModel: NSObject {
         }
     }
 
+    private func verifyAfterUpdate() async {
+        guard let peripheral = currentPeripheral, let cloud = currentCloud else {
+            state = .idle
+            return
+        }
+        for attempt in 1...4 {
+            try? await Task.sleep(for: .seconds(attempt == 1 ? 4 : 3))
+            guard !Task.isCancelled else { return }
+            state = .verifying
+            await performCheck(peripheral: peripheral, cloud: cloud)
+            if case .failed = state {
+                log.info("Re-reading firmware version after the update failed (attempt \(attempt)). Retrying.")
+                continue
+            }
+            return
+        }
+    }
+
     private func finish(_ newState: State) {
         upgradeManager = nil
         upgradeController = nil
@@ -153,7 +188,12 @@ extension DeviceOTAViewModel: FirmwareUpgradeDelegate {
 
     nonisolated func upgradeDidComplete() {
         Task { @MainActor in
-            finish(.completed)
+            updatedFromVersion = installedVersion
+            updatedToVersion = pendingRelease?.version
+            finish(.verifying)
+            task = Task { [weak self] in
+                await self?.verifyAfterUpdate()
+            }
         }
     }
 

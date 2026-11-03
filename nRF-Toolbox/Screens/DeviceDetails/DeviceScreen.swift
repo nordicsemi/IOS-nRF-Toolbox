@@ -156,6 +156,9 @@ struct DeviceScreen: View {
                 await crashes.resolveMemfaultIdentity(peripheral: deviceViewModel.id)
             }
             crashes.deviceConnected(identifiers: crashIdentifiers, cloud: cloudViewModel)
+            if deviceViewModel.supportsSMP {
+                ota.autoCheck(peripheral: deviceViewModel.id, cloud: cloudViewModel)
+            }
         }
         .onChange(of: deviceViewModel.observabilityViewModel?.largeUploadsCompleted) { _, completed in
             guard let completed, completed > 0 else { return }
