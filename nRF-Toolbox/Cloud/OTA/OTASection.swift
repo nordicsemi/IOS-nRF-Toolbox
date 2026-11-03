@@ -15,6 +15,7 @@ struct OTASection: View {
 
     let viewModel: DeviceOTAViewModel
     let peripheral: UUID
+    var isConnected = true
 
     var body: some View {
         Section {
@@ -61,6 +62,8 @@ struct OTASection: View {
 
             if let installed = viewModel.installedVersion {
                 VersionPill(version: installed, tint: .secondary)
+            } else if isChecking {
+                SkeletonBar(width: 56, height: 28)
             }
         }
     }
@@ -70,10 +73,12 @@ struct OTASection: View {
     @ViewBuilder
     private var content: some View {
         switch viewModel.state {
+        case .idle where isChecking:
+            SkeletonCard()
         case .idle:
             checkButton(title: "Check for Updates")
         case .checking:
-            ProgressRow(text: "Looking for updates…")
+            SkeletonCard()
         case .upToDate:
             if let updated = updatedBanner {
                 updated
@@ -198,7 +203,8 @@ struct OTASection: View {
     // MARK: Status
 
     private var stateKey: String {
-        switch viewModel.state {
+        if isChecking { return "checking" }
+        return switch viewModel.state {
         case .idle: "idle"
         case .checking: "checking"
         case .upToDate: "upToDate"
@@ -210,15 +216,25 @@ struct OTASection: View {
         }
     }
 
-    private var isWorking: Bool {
+    private var isChecking: Bool {
         switch viewModel.state {
+        case .checking: true
+        case .idle: cloud.isConfigured && isConnected
+        default: false
+        }
+    }
+
+    private var isWorking: Bool {
+        if isChecking { return true }
+        return switch viewModel.state {
         case .checking, .downloading, .updating, .verifying: true
         default: false
         }
     }
 
     private var statusIcon: String {
-        switch viewModel.state {
+        if isChecking { return "magnifyingglass" }
+        return switch viewModel.state {
         case .idle: "cpu"
         case .checking: "magnifyingglass"
         case .upToDate: "checkmark.circle.fill"
@@ -231,7 +247,8 @@ struct OTASection: View {
     }
 
     private var tint: Color {
-        switch viewModel.state {
+        if isChecking { return Color.universalAccentColor }
+        return switch viewModel.state {
         case .failed: Color.nordicRed
         case .idle: .secondary
         default: Color.universalAccentColor
@@ -239,7 +256,8 @@ struct OTASection: View {
     }
 
     private var statusTitle: String {
-        switch viewModel.state {
+        if isChecking { return "Checking for updates" }
+        return switch viewModel.state {
         case .idle: "Firmware"
         case .checking: "Checking for updates"
         case .upToDate: "Firmware is up to date"
@@ -252,7 +270,8 @@ struct OTASection: View {
     }
 
     private var statusSubtitle: String {
-        switch viewModel.state {
+        if isChecking { return "Comparing with your cloud releases" }
+        return switch viewModel.state {
         case .idle: "Tap to look for a newer version"
         case .checking: "Comparing with your cloud releases"
         case .upToDate: "You have the latest version"
@@ -341,5 +360,53 @@ private struct UpdateProgress: View {
         .padding(14)
         .background(Color.universalAccentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         .animation(.smooth, value: progress)
+    }
+}
+
+// MARK: - SkeletonBar
+
+private struct SkeletonBar: View {
+
+    var width: CGFloat?
+    var height: CGFloat = 14
+
+    @State private var dimmed = false
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: height / 2, style: .continuous)
+            .fill(Color.secondary.opacity(dimmed ? 0.12 : 0.28))
+            .frame(width: width, height: height)
+            .frame(maxWidth: width == nil ? .infinity : nil)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
+                    dimmed = true
+                }
+            }
+    }
+}
+
+// MARK: - SkeletonCard
+
+private struct SkeletonCard: View {
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 10) {
+                SkeletonBar(width: 64, height: 28)
+
+                SkeletonBar(width: 18, height: 10)
+
+                SkeletonBar(width: 64, height: 28)
+
+                Spacer()
+            }
+
+            SkeletonBar(height: 10)
+
+            SkeletonBar(width: 160, height: 10)
+        }
+        .padding(14)
+        .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .accessibilityLabel("Checking for updates")
     }
 }

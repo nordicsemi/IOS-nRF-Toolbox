@@ -194,7 +194,7 @@ struct DeviceScreen: View {
     private var crashesSection: some View {
         Group {
             if deviceViewModel.supportsSMP {
-                OTASection(viewModel: ota, peripheral: deviceViewModel.id)
+                OTASection(viewModel: ota, peripheral: deviceViewModel.id, isConnected: crashLoadTrigger.isConnected)
             }
             
             CrashesSection(viewModel: crashes, onRefresh: {
