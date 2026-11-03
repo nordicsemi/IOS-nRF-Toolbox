@@ -12,6 +12,8 @@ import iOS_Common_Libraries
 
 struct OTASection: View {
 
+    @Environment(NRFCloudViewModel.self) private var cloud: NRFCloudViewModel
+
     let viewModel: DeviceOTAViewModel
     let peripheral: UUID
 
@@ -84,7 +86,7 @@ struct OTASection: View {
                     .foregroundStyle(.red)
 
                 Button("Retry") {
-                    viewModel.checkForUpdate(peripheral: peripheral)
+                    viewModel.checkForUpdate(peripheral: peripheral, cloud: cloud)
                 }
             }
         }
@@ -92,22 +94,18 @@ struct OTASection: View {
 
     private var checkButton: some View {
         Button("Check for Updates") {
-            viewModel.checkForUpdate(peripheral: peripheral)
+            viewModel.checkForUpdate(peripheral: peripheral, cloud: cloud)
         }
         .foregroundStyle(Color.universalAccentColor)
     }
 
     @ViewBuilder
-    private func releaseDetails(_ release: LatestReleaseInfo) -> some View {
+    private func releaseDetails(_ release: CatalogRelease) -> some View {
         LabeledContent {
-            Text(release.revision.isEmpty ? release.version : "\(release.version)-\(release.revision)")
+            Text(release.version)
         } label: {
             Label("Available", systemImage: "arrow.down.circle")
                 .setAccent(Color.universalAccentColor)
-        }
-
-        if let artifact = release.artifacts.first {
-            LabeledContent("Size", value: artifact.sizeString())
         }
 
         if !release.notes.trimmed.isEmpty {

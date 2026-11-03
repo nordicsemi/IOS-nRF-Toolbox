@@ -101,6 +101,35 @@ struct NRFCloudService {
         return detail
     }
     
+    func newestRelease(access: NRFCloudAccess, newerThan currentVersion: String,
+                       hardwareVersion: String, softwareType: String) async throws -> CatalogRelease? {
+        log.info("Listing releases for hardware \(hardwareVersion), newer than \(currentVersion)")
+        let summaries: [ReleaseSummary] = try await fetchAll(access: access, resource: "releases",
+                                                             query: [URLQueryItem(name: "hardware_version", value: hardwareVersion)])
+        let newer = summaries.map(\.version)
+            .filter { MemfaultReleaseCatalog.isVersion($0, newerThan: currentVersion) }
+            .sorted { MemfaultReleaseCatalog.isVersion($0, newerThan: $1) }
+        log.info("Fetched \(summaries.count) release(s), \(newer.count) newer than \(currentVersion)")
+        for version in newer {
+            let encoded = version.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? version
+            let data = try await send(access: access, resource: "releases/\(encoded)", query: [])
+            let body = try JSONDecoder().decode(DataEnvelope<ReleaseBody>.self, from: data).data
+            guard let artifact = body.artifacts.first(where: {
+                $0.type == "firmware"
+                && $0.softwareType == softwareType
+                && $0.hardwareVersion.name == hardwareVersion
+                && $0.downloadable != false
+            }) else {
+                log.info("Release \(version) has no \(softwareType)/\(hardwareVersion) firmware artifact")
+                continue
+            }
+            guard let url = URL(string: artifact.url) else { throw MemfaultReleaseCatalogError.invalidArtifactURL }
+            return CatalogRelease(version: body.version, notes: body.notes ?? "",
+                                  filename: artifact.filename, url: url, md5: artifact.md5)
+        }
+        return nil
+    }
+    
     private func decode<T: Decodable>(path: String, token: String) async throws -> T {
         var components = URLComponents()
         components.scheme = "https"
@@ -231,4 +260,38 @@ private struct Paging: Decodable {
     enum CodingKeys: String, CodingKey {
         case pageCount = "page_count"
     }
+}
+
+private struct ReleaseSummary: Decodable {
+    
+    let version: String
+}
+
+private struct ReleaseBody: Decodable {
+    
+    let version: String
+    let notes: String?
+    let artifacts: [ReleaseBodyArtifact]
+}
+
+private struct ReleaseBodyArtifact: Decodable {
+    
+    let type: String
+    let softwareType: String
+    let hardwareVersion: ReleaseBodyHardware
+    let filename: String
+    let url: String
+    let md5: String
+    let downloadable: Bool?
+    
+    enum CodingKeys: String, CodingKey {
+        case type, filename, url, md5, downloadable
+        case softwareType = "software_type"
+        case hardwareVersion = "hardware_version"
+    }
+}
+
+private struct ReleaseBodyHardware: Decodable {
+    
+    let name: String
 }

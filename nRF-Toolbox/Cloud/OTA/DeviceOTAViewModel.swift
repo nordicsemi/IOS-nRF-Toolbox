@@ -30,8 +30,8 @@ final class DeviceOTAViewModel: NSObject {
         case idle
         case checking
         case upToDate
-        case available(LatestReleaseInfo)
-        case downloading(LatestReleaseInfo)
+        case available(CatalogRelease)
+        case downloading(CatalogRelease)
         case updating(step: String, progress: Double?)
         case completed
         case failed(String)
@@ -54,19 +54,19 @@ final class DeviceOTAViewModel: NSObject {
     @ObservationIgnored private let otaManager = OTAManager()
     @ObservationIgnored private let log = NordicLog(category: "DeviceOTAViewModel", subsystem: "com.nordicsemi.nrf-toolbox")
 
-    func checkForUpdate(peripheral identifier: UUID) {
+    func checkForUpdate(peripheral identifier: UUID, cloud: NRFCloudViewModel) {
         guard !isBusy else { return }
         state = .checking
         task = Task { [weak self] in
-            await self?.performCheck(peripheral: identifier)
+            await self?.performCheck(peripheral: identifier, cloud: cloud)
         }
     }
 
-    func install(_ release: LatestReleaseInfo) {
-        guard !isBusy, let transport, let artifact = release.artifacts.first else { return }
+    func install(_ release: CatalogRelease) {
+        guard !isBusy, let transport else { return }
         state = .downloading(release)
         task = Task { [weak self] in
-            await self?.performInstall(artifact: artifact, transport: transport)
+            await self?.performInstall(release: release, transport: transport)
         }
     }
 
@@ -85,7 +85,7 @@ final class DeviceOTAViewModel: NSObject {
         state = .idle
     }
 
-    private func performCheck(peripheral identifier: UUID) async {
+    private func performCheck(peripheral identifier: UUID, cloud: NRFCloudViewModel) async {
         let transport = McuMgrBleTransport(identifier)
         self.transport = transport
         do {
@@ -93,14 +93,11 @@ final class DeviceOTAViewModel: NSObject {
             let deviceInfo = try await otaManager.getDeviceInfoToken(via: transport)
             installedVersion = deviceInfo.currentVersion
             log.info("Installed firmware \(deviceInfo.currentVersion) (\(deviceInfo.softwareType), \(deviceInfo.hardwareVersion), serial \(deviceInfo.deviceSerialNumber))")
-            let projectKey: ProjectKey
-            do {
-                projectKey = try await otaManager.getProjectKey(via: transport)
-            } catch {
-                log.error("Reading project key failed: \(error.localizedDescription)")
-                throw OTACheckError.projectKeyUnavailable(error.localizedDescription)
+            guard let release = try await cloud.newestRelease(newerThan: deviceInfo.currentVersion,
+                                                              hardwareVersion: deviceInfo.hardwareVersion,
+                                                              softwareType: deviceInfo.softwareType) else {
+                throw OTAManagerError.deviceIsUpToDate
             }
-            let release = try await otaManager.getLatestReleaseInfo(deviceInfo: deviceInfo, projectKey: projectKey)
             try Task.checkCancellation()
             log.info("Release \(release.version) is available")
             state = .available(release)
@@ -114,12 +111,13 @@ final class DeviceOTAViewModel: NSObject {
         }
     }
 
-    private func performInstall(artifact: ReleaseArtifact, transport: McuMgrBleTransport) async {
+    private func performInstall(release: CatalogRelease, transport: McuMgrBleTransport) async {
         do {
-            let url = try await otaManager.download(artifact: artifact)
+            let url = try await MemfaultReleaseCatalog.download(release)
             try Task.checkCancellation()
             let package = try McuMgrPackage(from: url)
             let manager = FirmwareUpgradeManager(transport: transport, delegate: self)
+            manager.logDelegate = self
             upgradeManager = manager
             state = .updating(step: "Starting", progress: nil)
             manager.start(package: package)
@@ -175,6 +173,19 @@ extension DeviceOTAViewModel: FirmwareUpgradeDelegate {
         Task { @MainActor in
             guard case .updating(let step, _) = state, imageSize > 0 else { return }
             state = .updating(step: step, progress: Double(bytesSent) / Double(imageSize))
+        }
+    }
+}
+
+extension DeviceOTAViewModel: McuMgrLogDelegate {
+
+    nonisolated func log(_ msg: String, ofCategory category: McuMgrLogCategory, atLevel level: McuMgrLogLevel) {
+        let line = "[McuMgr \(category)] \(msg)"
+        switch level {
+        case .error, .warning:
+            log.error("\(line)")
+        default:
+            log.info("\(line)")
         }
     }
 }

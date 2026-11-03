@@ -162,6 +162,14 @@ final class NRFCloudViewModel {
         return match
     }
     
+    func newestRelease(newerThan currentVersion: String, hardwareVersion: String, softwareType: String) async throws -> CatalogRelease? {
+        guard let selection, account.isSignedIn else { throw MemfaultReleaseCatalogError.notSignedIn }
+        return try await withAccess(selection) {
+            try await service.newestRelease(access: $0, newerThan: currentVersion,
+                                            hardwareVersion: hardwareVersion, softwareType: softwareType)
+        }
+    }
+    
     func loadCrashes(for device: NRFCloudDevice) async {
         guard let selection else { return }
         if case .loaded = crashStates[device.id] {} else {
