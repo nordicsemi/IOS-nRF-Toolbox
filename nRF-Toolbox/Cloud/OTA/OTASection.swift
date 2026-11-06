@@ -23,9 +23,9 @@ struct OTASection: View {
                 header
 
                 content
+                    .animation(.smooth(duration: 0.35), value: stateKey)
             }
             .padding(.vertical, 6)
-            .animation(.smooth(duration: 0.35), value: stateKey)
         } header: {
             Text("Firmware Update")
         } footer: {
@@ -37,17 +37,23 @@ struct OTASection: View {
 
     private var header: some View {
         HStack(spacing: 14) {
-            ZStack {
-                Circle()
-                    .fill(tint.opacity(0.15))
-                    .frame(width: 44, height: 44)
-
-                Image(systemName: statusIcon)
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(tint)
-                    .symbolEffect(.pulse, isActive: isWorking)
-                    .contentTransition(.symbolEffect(.replace))
-            }
+            Image(systemName: statusIcon)
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundStyle(tint)
+                .symbolEffect(.pulse, isActive: isWorking)
+                .contentTransition(.symbolEffect(.replace))
+                .frame(width: 44, height: 44)
+                .background(Circle().fill(tint.opacity(0.15)))
+                .fixedSize()
+                .animation(.smooth(duration: 0.3), value: statusIcon)
+                .keyframeAnimator(initialValue: 1.0, trigger: statusIcon) { view, scale in
+                    view.scaleEffect(scale)
+                } keyframes: { _ in
+                    KeyframeTrack {
+                        SpringKeyframe(0.8, duration: 0.15)
+                        SpringKeyframe(1.0, duration: 0.35, spring: .bouncy)
+                    }
+                }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(statusTitle)
@@ -260,7 +266,7 @@ struct OTASection: View {
         return switch viewModel.state {
         case .idle: "Firmware"
         case .checking: "Checking for updates"
-        case .upToDate: "Firmware is up to date"
+        case .upToDate: "Firmware is updated"
         case .available(let release): "Version \(release.version) available"
         case .downloading: "Downloading"
         case .updating: "Updating firmware"
