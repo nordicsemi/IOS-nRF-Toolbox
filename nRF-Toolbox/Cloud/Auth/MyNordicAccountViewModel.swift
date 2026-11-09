@@ -9,22 +9,22 @@
 import Foundation
 import iOS_Common_Libraries
 
-
 @MainActor
 @Observable
 final class MyNordicAccountViewModel {
     
     private static let expirationMargin: TimeInterval = 60
     
-    private(set) var account: MyNordicAccount?
     var userName: String? { account?.userName }
     var isSignedIn: Bool { account != nil }
-    private(set) var isSigningIn = false
     var errorMessage: String?
+    
+    private(set) var account: MyNordicAccount?
+    private(set) var isSigningIn = false
     
     private let service = MyNordicAuthService()
     private let keychain = MyNordicKeychain()
-    private let log = NordicLog(category: "MyNordicAccountViewModel", subsystem: "com.nordicsemi.nrf-toolbox")
+    private let log = NordicLog.cloud("MyNordicAccountViewModel")
     
     func signIn() async {
         isSigningIn = true

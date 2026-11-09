@@ -190,8 +190,14 @@ private struct FramePayload: Decodable {
     }
     
     var frame: NRFCloudCrashDetail.Frame {
-        NRFCloudCrashDetail.Frame(index: index, function: function, file: file, line: lineno,
-                                  address: address?.text, type: frameType)
+        NRFCloudCrashDetail.Frame(
+            index: index,
+            function: function,
+            file: file,
+            line: lineno,
+            address: address?.text,
+            type: frameType
+        )
     }
 }
 
@@ -214,11 +220,17 @@ private struct ThreadPayload: Decodable {
     }
     
     var thread: NRFCloudCrashDetail.Thread {
-        NRFCloudCrashDetail.Thread(id: tid ?? -1, name: name, state: state,
-                                   isCrashed: crashed ?? false, isCurrent: current ?? false,
-                                   stackSize: stackSize, stackUnused: stackUnused,
-                                   frames: (stacktrace ?? []).map(\.frame),
-                                   registers: (registers ?? []).map(\.register))
+        NRFCloudCrashDetail.Thread(
+            id: tid ?? -1,
+            name: name,
+            state: state,
+            isCrashed: crashed ?? false,
+            isCurrent: current ?? false,
+            stackSize: stackSize,
+            stackUnused: stackUnused,
+            frames: (stacktrace ?? []).map(\.frame),
+            registers: (registers ?? []).map(\.register)
+        )
     }
 }
 

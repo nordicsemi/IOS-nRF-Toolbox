@@ -39,14 +39,3 @@ struct NRFCloudProject: Decodable, Identifiable, Hashable {
     let name: String
     let slug: String
 }
-
-extension String {
-    
-    var trimmed: String {
-        trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-    
-    var nonEmpty: String? {
-        isEmpty ? nil : self
-    }
-}

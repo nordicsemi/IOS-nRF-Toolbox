@@ -11,17 +11,6 @@ import iOSMcuManagerLibrary
 import iOSOtaLibrary
 import iOS_Common_Libraries
 
-enum OTACheckError: LocalizedError {
-    case projectKeyUnavailable(String)
-    
-    var errorDescription: String? {
-        switch self {
-        case .projectKeyUnavailable(let reason):
-            "The device could not provide its Memfault project key (\(reason)). Check that the firmware has a project key configured."
-        }
-    }
-}
-
 @MainActor
 @Observable
 final class DeviceOTAViewModel: NSObject {
@@ -36,6 +25,11 @@ final class DeviceOTAViewModel: NSObject {
         case verifying
         case failed(String)
     }
+
+    private static let autoCheckInterval: TimeInterval = 20
+    private static let verificationAttempts = 4
+    private static let firstVerificationDelay: Duration = .seconds(4)
+    private static let retryVerificationDelay: Duration = .seconds(3)
 
     private(set) var state: State = .idle
     private(set) var installedVersion: String?
@@ -58,11 +52,11 @@ final class DeviceOTAViewModel: NSObject {
     @ObservationIgnored private var currentPeripheral: UUID?
     @ObservationIgnored private weak var currentCloud: NRFCloudViewModel?
     @ObservationIgnored private let otaManager = OTAManager()
-    @ObservationIgnored private let log = NordicLog(category: "DeviceOTAViewModel", subsystem: "com.nordicsemi.nrf-toolbox")
+    @ObservationIgnored private let log = NordicLog.cloud("DeviceOTAViewModel")
 
     func autoCheck(peripheral identifier: UUID, cloud: NRFCloudViewModel) {
         guard !isBusy, cloud.isConfigured else { return }
-        if let last = lastCheckedDate, Date().timeIntervalSince(last) < 20 { return }
+        if let last = lastCheckedDate, Date().timeIntervalSince(last) < Self.autoCheckInterval { return }
         checkForUpdate(peripheral: identifier, cloud: cloud)
     }
 
@@ -104,7 +98,7 @@ final class DeviceOTAViewModel: NSObject {
         let transport = McuMgrBleTransport(identifier)
         self.transport = transport
         do {
-            log.info("Reading device info and project key")
+            log.info("Reading device info")
             let deviceInfo = try await otaManager.getDeviceInfoToken(via: transport)
             installedVersion = deviceInfo.currentVersion
             log.info("Installed firmware \(deviceInfo.currentVersion) (\(deviceInfo.softwareType), \(deviceInfo.hardwareVersion), serial \(deviceInfo.deviceSerialNumber))")
@@ -151,8 +145,8 @@ final class DeviceOTAViewModel: NSObject {
             state = .idle
             return
         }
-        for attempt in 1...4 {
-            try? await Task.sleep(for: .seconds(attempt == 1 ? 4 : 3))
+        for attempt in 1...Self.verificationAttempts {
+            try? await Task.sleep(for: attempt == 1 ? Self.firstVerificationDelay : Self.retryVerificationDelay)
             guard !Task.isCancelled else { return }
             state = .verifying
             await performCheck(peripheral: peripheral, cloud: cloud)

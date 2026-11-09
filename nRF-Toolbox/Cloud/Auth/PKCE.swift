@@ -9,7 +9,6 @@
 import CryptoKit
 import Foundation
 
-
 struct PKCE {
     
     let verifier: String
@@ -22,7 +21,6 @@ struct PKCE {
         challenge = Data(SHA256.hash(data: Data(verifier.utf8))).base64URLEncoded
     }
 }
-
 
 private extension Data {
     

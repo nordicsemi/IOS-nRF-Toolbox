@@ -23,7 +23,7 @@ struct OTASection: View {
                 header
 
                 content
-                    .animation(.smooth(duration: 0.35), value: stateKey)
+                    .animation(.smooth(duration: 0.35), value: phase)
             }
             .padding(.vertical, 6)
         } header: {
@@ -37,16 +37,16 @@ struct OTASection: View {
 
     private var header: some View {
         HStack(spacing: 14) {
-            Image(systemName: statusIcon)
+            Image(systemName: phase.icon)
                 .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(tint)
-                .symbolEffect(.pulse, isActive: isWorking)
+                .foregroundStyle(phase.tint)
+                .symbolEffect(.pulse, isActive: phase.isWorking)
                 .contentTransition(.symbolEffect(.replace))
                 .frame(width: 44, height: 44)
-                .background(Circle().fill(tint.opacity(0.15)))
+                .background(Circle().fill(phase.tint.opacity(0.15)))
                 .fixedSize()
-                .animation(.smooth(duration: 0.3), value: statusIcon)
-                .keyframeAnimator(initialValue: 1.0, trigger: statusIcon) { view, scale in
+                .animation(.smooth(duration: 0.3), value: phase.icon)
+                .keyframeAnimator(initialValue: 1.0, trigger: phase.icon) { view, scale in
                     view.scaleEffect(scale)
                 } keyframes: { _ in
                     KeyframeTrack {
@@ -59,7 +59,7 @@ struct OTASection: View {
                 Text(statusTitle)
                     .font(.headline)
 
-                Text(statusSubtitle)
+                Text(phase.subtitle)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -79,16 +79,12 @@ struct OTASection: View {
     @ViewBuilder
     private var content: some View {
         switch viewModel.state {
-        case .idle where isChecking:
+        case .idle where isChecking, .checking:
             SkeletonCard()
         case .idle:
             checkButton(title: "Check for Updates")
-        case .checking:
-            SkeletonCard()
         case .upToDate:
-            if let updated = updatedBanner {
-                updated
-            }
+            updatedBanner
 
             checkButton(title: "Check Again")
         case .available(let release):
@@ -122,7 +118,7 @@ struct OTASection: View {
                 .foregroundStyle(Color.nordicRed)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
-                .background(Color.nordicRed.opacity(0.1), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .otaCard(Color.nordicRed, opacity: 0.1, radius: 12)
 
             checkButton(title: "Try Again")
         }
@@ -186,41 +182,27 @@ struct OTASection: View {
             }
         }
         .padding(14)
-        .background(Color.universalAccentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .otaCard(Color.universalAccentColor)
     }
 
-    private var updatedBanner: AnyView? {
-        guard let to = viewModel.updatedToVersion else { return nil }
-        let matches = viewModel.installedVersion == to
-        let text = matches
-            ? "Updated from \(viewModel.updatedFromVersion ?? "previous version") to \(to)"
-            : "Update to \(to) was sent, but the device reports \(viewModel.installedVersion ?? "an unknown version")"
-        let color: Color = matches ? Color.universalAccentColor : .orange
-        return AnyView(
+    @ViewBuilder
+    private var updatedBanner: some View {
+        if let to = viewModel.updatedToVersion {
+            let matches = viewModel.installedVersion == to
+            let text = matches
+                ? "Updated from \(viewModel.updatedFromVersion ?? "previous version") to \(to)"
+                : "Update to \(to) was sent, but the device reports \(viewModel.installedVersion ?? "an unknown version")"
+            let color: Color = matches ? Color.universalAccentColor : .orange
             Label(text, systemImage: matches ? "checkmark.seal.fill" : "questionmark.circle.fill")
                 .font(.subheadline)
                 .foregroundStyle(color)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
-                .background(color.opacity(0.1), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        )
+                .otaCard(color, opacity: 0.1, radius: 12)
+        }
     }
 
     // MARK: Status
-
-    private var stateKey: String {
-        if isChecking { return "checking" }
-        return switch viewModel.state {
-        case .idle: "idle"
-        case .checking: "checking"
-        case .upToDate: "upToDate"
-        case .available: "available"
-        case .downloading: "downloading"
-        case .updating: "updating"
-        case .verifying: "verifying"
-        case .failed: "failed"
-        }
-    }
 
     private var isChecking: Bool {
         switch viewModel.state {
@@ -230,189 +212,14 @@ struct OTASection: View {
         }
     }
 
-    private var isWorking: Bool {
-        if isChecking { return true }
-        return switch viewModel.state {
-        case .checking, .downloading, .updating, .verifying: true
-        default: false
-        }
-    }
-
-    private var statusIcon: String {
-        if isChecking { return "magnifyingglass" }
-        return switch viewModel.state {
-        case .idle: "cpu"
-        case .checking: "magnifyingglass"
-        case .upToDate: "checkmark.circle.fill"
-        case .available: "arrow.down.circle.fill"
-        case .downloading: "icloud.and.arrow.down.fill"
-        case .updating: "arrow.triangle.2.circlepath"
-        case .verifying: "power"
-        case .failed: "exclamationmark.triangle.fill"
-        }
-    }
-
-    private var tint: Color {
-        if isChecking { return Color.universalAccentColor }
-        return switch viewModel.state {
-        case .failed: Color.nordicRed
-        case .idle: .secondary
-        default: Color.universalAccentColor
-        }
+    private var phase: OTAPhase {
+        isChecking ? .checking : OTAPhase(viewModel.state)
     }
 
     private var statusTitle: String {
-        if isChecking { return "Checking for updates" }
-        return switch viewModel.state {
-        case .idle: "Firmware"
-        case .checking: "Checking for updates"
-        case .upToDate: "Firmware is updated"
-        case .available(let release): "Version \(release.version) available"
-        case .downloading: "Downloading"
-        case .updating: "Updating firmware"
-        case .verifying: "Finishing up"
-        case .failed: "Something went wrong"
+        if case .available(let release) = viewModel.state, phase == .available {
+            return "Version \(release.version) available"
         }
-    }
-
-    private var statusSubtitle: String {
-        if isChecking { return "Comparing with your cloud releases" }
-        return switch viewModel.state {
-        case .idle: "Tap to look for a newer version"
-        case .checking: "Comparing with your cloud releases"
-        case .upToDate: "You have the latest version"
-        case .available: "A newer release is ready to install"
-        case .downloading: "Keep the app open"
-        case .updating: "Do not disconnect or close the app"
-        case .verifying: "Confirming the installed version"
-        case .failed: "Check your connection and try again"
-        }
-    }
-}
-
-// MARK: - VersionPill
-
-private struct VersionPill: View {
-
-    let version: String
-    var tint: Color
-    var emphasised = false
-
-    var body: some View {
-        Text(version)
-            .font(.system(.callout, design: .monospaced).weight(emphasised ? .bold : .regular))
-            .foregroundStyle(emphasised ? Color.white : tint)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(
-                Capsule(style: .continuous)
-                    .fill(emphasised ? tint : tint.opacity(0.14))
-            )
-    }
-}
-
-// MARK: - ProgressRow
-
-private struct ProgressRow: View {
-
-    let text: String
-
-    var body: some View {
-        HStack(spacing: 12) {
-            ProgressView()
-
-            Text(text)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            Spacer()
-        }
-        .padding(12)
-        .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-    }
-}
-
-// MARK: - UpdateProgress
-
-private struct UpdateProgress: View {
-
-    let step: String
-    let progress: Double?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Text(step)
-                    .font(.subheadline.weight(.semibold))
-
-                Spacer()
-
-                if let progress {
-                    Text(progress, format: .percent.precision(.fractionLength(0)))
-                        .font(.system(.subheadline, design: .monospaced))
-                        .foregroundStyle(.secondary)
-                        .contentTransition(.numericText(value: progress))
-                }
-            }
-
-            if let progress {
-                ProgressView(value: progress)
-                    .tint(Color.universalAccentColor)
-            } else {
-                IndeterminateProgressView()
-                    .accentColor(.universalAccentColor)
-            }
-        }
-        .padding(14)
-        .background(Color.universalAccentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .animation(.smooth, value: progress)
-    }
-}
-
-// MARK: - SkeletonBar
-
-private struct SkeletonBar: View {
-
-    var width: CGFloat?
-    var height: CGFloat = 14
-
-    @State private var dimmed = false
-
-    var body: some View {
-        RoundedRectangle(cornerRadius: height / 2, style: .continuous)
-            .fill(Color.secondary.opacity(dimmed ? 0.12 : 0.28))
-            .frame(width: width, height: height)
-            .frame(maxWidth: width == nil ? .infinity : nil)
-            .onAppear {
-                withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
-                    dimmed = true
-                }
-            }
-    }
-}
-
-// MARK: - SkeletonCard
-
-private struct SkeletonCard: View {
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 10) {
-                SkeletonBar(width: 64, height: 28)
-
-                SkeletonBar(width: 18, height: 10)
-
-                SkeletonBar(width: 64, height: 28)
-
-                Spacer()
-            }
-
-            SkeletonBar(height: 10)
-
-            SkeletonBar(width: 160, height: 10)
-        }
-        .padding(14)
-        .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .accessibilityLabel("Checking for updates")
+        return phase.title
     }
 }

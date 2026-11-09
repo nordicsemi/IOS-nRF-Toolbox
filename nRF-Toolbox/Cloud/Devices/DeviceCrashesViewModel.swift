@@ -37,7 +37,7 @@ final class DeviceCrashesViewModel {
     @ObservationIgnored private var pending: Request?
     @ObservationIgnored private var worker: Task<Void, Never>?
     @ObservationIgnored private var lastStart: ContinuousClock.Instant?
-    @ObservationIgnored private let log = NordicLog(category: "DeviceCrashesViewModel", subsystem: "com.nordicsemi.nrf-toolbox")
+    @ObservationIgnored private let log = NordicLog.cloud("DeviceCrashesViewModel")
     
     func resolveMemfaultIdentity(peripheral: UUID) async {
         guard memfaultIdentity == nil else { return }

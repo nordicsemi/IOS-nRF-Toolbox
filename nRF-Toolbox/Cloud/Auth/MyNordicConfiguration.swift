@@ -8,7 +8,6 @@
 
 import Foundation
 
-
 enum MyNordicConfiguration {
     
     static let clientID = "5b42d3f5-9af2-4d64-9cb1-00f85bf27da8"
@@ -23,6 +22,8 @@ enum MyNordicConfiguration {
         "offline_access",
         "https://graph.microsoft.com/User.Read"
     ]
+    
+    static var scopeValue: String { scopes.joined(separator: " ") }
     
     static let tenantID = "1fb18d84-2f00-4d3e-a795-e45655386b44"
     static let authority = "https://nordicsemiextprod.ciamlogin.com/\(tenantID)"

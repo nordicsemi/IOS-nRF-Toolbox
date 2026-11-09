@@ -8,16 +8,14 @@
 
 import Foundation
 
-
 struct MyNordicAccount {
     
     let userName: String
-    let accessToken: String
-    let idToken: String?
+    let accessToken: String // Used for getting an user name.
+    let idToken: String? // Used for getting a cloud token.
     let refreshToken: String?
     let claims: IDTokenClaims?
 }
-
 
 struct IDTokenClaims: Decodable {
     
