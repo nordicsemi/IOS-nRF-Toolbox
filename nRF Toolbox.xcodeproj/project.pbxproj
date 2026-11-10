@@ -451,6 +451,7 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A76A45252E7D638E00E0E19C /* nRF-ToolboxTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "nRF-ToolboxTests"; sourceTree = "<group>"; };
 		A7C10D0A30AB00010079DA29 /* Cloud */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Cloud; sourceTree = "<group>"; };
+		A7E8EA2E30A1BD2F001FCD1C /* Cloud2 */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Cloud2; sourceTree = "<group>"; };
 		A7F11BA8302476AD0079DA29 /* Analytics */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (A7F11CB13025BB230079DA29 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Analytics; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -641,6 +642,7 @@
 		017D102C2A5809E300E38E5F /* nRF-Toolbox */ = {
 			isa = PBXGroup;
 			children = (
+				A7E8EA2E30A1BD2F001FCD1C /* Cloud2 */,
 				A7F11BA8302476AD0079DA29 /* Analytics */,
 				A7C10D0A30AB00010079DA29 /* Cloud */,
 				A70A61FA2F0D46C000C341AB /* Persistent */,
@@ -1150,6 +1152,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				A7C10D0A30AB00010079DA29 /* Cloud */,
+				A7E8EA2E30A1BD2F001FCD1C /* Cloud2 */,
 				A7F11BA8302476AD0079DA29 /* Analytics */,
 			);
 			name = "nRF-Toolbox";

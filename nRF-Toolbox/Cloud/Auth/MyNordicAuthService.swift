@@ -61,8 +61,13 @@ final class MyNordicAuthService: NSObject {
         guard let name = userName ?? claims?.name ?? claims?.preferredUsername else {
             throw MyNordicAuthError.invalidResponse
         }
-        return MyNordicAccount(userName: name, accessToken: tokens.accessToken, idToken: tokens.idToken,
-                               refreshToken: tokens.refreshToken, claims: claims)
+        return MyNordicAccount(
+            userName: name,
+            accessToken: tokens.accessToken,
+            idToken: tokens.idToken,
+            refreshToken: tokens.refreshToken,
+            claims: claims
+        )
     }
 
     private func authorize(pkce: PKCE, state: String) async throws -> String {
