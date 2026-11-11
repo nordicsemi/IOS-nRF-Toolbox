@@ -136,7 +136,7 @@ final class NRFCloudViewModel {
         isLoading = true
         defer { isLoading = false }
         do {
-            devices = try await session.authorized(for: selection) { try await service.listDevices(access: $0) }
+            devices = try await session.authorized { try await service.listDevices(token: $0, selection: selection) }
             errorMessage = nil
         } catch is CancellationError {
         } catch let error as URLError where error.code == .cancelled {
@@ -148,8 +148,8 @@ final class NRFCloudViewModel {
     
     func addDevice(serial: String, hardwareVersion: String, nickname: String?) async throws {
         guard let selection else { throw NRFCloudError.notFound("no project selected") }
-        try await session.authorized(for: selection) {
-            try await service.addDevice(access: $0, serial: serial, hardwareVersion: hardwareVersion, nickname: nickname)
+        try await session.authorized {
+            try await service.addDevice(token: $0, selection: selection, serial: serial, hardwareVersion: hardwareVersion, nickname: nickname)
         }
         await refresh()
     }
@@ -163,8 +163,8 @@ final class NRFCloudViewModel {
     
     func newestRelease(newerThan currentVersion: String, hardwareVersion: String, softwareType: String) async throws -> CatalogRelease? {
         guard let selection, account.isSignedIn else { throw MemfaultReleaseCatalogError.notSignedIn }
-        return try await session.authorized(for: selection) {
-            try await service.newestRelease(access: $0, newerThan: currentVersion,
+        return try await session.authorized {
+            try await service.newestRelease(token: $0, selection: selection, newerThan: currentVersion,
                                             hardwareVersion: hardwareVersion, softwareType: softwareType)
         }
     }
@@ -173,21 +173,21 @@ final class NRFCloudViewModel {
         guard let selection else { return }
         Self.markLoading(&crashStates, deviceID: device.id)
         crashStates[device.id] = await loadState(kind: "crashes", deviceID: device.id) {
-            let crashes = try await self.session.authorized(for: selection) { try await self.service.listCrashes(access: $0, serial: device.id) }
+            let crashes = try await self.session.authorized { try await self.service.listCrashes(token: $0, selection: selection, serial: device.id) }
             return crashes.sorted { ($0.capturedDate ?? .distantPast) > ($1.capturedDate ?? .distantPast) }
         }
     }
     
     func crashDetail(for crash: NRFCloudCrash) async throws -> NRFCloudCrashDetail {
         guard let selection else { throw NRFCloudError.notFound("no project selected") }
-        return try await session.authorized(for: selection) { try await service.crashDetail(access: $0, traceID: crash.id) }
+        return try await session.authorized { try await service.crashDetail(token: $0, selection: selection, traceID: crash.id) }
     }
     
     func loadReboots(for device: NRFCloudDevice) async {
         guard let selection else { return }
         Self.markLoading(&rebootStates, deviceID: device.id)
         rebootStates[device.id] = await loadState(kind: "reboots", deviceID: device.id) {
-            let reboots = try await self.session.authorized(for: selection) { try await self.service.listReboots(access: $0, serial: device.id) }
+            let reboots = try await self.session.authorized { try await self.service.listReboots(token: $0, selection: selection, serial: device.id) }
             return reboots.sorted { ($0.time ?? .distantPast) > ($1.time ?? .distantPast) }
         }
     }

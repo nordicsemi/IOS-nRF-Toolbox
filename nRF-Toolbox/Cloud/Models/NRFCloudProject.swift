@@ -14,12 +14,6 @@ struct NRFCloudSelection: Codable, Equatable {
     var project: String
 }
 
-struct NRFCloudAccess {
-    
-    let token: String
-    let selection: NRFCloudSelection
-}
-
 struct NRFCloudToken {
     
     let value: String

@@ -47,24 +47,24 @@ struct nRFCloudService {
         return projects
     }
 
-    func listDevices(access: NRFCloudAccess) async throws -> [NRFCloudDevice] {
-        log.info("Listing devices for \(access.selection.organization)/\(access.selection.project)")
-        let devices: [NRFCloudDevice] = try await fetchAll(access: access, resource: "devices")
+    func listDevices(token: String, selection: NRFCloudSelection) async throws -> [NRFCloudDevice] {
+        log.info("Listing devices for \(selection.organization)/\(selection.project)")
+        let devices: [NRFCloudDevice] = try await fetchAll(token: token, selection: selection, resource: "devices")
         log.info("Fetched \(devices.count) device(s)")
         return devices
     }
 
-    func addDevice(access: NRFCloudAccess, serial: String, hardwareVersion: String, nickname: String?) async throws {
-        log.info("Adding device \(serial) to \(access.selection.organization)/\(access.selection.project)")
+    func addDevice(token: String, selection: NRFCloudSelection, serial: String, hardwareVersion: String, nickname: String?) async throws {
+        log.info("Adding device \(serial) to \(selection.organization)/\(selection.project)")
         var body = ["device_serial": serial, "hardware_version": hardwareVersion]
         if let nickname { body["nickname"] = nickname }
-        _ = try await post(path: access.createPath("devices"), token: access.token, body: body)
+        _ = try await post(path: selection.createPath("devices"), token: token, body: body)
     }
 
-    func listCrashes(access: NRFCloudAccess, serial: String) async throws -> [NRFCloudCrash] {
+    func listCrashes(token: String, selection: NRFCloudSelection, serial: String) async throws -> [NRFCloudCrash] {
         log.info("Listing crashes for device \(serial)")
         let crashes: [NRFCloudCrash] = try await fetchAll(
-            access: access,
+            token: token, selection: selection,
             resource: "traces",
             query: [URLQueryItem(name: "device", value: serial)],
             maxPages: Self.maxPages
@@ -73,10 +73,10 @@ struct nRFCloudService {
         return crashes
     }
 
-    func listReboots(access: NRFCloudAccess, serial: String) async throws -> [NRFCloudReboot] {
+    func listReboots(token: String, selection: NRFCloudSelection, serial: String) async throws -> [NRFCloudReboot] {
         log.info("Listing reboots for device \(serial)")
         let reboots: [NRFCloudReboot] = try await fetchAll(
-            access: access,
+            token: token, selection: selection,
             resource: "devices/\(serial)/reboots",
             maxPages: Self.maxPages
         )
@@ -84,23 +84,23 @@ struct nRFCloudService {
         return reboots
     }
 
-    func crashDetail(access: NRFCloudAccess, traceID: Int) async throws -> NRFCloudCrashDetail {
+    func crashDetail(token: String, selection: NRFCloudSelection, traceID: Int) async throws -> NRFCloudCrashDetail {
         log.info("Loading crash detail \(traceID)")
-        let data = try await get(path: access.createPath("traces/\(traceID)"), token: access.token)
+        let data = try await get(path: selection.createPath("traces/\(traceID)"), token: token)
         let detail = try NRFCloudCrashDetail.decode(from: data)
         log.info("Crash \(traceID): \(detail.threads.count) thread(s), \(detail.logs.count) log line(s), \(detail.faultRegisters.count) fault register(s)")
         return detail
     }
 
     func newestRelease(
-        access: NRFCloudAccess,
+        token: String, selection: NRFCloudSelection,
         newerThan currentVersion: String,
         hardwareVersion: String,
         softwareType: String
     ) async throws -> CatalogRelease? {
         log.info("Listing releases for hardware \(hardwareVersion), newer than \(currentVersion)")
         let summaries: [MemfaultReleaseSummary] = try await fetchAll(
-            access: access,
+            token: token, selection: selection,
             resource: "releases",
             query: [URLQueryItem(name: "hardware_version", value: hardwareVersion)]
         )
@@ -109,7 +109,7 @@ struct nRFCloudService {
             .sorted { MemfaultReleaseCatalog.isVersion($0, newerThan: $1) }
         log.info("Fetched \(summaries.count) release(s), \(newerVersions.count) newer than \(currentVersion)")
         for version in newerVersions {
-            let release = try await loadRelease(access: access, version: version)
+            let release = try await loadRelease(token: token, selection: selection, version: version)
             if let match = try catalogRelease(from: release, hardwareVersion: hardwareVersion, softwareType: softwareType) {
                 return match
             }
@@ -118,9 +118,9 @@ struct nRFCloudService {
         return nil
     }
 
-    func loadRelease(access: NRFCloudAccess, version: String) async throws -> MemfaultRelease {
+    func loadRelease(token: String, selection: NRFCloudSelection, version: String) async throws -> MemfaultRelease {
         let encoded = version.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? version
-        let data = try await get(path: access.createPath("releases/\(encoded)"), token: access.token)
+        let data = try await get(path: selection.createPath("releases/\(encoded)"), token: token)
         return try JSONDecoder().decode(MemfaultEnvelope<MemfaultRelease>.self, from: data).data
     }
 
@@ -154,7 +154,8 @@ private extension nRFCloudService {
     }
 
     func fetchAll<T: Decodable>(
-        access: NRFCloudAccess,
+        token: String,
+        selection: NRFCloudSelection,
         resource: String,
         query: [URLQueryItem] = [],
         maxPages: Int = .max
@@ -167,7 +168,7 @@ private extension nRFCloudService {
                 URLQueryItem(name: "page", value: String(page)),
                 URLQueryItem(name: "per_page", value: String(Self.perPage))
             ]
-            let data = try await get(path: access.createPath(resource), query: query + paging, token: access.token)
+            let data = try await get(path: selection.createPath(resource), query: query + paging, token: token)
             let result = try JSONDecoder().decode(MemfaultPage<T>.self, from: data)
             items.append(contentsOf: result.data)
             pageCount = result.paging.pageCount
@@ -237,9 +238,9 @@ private extension nRFCloudService {
     }
 }
 
-private extension NRFCloudAccess {
+private extension NRFCloudSelection {
 
     func createPath(_ resource: String) -> String {
-        "/api/v0/organizations/\(selection.organization)/projects/\(selection.project)/\(resource)"
+        "/api/v0/organizations/\(organization)/projects/\(project)/\(resource)"
     }
 }

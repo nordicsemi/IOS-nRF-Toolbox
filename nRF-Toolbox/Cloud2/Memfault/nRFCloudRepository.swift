@@ -45,28 +45,33 @@ final class nRFCloudRepository {
     }
 
     func listDevices() async throws -> [NRFCloudDevice] {
-        let access = try await access()
-        return try await service.listDevices(access: access)
+        guard let selection else { throw NRFCloudError.notFound("No project selected.") }
+        let token = try await token()
+        return try await service.listDevices(token: token, selection: selection)
     }
 
     func addDevice(serial: String, hardwareVersion: String, nickname: String?) async throws {
-        let access = try await access()
-        try await service.addDevice(access: access, serial: serial, hardwareVersion: hardwareVersion, nickname: nickname)
+        guard let selection else { throw NRFCloudError.notFound("No project selected.") }
+        let token = try await token()
+        try await service.addDevice(token: token, selection: selection, serial: serial, hardwareVersion: hardwareVersion, nickname: nickname)
     }
 
     func listCrashes(serial: String) async throws -> [NRFCloudCrash] {
-        let access = try await access()
-        return try await service.listCrashes(access: access, serial: serial)
+        guard let selection else { throw NRFCloudError.notFound("No project selected.") }
+        let token = try await token()
+        return try await service.listCrashes(token: token, selection: selection, serial: serial)
     }
 
     func listReboots(serial: String) async throws -> [NRFCloudReboot] {
-        let access = try await access()
-        return try await service.listReboots(access: access, serial: serial)
+        guard let selection else { throw NRFCloudError.notFound("No project selected.") }
+        let token = try await token()
+        return try await service.listReboots(token: token, selection: selection, serial: serial)
     }
 
     func crashDetail(traceID: Int) async throws -> NRFCloudCrashDetail {
-        let access = try await access()
-        return try await service.crashDetail(access: access, traceID: traceID)
+        guard let selection else { throw NRFCloudError.notFound("No project selected.") }
+        let token = try await token()
+        return try await service.crashDetail(token: token, selection: selection, traceID: traceID)
     }
 
     func newestRelease(
@@ -74,9 +79,10 @@ final class nRFCloudRepository {
         hardwareVersion: String,
         softwareType: String
     ) async throws -> CatalogRelease? {
-        let access = try await access()
+        guard let selection else { throw NRFCloudError.notFound("No project selected.") }
+        let token = try await token()
         return try await service.newestRelease(
-            access: access,
+            token: token, selection: selection,
             newerThan: currentVersion,
             hardwareVersion: hardwareVersion,
             softwareType: softwareType
@@ -91,11 +97,6 @@ final class nRFCloudRepository {
     private func persistSelection() {
         let data = selection.flatMap { try? JSONEncoder().encode($0) }
         UserDefaults.standard.set(data, forKey: Self.selectionKey)
-    }
-
-    private func access() async throws -> NRFCloudAccess {
-        guard let selection else { throw NRFCloudError.notFound("no project selected") }
-        return NRFCloudAccess(token: try await token(), selection: selection)
     }
 
     private func token() async throws -> String {

@@ -53,11 +53,4 @@ final class NRFCloudSession {
             return try await request(try await accessToken())
         }
     }
-    
-    func authorized<T>(
-        for selection: NRFCloudSelection,
-        _ request: (NRFCloudAccess) async throws -> T
-    ) async throws -> T {
-        try await authorized { try await request(NRFCloudAccess(token: $0, selection: selection)) }
-    }
 }
