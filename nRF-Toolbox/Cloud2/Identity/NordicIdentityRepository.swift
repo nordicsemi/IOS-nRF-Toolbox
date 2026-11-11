@@ -31,6 +31,7 @@ struct NordicIdentityRepository {
     
     private let sessionRepository = AuthenticationSessionRepository()
     
+    /// The process used is: The OIDC Authentication Flow
     func signInToNordicIdentity() async throws -> NordicIdentity {
         let pkce = PKCE()
         let csrfToken = UUID().uuidString
