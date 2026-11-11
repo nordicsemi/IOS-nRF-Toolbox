@@ -1,5 +1,5 @@
 //
-//  NordicIdentityRepository.swift
+//  NordicIdentityService.swift
 //  nRF Toolbox
 //
 //  Created by Sylwester Zielinski on 09/11/2026.
@@ -9,7 +9,7 @@
 import Foundation
 import AuthenticationServices
 
-struct NordicIdentityRepository {
+struct NordicIdentityService {
     
     private static let clientID = "5b42d3f5-9af2-4d64-9cb1-00f85bf27da8"
     private static let source = "nrfconnectfordesktop"

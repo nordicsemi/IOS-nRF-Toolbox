@@ -9,7 +9,7 @@
 import Foundation
 import iOS_Common_Libraries
 
-struct nRFCloudRepository {
+struct nRFCloudService {
 
     private static let host = "api.memfault.com"
     private static let perPage = 100
@@ -58,7 +58,7 @@ struct nRFCloudRepository {
         log.info("Adding device \(serial) to \(access.selection.organization)/\(access.selection.project)")
         var body = ["device_serial": serial, "hardware_version": hardwareVersion]
         if let nickname { body["nickname"] = nickname }
-        _ = try await post(path: access.path("devices"), token: access.token, body: body)
+        _ = try await post(path: access.createPath("devices"), token: access.token, body: body)
     }
 
     func listCrashes(access: NRFCloudAccess, serial: String) async throws -> [NRFCloudCrash] {
@@ -86,7 +86,7 @@ struct nRFCloudRepository {
 
     func crashDetail(access: NRFCloudAccess, traceID: Int) async throws -> NRFCloudCrashDetail {
         log.info("Loading crash detail \(traceID)")
-        let data = try await get(path: access.path("traces/\(traceID)"), token: access.token)
+        let data = try await get(path: access.createPath("traces/\(traceID)"), token: access.token)
         let detail = try NRFCloudCrashDetail.decode(from: data)
         log.info("Crash \(traceID): \(detail.threads.count) thread(s), \(detail.logs.count) log line(s), \(detail.faultRegisters.count) fault register(s)")
         return detail
@@ -120,7 +120,7 @@ struct nRFCloudRepository {
 
     func loadRelease(access: NRFCloudAccess, version: String) async throws -> MemfaultRelease {
         let encoded = version.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? version
-        let data = try await get(path: access.path("releases/\(encoded)"), token: access.token)
+        let data = try await get(path: access.createPath("releases/\(encoded)"), token: access.token)
         return try JSONDecoder().decode(MemfaultEnvelope<MemfaultRelease>.self, from: data).data
     }
 
@@ -143,7 +143,7 @@ struct nRFCloudRepository {
     }
 }
 
-private extension nRFCloudRepository {
+private extension nRFCloudService {
 
     func get(path: String, query: [URLQueryItem] = [], token: String) async throws -> Data {
         try await send("GET", path: path, query: query, token: token)
@@ -167,7 +167,7 @@ private extension nRFCloudRepository {
                 URLQueryItem(name: "page", value: String(page)),
                 URLQueryItem(name: "per_page", value: String(Self.perPage))
             ]
-            let data = try await get(path: access.path(resource), query: query + paging, token: access.token)
+            let data = try await get(path: access.createPath(resource), query: query + paging, token: access.token)
             let result = try JSONDecoder().decode(MemfaultPage<T>.self, from: data)
             items.append(contentsOf: result.data)
             pageCount = result.paging.pageCount
@@ -239,7 +239,7 @@ private extension nRFCloudRepository {
 
 private extension NRFCloudAccess {
 
-    func path(_ resource: String) -> String {
+    func createPath(_ resource: String) -> String {
         "/api/v0/organizations/\(selection.organization)/projects/\(selection.project)/\(resource)"
     }
 }
