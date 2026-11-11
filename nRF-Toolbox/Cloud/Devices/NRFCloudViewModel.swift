@@ -86,11 +86,11 @@ final class NRFCloudViewModel {
         projectsErrorMessage = nil
         defer { isLoadingProjects = false }
         do {
-            let loaded = try await authorized { try await repository.listOrganizations() }
+            let loaded = try await repository.listOrganizations()
             organizations = loaded
             let slug = selection?.organization ?? loaded.first?.slug
             if let slug {
-                projects = try await authorized { try await repository.listProjects(organization: slug) }
+                projects = try await repository.listProjects(organization: slug)
                 if selection == nil, projects.count == 1, let project = projects.first {
                     selectProject(organization: slug, project: project.slug)
                 }
@@ -106,7 +106,7 @@ final class NRFCloudViewModel {
         projectsErrorMessage = nil
         defer { isLoadingProjects = false }
         do {
-            projects = try await authorized { try await repository.listProjects(organization: organization) }
+            projects = try await repository.listProjects(organization: organization)
         } catch {
             log.error("Loading projects failed: \(error.localizedDescription)")
             projectsErrorMessage = error.localizedDescription
@@ -123,11 +123,11 @@ final class NRFCloudViewModel {
     }
     
     func refresh() async {
-        guard let selection, account.isSignedIn, !isLoading else { return }
+        guard account.isSignedIn, !isLoading else { return }
         isLoading = true
         defer { isLoading = false }
         do {
-            devices = try await authorized { try await repository.listDevices() }
+            devices = try await repository.listDevices()
             errorMessage = nil
         } catch is CancellationError {
         } catch let error as URLError where error.code == .cancelled {
@@ -138,7 +138,7 @@ final class NRFCloudViewModel {
     }
     
     func addDevice(serial: String, hardwareVersion: String, nickname: String?) async throws {
-        try await authorized { try await repository.addDevice(serial: serial, hardwareVersion: hardwareVersion, nickname: nickname) }
+        try await repository.addDevice(serial: serial, hardwareVersion: hardwareVersion, nickname: nickname)
         await refresh()
     }
     
@@ -151,37 +151,27 @@ final class NRFCloudViewModel {
     
     func newestRelease(newerThan currentVersion: String, hardwareVersion: String, softwareType: String) async throws -> CatalogRelease? {
         guard selection != nil, account.isSignedIn else { throw MemfaultReleaseCatalogError.notSignedIn }
-        return try await authorized { try await repository.newestRelease(newerThan: currentVersion,
-                                                  hardwareVersion: hardwareVersion, softwareType: softwareType) }
+        return try await repository.newestRelease(newerThan: currentVersion,
+                                                  hardwareVersion: hardwareVersion, softwareType: softwareType)
     }
     
     func loadCrashes(for device: NRFCloudDevice) async {
         Self.markLoading(&crashStates, deviceID: device.id)
         crashStates[device.id] = await loadState(kind: "crashes", deviceID: device.id) {
-            let crashes = try await self.authorized { try await self.repository.listCrashes(serial: device.id) }
+            let crashes = try await self.repository.listCrashes(serial: device.id)
             return crashes.sorted { ($0.capturedDate ?? .distantPast) > ($1.capturedDate ?? .distantPast) }
         }
     }
     
     func crashDetail(for crash: NRFCloudCrash) async throws -> NRFCloudCrashDetail {
-        try await authorized { try await repository.crashDetail(traceID: crash.id) }
+        try await repository.crashDetail(traceID: crash.id)
     }
     
     func loadReboots(for device: NRFCloudDevice) async {
         Self.markLoading(&rebootStates, deviceID: device.id)
         rebootStates[device.id] = await loadState(kind: "reboots", deviceID: device.id) {
-            let reboots = try await self.authorized { try await self.repository.listReboots(serial: device.id) }
+            let reboots = try await self.repository.listReboots(serial: device.id)
             return reboots.sorted { ($0.time ?? .distantPast) > ($1.time ?? .distantPast) }
-        }
-    }
-    
-    private func authorized<T>(_ request: () async throws -> T) async throws -> T {
-        do {
-            return try await request()
-        } catch NRFCloudError.rejected(let status, _) where status == 401 {
-            log.info("Memfault token rejected. Requesting a new one.")
-            repository.reset()
-            return try await request()
         }
     }
     
