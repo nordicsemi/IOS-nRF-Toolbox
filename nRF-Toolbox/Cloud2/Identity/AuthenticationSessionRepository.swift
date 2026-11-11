@@ -9,7 +9,7 @@
 import ObjectiveC
 import AuthenticationServices
 
-class AuthenticationSessionRepository : NSObject, ASWebAuthenticationPresentationContextProviding {
+internal class AuthenticationSessionRepository : NSObject, ASWebAuthenticationPresentationContextProviding {
     
     func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
         UIApplication.shared.connectedScenes
