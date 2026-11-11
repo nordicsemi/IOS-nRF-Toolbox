@@ -22,6 +22,21 @@ final class NordicIdentityRepository {
         self.service = service
     }
 
+    var userName: String? { identity?.userName }
+
+    func restoreSession() async throws -> Bool {
+        try await restore() != nil
+    }
+
+    func signInInteractively() async throws {
+        _ = try await signIn()
+    }
+
+    func signOut() {
+        identity = nil
+        keychain.deleteRefreshToken()
+    }
+
     func idToken() async throws -> String {
         if let idToken = identity?.idToken, isValid(idToken) {
             return idToken

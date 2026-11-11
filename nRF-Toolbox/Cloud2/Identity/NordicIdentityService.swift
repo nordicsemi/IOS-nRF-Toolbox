@@ -12,7 +12,8 @@ import AuthenticationServices
 struct NordicIdentityService {
     
     private static let clientID = "5b42d3f5-9af2-4d64-9cb1-00f85bf27da8"
-    private static let source = "nrfconnectfordesktop"
+    static let callbackScheme = "nrfconnectfordesktop"
+    private static let source = callbackScheme
     private static let redirectURI = "\(source)://my-nordic/auth/callback"
     private static let scopes = [
         "openid",
@@ -64,7 +65,7 @@ struct NordicIdentityService {
     }
     
     private func requestRefreshedTokens(refreshToken: String) async throws -> TokenResponse {
-        var request = URLRequest(url: MyNordicConfiguration.tokenURL)
+        var request = URLRequest(url: Self.tokenUrl)
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         
@@ -128,7 +129,7 @@ struct NordicIdentityService {
     // MARK: Cloud Token
     
     private func requestCloudTokens(pkce: PKCE, accessToken: String) async throws -> TokenResponse {
-        var request = URLRequest(url: MyNordicConfiguration.tokenURL)
+        var request = URLRequest(url: Self.tokenUrl)
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         

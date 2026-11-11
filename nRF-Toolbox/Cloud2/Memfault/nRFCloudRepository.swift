@@ -35,43 +35,50 @@ final class nRFCloudRepository {
     }
 
     func listOrganizations() async throws -> [NRFCloudOrganization] {
-        let token = try await token()
-        return try await service.listOrganizations(token: token)
+        return try await authorized { token in
+            try await service.listOrganizations(token: token)
+        }
     }
 
     func listProjects(organization: String) async throws -> [NRFCloudProject] {
-        let token = try await token()
-        return try await service.listProjects(token: token, organization: organization)
+        return try await authorized { token in
+            try await service.listProjects(token: token, organization: organization)
+        }
     }
 
     func listDevices() async throws -> [NRFCloudDevice] {
         guard let selection else { throw NRFCloudError.notFound("No project selected.") }
-        let token = try await token()
-        return try await service.listDevices(token: token, selection: selection)
+        return try await authorized { token in
+            try await service.listDevices(token: token, selection: selection)
+        }
     }
 
     func addDevice(serial: String, hardwareVersion: String, nickname: String?) async throws {
         guard let selection else { throw NRFCloudError.notFound("No project selected.") }
-        let token = try await token()
-        try await service.addDevice(token: token, selection: selection, serial: serial, hardwareVersion: hardwareVersion, nickname: nickname)
+        try await authorized { token in
+            try await service.addDevice(token: token, selection: selection, serial: serial, hardwareVersion: hardwareVersion, nickname: nickname)
+        }
     }
 
     func listCrashes(serial: String) async throws -> [NRFCloudCrash] {
         guard let selection else { throw NRFCloudError.notFound("No project selected.") }
-        let token = try await token()
-        return try await service.listCrashes(token: token, selection: selection, serial: serial)
+        return try await authorized { token in
+            try await service.listCrashes(token: token, selection: selection, serial: serial)
+        }
     }
 
     func listReboots(serial: String) async throws -> [NRFCloudReboot] {
         guard let selection else { throw NRFCloudError.notFound("No project selected.") }
-        let token = try await token()
-        return try await service.listReboots(token: token, selection: selection, serial: serial)
+        return try await authorized { token in
+            try await service.listReboots(token: token, selection: selection, serial: serial)
+        }
     }
 
     func crashDetail(traceID: Int) async throws -> NRFCloudCrashDetail {
         guard let selection else { throw NRFCloudError.notFound("No project selected.") }
-        let token = try await token()
-        return try await service.crashDetail(token: token, selection: selection, traceID: traceID)
+        return try await authorized { token in
+            try await service.crashDetail(token: token, selection: selection, traceID: traceID)
+        }
     }
 
     func newestRelease(
@@ -80,13 +87,14 @@ final class nRFCloudRepository {
         softwareType: String
     ) async throws -> CatalogRelease? {
         guard let selection else { throw NRFCloudError.notFound("No project selected.") }
-        let token = try await token()
-        return try await service.newestRelease(
-            token: token, selection: selection,
-            newerThan: currentVersion,
-            hardwareVersion: hardwareVersion,
-            softwareType: softwareType
-        )
+        return try await authorized { token in
+            try await service.newestRelease(
+                token: token, selection: selection,
+                newerThan: currentVersion,
+                hardwareVersion: hardwareVersion,
+                softwareType: softwareType
+            )
+        }
     }
     
     private static func loadSelection() -> NRFCloudSelection? {
@@ -97,6 +105,15 @@ final class nRFCloudRepository {
     private func persistSelection() {
         let data = selection.flatMap { try? JSONEncoder().encode($0) }
         UserDefaults.standard.set(data, forKey: Self.selectionKey)
+    }
+
+    private func authorized<T>(_ request: (String) async throws -> T) async throws -> T {
+        do {
+            return try await request(try await token())
+        } catch NRFCloudError.rejected(let status, _) where status == 401 {
+            cloudToken = nil
+            return try await request(try await token())
+        }
     }
 
     private func token() async throws -> String {

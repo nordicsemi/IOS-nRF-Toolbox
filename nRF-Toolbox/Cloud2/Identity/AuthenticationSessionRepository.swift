@@ -22,14 +22,14 @@ internal class AuthenticationSessionRepository : NSObject, ASWebAuthenticationPr
         return try await withCheckedThrowingContinuation { continuation in
             let session = ASWebAuthenticationSession(
                 url: url,
-                callbackURLScheme: MyNordicConfiguration.callbackScheme
+                callbackURLScheme: NordicIdentityService.callbackScheme
             ) { url, error in
                 if let url {
                     continuation.resume(returning: url)
                 } else if let error = error as? ASWebAuthenticationSessionError, error.code == .canceledLogin {
-                    continuation.resume(throwing: MyNordicAuthError.cancelled)
+                    continuation.resume(throwing: NordicIdentityError.cancelled)
                 } else {
-                    continuation.resume(throwing: error ?? MyNordicAuthError.invalidCallback)
+                    continuation.resume(throwing: error ?? NordicIdentityError.invalidCallback)
                 }
             }
             session.presentationContextProvider = self
