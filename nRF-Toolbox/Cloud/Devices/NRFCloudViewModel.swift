@@ -53,7 +53,7 @@ final class NRFCloudViewModel {
     
     init() {
         session = NRFCloudSession(account: account, service: service)
-        MyNordicKeychain.deleteLegacyAPIKey()
+        NordicIdentityKeychain.deleteLegacyAPIKey()
         selection = UserDefaults.standard.data(forKey: Self.selectionKey)
             .flatMap { try? JSONDecoder().decode(NRFCloudSelection.self, from: $0) }
     }

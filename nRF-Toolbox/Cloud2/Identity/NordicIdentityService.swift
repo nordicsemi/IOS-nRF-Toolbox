@@ -31,6 +31,8 @@ struct NordicIdentityService {
     
     private let sessionRepository = AuthenticationSessionRepository()
     
+    // MARK: Sign in
+    
     /// The process used is: The OIDC Authentication Flow
     func signInToNordicIdentity() async throws -> NordicIdentity {
         let pkce = PKCE()
@@ -45,6 +47,41 @@ struct NordicIdentityService {
             idToken: tokens.idToken,
             refreshToken: tokens.refreshToken
         )
+    }
+    
+    // MARK: Refresh token
+    
+    func refreshNordicIdentity(refreshToken: String) async throws -> NordicIdentity {
+        let tokens = try await requestRefreshedTokens(refreshToken: refreshToken)
+        let userName = try await requestUserName(accessToken: tokens.accessToken)
+        
+        return NordicIdentity(
+            userName: userName,
+            accessToken: tokens.accessToken,
+            idToken: tokens.idToken,
+            refreshToken: tokens.refreshToken ?? refreshToken
+        )
+    }
+    
+    private func requestRefreshedTokens(refreshToken: String) async throws -> TokenResponse {
+        var request = URLRequest(url: MyNordicConfiguration.tokenURL)
+        request.httpMethod = "POST"
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        
+        var components = URLComponents()
+        components.queryItems = [
+            URLQueryItem(name: "client_id", value: Self.clientID),
+            URLQueryItem(name: "grant_type", value: "refresh_token"),
+            URLQueryItem(name: "refresh_token", value: refreshToken),
+            URLQueryItem(name: "scope", value: Self.scopeValue)
+        ]
+        request.httpBody = components.percentEncodedQuery?.data(using: .utf8)
+        
+        let (data, _) = try await URLSession.shared.data(for: request)
+        guard let response = try? JSONDecoder().decode(TokenResponse.self, from: data) else {
+            throw NordicIdentityError.server("Token refresh failed.")
+        }
+        return response
     }
     
     // MARK: Access Token
