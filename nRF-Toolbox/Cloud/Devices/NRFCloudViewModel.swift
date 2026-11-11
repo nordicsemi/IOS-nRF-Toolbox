@@ -26,8 +26,6 @@ final class NRFCloudViewModel {
         case failed(String)
     }
     
-    let account: NordicAccountViewModel
-    
     private(set) var devices: [NRFCloudDevice] = []
     private(set) var crashStates: [String: LoadState<[NRFCloudCrash]>] = [:]
     private(set) var rebootStates: [String: LoadState<[NRFCloudReboot]>] = [:]
@@ -40,39 +38,36 @@ final class NRFCloudViewModel {
     private(set) var projectsErrorMessage: String?
     
     var isConfigured: Bool {
-        account.isSignedIn && selection != nil
+        identity.isSignedIn && selection != nil
     }
     
     @ObservationIgnored private var lastGroupingSignature = ""
     
+    private let identity: NordicIdentityRepository
     private let repository: NRFCloudRepository
     private let log = NordicLog.cloud("NRFCloudViewModel")
     
-    init() {
-        let identity = NordicIdentityRepository()
-        account = NordicAccountViewModel(identity: identity)
+    init(identity: NordicIdentityRepository) {
+        self.identity = identity
         repository = NRFCloudRepository(identity: identity)
         selection = repository.selection
     }
     
     func start() async {
-        await account.restore()
-        guard account.isSignedIn else { return }
+        guard identity.isSignedIn else { return }
         async let devicesLoad: () = refresh()
         async let projectsLoad: () = loadOrganizations()
         _ = await (devicesLoad, projectsLoad)
     }
     
-    func signIn() async {
-        await account.signIn()
-        guard account.isSignedIn else { return }
+    func didSignIn() async {
+        guard identity.isSignedIn else { return }
         resetData()
         await loadOrganizations()
         await refresh()
     }
     
-    func signOut() {
-        account.signOut()
+    func didSignOut() {
         repository.reset()
         organizations = []
         projects = []
@@ -81,7 +76,7 @@ final class NRFCloudViewModel {
     }
     
     func loadOrganizations() async {
-        guard account.isSignedIn, !isLoadingProjects else { return }
+        guard identity.isSignedIn, !isLoadingProjects else { return }
         isLoadingProjects = true
         projectsErrorMessage = nil
         defer { isLoadingProjects = false }
@@ -123,7 +118,7 @@ final class NRFCloudViewModel {
     }
     
     func refresh() async {
-        guard account.isSignedIn, !isLoading else { return }
+        guard identity.isSignedIn, !isLoading else { return }
         isLoading = true
         defer { isLoading = false }
         do {
@@ -150,7 +145,7 @@ final class NRFCloudViewModel {
     }
     
     func newestRelease(newerThan currentVersion: String, hardwareVersion: String, softwareType: String) async throws -> CatalogRelease? {
-        guard selection != nil, account.isSignedIn else { throw MemfaultReleaseCatalogError.notSignedIn }
+        guard selection != nil, identity.isSignedIn else { throw MemfaultReleaseCatalogError.notSignedIn }
         return try await repository.newestRelease(newerThan: currentVersion,
                                                   hardwareVersion: hardwareVersion, softwareType: softwareType)
     }

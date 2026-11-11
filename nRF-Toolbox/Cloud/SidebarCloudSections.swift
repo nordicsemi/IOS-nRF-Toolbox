@@ -10,17 +10,18 @@ import SwiftUI
 
 struct NRFCloudSection: View {
     
+    @Environment(NordicAccountViewModel.self) private var account
     @Environment(NRFCloudViewModel.self) private var cloud
     
     @Binding var showProjectSheet: Bool
     
     private var isSignedIn: Bool {
-        cloud.account.isSignedIn
+        account.isSignedIn
     }
     
     var body: some View {
         Section("nRF Cloud") {
-            if let userName = cloud.account.userName {
+            if let userName = account.userName {
                 signedIn(userName)
                 projectRow
             } else {
@@ -60,7 +61,8 @@ struct NRFCloudSection: View {
             
             Menu {
                 Button("Sign Out", systemImage: "rectangle.portrait.and.arrow.right", role: .destructive) {
-                    cloud.signOut()
+                    account.signOut()
+                    cloud.didSignOut()
                 }
             } label: {
                 Image(systemName: "ellipsis.circle")
@@ -88,21 +90,24 @@ struct NRFCloudSection: View {
             }
             
             Button {
-                Task { await cloud.signIn() }
+                Task {
+                    await account.signIn()
+                    await cloud.didSignIn()
+                }
             } label: {
                 HStack(spacing: 8) {
-                    if cloud.account.isSigningIn {
+                    if account.isSigningIn {
                         ProgressView()
                             .tint(.white)
                     }
-                    Text(cloud.account.isSigningIn ? "Signing in…" : "Sign in to myNordic")
+                    Text(account.isSigningIn ? "Signing in…" : "Sign in to myNordic")
                         .fontWeight(.semibold)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 6)
             }
             .buttonStyle(.borderedProminent)
-            .disabled(cloud.account.isSigningIn)
+            .disabled(account.isSigningIn)
         }
         .padding(.vertical, 4)
     }

@@ -24,10 +24,14 @@ struct nRF_ToolboxApp: App {
     )
     
     @State var viewModel = AppViewModel()
-    @State var cloudViewModel = NRFCloudViewModel()
+    @State var accountViewModel: NordicAccountViewModel
+    @State var cloudViewModel: NRFCloudViewModel
     @State var connectedDevicesViewModel: ConnectedDevicesViewModel = ConnectedDevicesViewModel(centralManager: centralManager, restoredPeripherals: centralDelegate.restoredPeripheralsSubject)
     
     init() {
+        let identity = NordicIdentityRepository()
+        _accountViewModel = State(initialValue: NordicAccountViewModel(identity: identity))
+        _cloudViewModel = State(initialValue: NRFCloudViewModel(identity: identity))
         BluetoothEmulation.shared.simulateState()
         BluetoothEmulation.shared.simulatePeripherals()
     }
@@ -36,10 +40,14 @@ struct nRF_ToolboxApp: App {
     
     var body: some Scene {
         WindowGroup {
-            SplashContainer(preload: { await cloudViewModel.start() }) {
+            SplashContainer(preload: {
+                await accountViewModel.restore()
+                await cloudViewModel.start()
+            }) {
                 RootNavigationView()
                     .setupTranslucentBackground()
                     .environment(viewModel)
+                    .environment(accountViewModel)
                     .environment(cloudViewModel)
                     .environment(connectedDevicesViewModel)
             }

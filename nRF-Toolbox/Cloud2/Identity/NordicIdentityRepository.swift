@@ -9,20 +9,22 @@
 import Foundation
 
 @MainActor
+@Observable
 final class NordicIdentityRepository {
 
     private static let expirationMargin: TimeInterval = 60
 
-    private let service: NordicIdentityService
-    private let keychain = NordicIdentityKeychain()
+    @ObservationIgnored private let service: NordicIdentityService
+    @ObservationIgnored private let keychain = NordicIdentityKeychain()
     private var identity: NordicIdentity?
-    private var identityTask: Task<NordicIdentity, Error>?
+    @ObservationIgnored private var identityTask: Task<NordicIdentity, Error>?
 
     init(service: NordicIdentityService = NordicIdentityService()) {
         self.service = service
     }
 
     var userName: String? { identity?.userName }
+    var isSignedIn: Bool { userName != nil }
 
     func restoreSession() async throws -> Bool {
         try await restore() != nil

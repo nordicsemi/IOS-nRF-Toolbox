@@ -18,6 +18,7 @@ struct SidebarView: View {
     
     @Environment(RootNavigationViewModel.self) var rootViewModel: RootNavigationViewModel
     @Environment(ConnectedDevicesViewModel.self) var viewModel: ConnectedDevicesViewModel
+    @Environment(NordicAccountViewModel.self) var account: NordicAccountViewModel
     @Environment(NRFCloudViewModel.self) var cloud: NRFCloudViewModel
     
     @State private var showFirebasePermissionDialog = NordicAnalytics.needsPermission()
@@ -124,15 +125,15 @@ struct SidebarView: View {
         .tint(Color.universalAccentColor)
         .listStyle(.insetGrouped)
         .alert("Sign in failed", isPresented: Binding(
-            get: { cloud.account.errorMessage != nil },
-            set: { if !$0 { cloud.account.errorMessage = nil } }
+            get: { account.errorMessage != nil },
+            set: { if !$0 { account.errorMessage = nil } }
         )) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text(cloud.account.errorMessage ?? "")
+            Text(account.errorMessage ?? "")
         }
-        .onChange(of: cloud.account.isSigningIn) { wasSigningIn, isSigningIn in
-            if wasSigningIn, !isSigningIn, cloud.account.isSignedIn, cloud.selection == nil {
+        .onChange(of: account.isSigningIn) { wasSigningIn, isSigningIn in
+            if wasSigningIn, !isSigningIn, account.isSignedIn, cloud.selection == nil {
                 showCloudProjectSheet = true
             }
         }
