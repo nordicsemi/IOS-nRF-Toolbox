@@ -12,10 +12,13 @@ import Foundation
 final class nRFCloudRepository {
 
     private static let expirationMargin: TimeInterval = 60
+    private static let selectionKey = "nrfcloud.selection"
 
     private let service: nRFCloudService
     private let identity: NordicIdentityRepository
-    var selection: NRFCloudSelection?
+    var selection: NRFCloudSelection? {
+        didSet { persistSelection() }
+    }
 
     private var cloudToken: NRFCloudToken?
     private var didProvision = false
@@ -23,6 +26,7 @@ final class nRFCloudRepository {
     init(identity: NordicIdentityRepository, service: nRFCloudService = nRFCloudService()) {
         self.identity = identity
         self.service = service
+        selection = Self.loadSelection()
     }
 
     func reset() {
@@ -79,6 +83,16 @@ final class nRFCloudRepository {
         )
     }
     
+    private static func loadSelection() -> NRFCloudSelection? {
+        UserDefaults.standard.data(forKey: selectionKey)
+            .flatMap { try? JSONDecoder().decode(NRFCloudSelection.self, from: $0) }
+    }
+
+    private func persistSelection() {
+        let data = selection.flatMap { try? JSONEncoder().encode($0) }
+        UserDefaults.standard.set(data, forKey: Self.selectionKey)
+    }
+
     private func access() async throws -> NRFCloudAccess {
         guard let selection else { throw NRFCloudError.notFound("no project selected") }
         return NRFCloudAccess(token: try await token(), selection: selection)
