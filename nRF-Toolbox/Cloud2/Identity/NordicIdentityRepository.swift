@@ -39,7 +39,12 @@ struct NordicIdentityRepository {
         let tokens = try await requestCloudTokens(pkce: pkce, accessToken: accessToken)
         let userName = try await requestUserName(accessToken: tokens.accessToken)
         
-        return NordicIdentity(userName: userName, accessToken: tokens.accessToken, idToken: tokens.idToken, refreshToken: tokens.refreshToken)
+        return NordicIdentity(
+            userName: userName,
+            accessToken: tokens.accessToken,
+            idToken: tokens.idToken,
+            refreshToken: tokens.refreshToken
+        )
     }
     
     // MARK: Access Token
@@ -122,7 +127,7 @@ struct NordicIdentityRepository {
         }
         let user = try JSONDecoder().decode(GraphMeResponse.self, from: data)
         guard let name = user.displayName ?? user.userPrincipalName else {
-            throw NordicIdentityError.invalidResponse
+            throw NordicIdentityError.invalidResponse // TODO: maybe check if those can be gotten from id token.
         }
         return name
     }
