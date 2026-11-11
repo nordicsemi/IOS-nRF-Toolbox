@@ -74,9 +74,9 @@ private extension NordicIdentityRepository {
     func restore() async throws -> NordicIdentity? {
         guard let refreshToken = identity?.refreshToken ?? keychain.loadRefreshToken() else { return nil }
         do {
-            let refreshed = try await service.refreshNordicIdentity(refreshToken: refreshToken)
-            store(refreshed)
-            return refreshed
+            let refreshedIdentity = try await service.refreshNordicIdentity(refreshToken: refreshToken)
+            store(identity: refreshedIdentity)
+            return refreshedIdentity
         } catch NordicIdentityError.server(_) {
             identity = nil
             keychain.deleteRefreshToken()
@@ -85,14 +85,14 @@ private extension NordicIdentityRepository {
     }
 
     func signIn() async throws -> NordicIdentity {
-        let signedIn = try await service.signInToNordicIdentity()
-        store(signedIn)
-        return signedIn
+        let identity = try await service.signInToNordicIdentity()
+        store(identity: identity)
+        return identity
     }
 
-    func store(_ newIdentity: NordicIdentity) {
-        identity = newIdentity
-        if let refreshToken = newIdentity.refreshToken {
+    func store(identity: NordicIdentity) {
+        self.identity = identity
+        if let refreshToken = identity.refreshToken {
             keychain.save(refreshToken: refreshToken)
         }
     }

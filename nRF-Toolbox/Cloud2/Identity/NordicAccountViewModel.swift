@@ -13,24 +13,24 @@ import iOS_Common_Libraries
 @Observable
 final class NordicAccountViewModel {
 
-    var isSignedIn: Bool { identity.isSignedIn }
-    var userName: String? { identity.userName }
+    var isSignedIn: Bool { repository.isSignedIn }
+    var userName: String? { repository.userName }
     var errorMessage: String?
 
     private(set) var isSigningIn = false
 
-    private let identity: NordicIdentityRepository
+    private let repository: NordicIdentityRepository
     private let log = NordicLog.cloud("NordicAccountViewModel")
 
     init(identity: NordicIdentityRepository) {
-        self.identity = identity
+        self.repository = identity
     }
 
     func signIn() async {
         isSigningIn = true
         defer { isSigningIn = false }
         do {
-            try await identity.signInInteractively()
+            try await repository.signInInteractively()
         } catch NordicIdentityError.cancelled {
         } catch {
             errorMessage = error.localizedDescription
@@ -41,13 +41,13 @@ final class NordicAccountViewModel {
         guard !isSignedIn else { return }
         log.info("Restoring myNordic session")
         do {
-            _ = try await identity.restoreSession()
+            _ = try await repository.restoreSession()
         } catch {
             log.error("Restoring myNordic session failed: \(error.localizedDescription)")
         }
     }
 
     func signOut() {
-        identity.signOut()
+        repository.signOut()
     }
 }
