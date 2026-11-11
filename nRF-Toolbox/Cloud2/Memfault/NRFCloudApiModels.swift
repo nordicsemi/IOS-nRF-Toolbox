@@ -8,12 +8,12 @@
 
 import Foundation
 
-struct MemfaultEnvelope<T: Decodable>: Decodable {
+internal struct MemfaultEnvelope<T: Decodable>: Decodable {
     
     let data: T
 }
 
-struct MemfaultPage<T: Decodable>: Decodable {
+internal struct MemfaultPage<T: Decodable>: Decodable {
     
     let data: [T]
     let paging: Paging
@@ -28,7 +28,7 @@ struct MemfaultPage<T: Decodable>: Decodable {
     }
 }
 
-struct MemfaultTokenResponse: Decodable {
+internal struct MemfaultTokenResponse: Decodable {
     
     let accessToken: String
     let expiresIn: Int
@@ -39,12 +39,12 @@ struct MemfaultTokenResponse: Decodable {
     }
 }
 
-struct MemfaultReleaseSummary: Decodable {
+internal struct MemfaultReleaseSummary: Decodable {
     
     let version: String
 }
 
-struct MemfaultRelease: Decodable {
+internal struct MemfaultRelease: Decodable {
     
     let version: String
     let notes: String?

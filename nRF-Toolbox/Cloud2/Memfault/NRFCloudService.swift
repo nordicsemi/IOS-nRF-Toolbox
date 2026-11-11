@@ -9,7 +9,7 @@
 import Foundation
 import iOS_Common_Libraries
 
-struct nRFCloudService {
+struct NRFCloudService {
 
     private static let host = "api.memfault.com"
     private static let perPage = 100
@@ -143,7 +143,7 @@ struct nRFCloudService {
     }
 }
 
-private extension nRFCloudService {
+private extension NRFCloudService {
 
     func get(path: String, query: [URLQueryItem] = [], token: String) async throws -> Data {
         try await send("GET", path: path, query: query, token: token)
