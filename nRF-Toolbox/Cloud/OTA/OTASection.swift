@@ -121,7 +121,7 @@ struct OTASection: View {
 
     @ViewBuilder
     private func releaseRows(_ release: CatalogRelease) -> some View {
-        LabeledContent("Available") {
+        LabeledContent("New version available") {
             Text(release.version)
                 .font(.callout.monospaced())
         }
@@ -158,8 +158,8 @@ struct OTASection: View {
     }
 
     private var statusTitle: String {
-        if case .available(let release) = viewModel.state, phase == .available {
-            return "Version \(release.version) available"
+        if case .available = viewModel.state, phase == .available {
+            return "Current version"
         }
         return phase.title
     }
