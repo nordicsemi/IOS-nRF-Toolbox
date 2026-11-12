@@ -77,21 +77,6 @@ final class NRFCloudRepository {
         return try await service.crashDetail(token: token, selection: selection, traceID: traceID)
     }
 
-    func newestRelease(
-        newerThan currentVersion: String,
-        hardwareVersion: String,
-        softwareType: String
-    ) async throws -> CatalogRelease? {
-        guard let selection else { throw NRFCloudError.notFound("No project selected.") }
-        let token = try await token()
-        return try await service.newestRelease(
-            token: token, selection: selection,
-            newerThan: currentVersion,
-            hardwareVersion: hardwareVersion,
-            softwareType: softwareType
-        )
-    }
-    
     private static func loadSelection() -> NRFCloudSelection? {
         UserDefaults.standard.data(forKey: selectionKey)
             .flatMap { try? JSONDecoder().decode(NRFCloudSelection.self, from: $0) }

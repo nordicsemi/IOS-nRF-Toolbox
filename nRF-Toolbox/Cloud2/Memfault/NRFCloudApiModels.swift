@@ -38,37 +38,3 @@ internal struct MemfaultTokenResponse: Decodable {
         case expiresIn = "expires_in"
     }
 }
-
-internal struct MemfaultReleaseSummary: Decodable {
-    
-    let version: String
-}
-
-internal struct MemfaultRelease: Decodable {
-    
-    let version: String
-    let notes: String?
-    let artifacts: [Artifact]
-    
-    struct Artifact: Decodable {
-        
-        let type: String
-        let softwareType: String
-        let hardwareVersion: Hardware
-        let filename: String
-        let url: String
-        let md5: String
-        let downloadable: Bool?
-        
-        enum CodingKeys: String, CodingKey {
-            case type, filename, url, md5, downloadable
-            case softwareType = "software_type"
-            case hardwareVersion = "hardware_version"
-        }
-        
-        struct Hardware: Decodable {
-            
-            let name: String
-        }
-    }
-}

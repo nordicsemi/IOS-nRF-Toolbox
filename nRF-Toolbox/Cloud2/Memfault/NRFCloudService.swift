@@ -91,56 +91,6 @@ struct NRFCloudService {
         log.info("Crash \(traceID): \(detail.threads.count) thread(s), \(detail.logs.count) log line(s), \(detail.faultRegisters.count) fault register(s)")
         return detail
     }
-
-    func newestRelease(
-        token: String, selection: NRFCloudSelection,
-        newerThan currentVersion: String,
-        hardwareVersion: String,
-        softwareType: String
-    ) async throws -> CatalogRelease? {
-        log.info("Listing releases for hardware \(hardwareVersion), newer than \(currentVersion)")
-        let summaries: [MemfaultReleaseSummary] = try await fetchAll(
-            token: token, selection: selection,
-            resource: "releases",
-            query: [URLQueryItem(name: "hardware_version", value: hardwareVersion)]
-        )
-        let newerVersions = summaries.map(\.version)
-            .filter { MemfaultReleaseCatalog.isVersion($0, newerThan: currentVersion) }
-            .sorted { MemfaultReleaseCatalog.isVersion($0, newerThan: $1) }
-        log.info("Fetched \(summaries.count) release(s), \(newerVersions.count) newer than \(currentVersion)")
-        for version in newerVersions {
-            let release = try await loadRelease(token: token, selection: selection, version: version)
-            if let match = try catalogRelease(from: release, hardwareVersion: hardwareVersion, softwareType: softwareType) {
-                return match
-            }
-            log.info("Release \(version) has no \(softwareType)/\(hardwareVersion) firmware artifact")
-        }
-        return nil
-    }
-
-    func loadRelease(token: String, selection: NRFCloudSelection, version: String) async throws -> MemfaultRelease {
-        let encoded = version.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? version
-        let data = try await get(path: selection.createPath("releases/\(encoded)"), token: token)
-        return try JSONDecoder().decode(MemfaultEnvelope<MemfaultRelease>.self, from: data).data
-    }
-
-    func catalogRelease(from release: MemfaultRelease, hardwareVersion: String, softwareType: String) throws -> CatalogRelease? {
-        let artifact = release.artifacts.first {
-            $0.type == "firmware"
-            && $0.softwareType == softwareType
-            && $0.hardwareVersion.name == hardwareVersion
-            && $0.downloadable != false
-        }
-        guard let artifact else { return nil }
-        guard let url = URL(string: artifact.url) else { throw MemfaultReleaseCatalogError.invalidArtifactURL }
-        return CatalogRelease(
-            version: release.version,
-            notes: release.notes ?? "",
-            filename: artifact.filename,
-            url: url,
-            md5: artifact.md5
-        )
-    }
 }
 
 private extension NRFCloudService {
