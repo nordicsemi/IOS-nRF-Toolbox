@@ -19,8 +19,8 @@ final class DeviceOTAViewModel: NSObject {
         case idle
         case checking
         case upToDate
-        case available(CatalogRelease)
-        case downloading(CatalogRelease)
+        case available(LatestReleaseInfo)
+        case downloading(LatestReleaseInfo)
         case updating(step: String, progress: Double?)
         case verifying
         case failed(String)
@@ -48,29 +48,27 @@ final class DeviceOTAViewModel: NSObject {
     @ObservationIgnored private var upgradeManager: FirmwareUpgradeManager?
     @ObservationIgnored private var upgradeController: FirmwareUpgradeController?
     @ObservationIgnored private var task: Task<Void, Never>?
-    @ObservationIgnored private var pendingRelease: CatalogRelease?
+    @ObservationIgnored private var pendingRelease: LatestReleaseInfo?
     @ObservationIgnored private var currentPeripheral: UUID?
-    @ObservationIgnored private weak var currentCloud: NRFCloudViewModel?
     @ObservationIgnored private let otaManager = OTAManager()
     @ObservationIgnored private let log = NordicLog.cloud("DeviceOTAViewModel")
 
-    func autoCheck(peripheral identifier: UUID, cloud: NRFCloudViewModel) {
-        guard !isBusy, cloud.isConfigured else { return }
+    func autoCheck(peripheral identifier: UUID) {
+        guard !isBusy else { return }
         if let last = lastCheckedDate, Date().timeIntervalSince(last) < Self.autoCheckInterval { return }
-        checkForUpdate(peripheral: identifier, cloud: cloud)
+        checkForUpdate(peripheral: identifier)
     }
 
-    func checkForUpdate(peripheral identifier: UUID, cloud: NRFCloudViewModel) {
+    func checkForUpdate(peripheral identifier: UUID) {
         guard !isBusy else { return }
         currentPeripheral = identifier
-        currentCloud = cloud
         state = .checking
         task = Task { [weak self] in
-            await self?.performCheck(peripheral: identifier, cloud: cloud)
+            await self?.performCheck(peripheral: identifier)
         }
     }
 
-    func install(_ release: CatalogRelease) {
+    func install(_ release: LatestReleaseInfo) {
         guard !isBusy, let transport else { return }
         pendingRelease = release
         state = .downloading(release)
@@ -94,7 +92,7 @@ final class DeviceOTAViewModel: NSObject {
         state = .idle
     }
 
-    private func performCheck(peripheral identifier: UUID, cloud: NRFCloudViewModel) async {
+    private func performCheck(peripheral identifier: UUID) async {
         let transport = McuMgrBleTransport(identifier)
         self.transport = transport
         do {
@@ -102,11 +100,8 @@ final class DeviceOTAViewModel: NSObject {
             let deviceInfo = try await otaManager.getDeviceInfoToken(via: transport)
             installedVersion = deviceInfo.currentVersion
             log.info("Installed firmware \(deviceInfo.currentVersion) (\(deviceInfo.softwareType), \(deviceInfo.hardwareVersion), serial \(deviceInfo.deviceSerialNumber))")
-            guard let release = try await cloud.newestRelease(newerThan: deviceInfo.currentVersion,
-                                                              hardwareVersion: deviceInfo.hardwareVersion,
-                                                              softwareType: deviceInfo.softwareType) else {
-                throw OTAManagerError.deviceIsUpToDate
-            }
+            let projectKey = try await otaManager.getProjectKey(via: transport)
+            let release = try await otaManager.getLatestReleaseInfo(deviceInfo: deviceInfo, projectKey: projectKey)
             try Task.checkCancellation()
             log.info("Release \(release.version) is available")
             lastCheckedDate = Date()
@@ -122,9 +117,12 @@ final class DeviceOTAViewModel: NSObject {
         }
     }
 
-    private func performInstall(release: CatalogRelease, transport: McuMgrBleTransport) async {
+    private func performInstall(release: LatestReleaseInfo, transport: McuMgrBleTransport) async {
         do {
-            let url = try await MemfaultReleaseCatalog.download(release)
+            guard let artifact = release.artifacts.first(where: { $0.type == "firmware" }) ?? release.artifacts.first else {
+                throw OTAManagerError.invalidArtifactURL
+            }
+            let url = try await otaManager.download(artifact: artifact)
             try Task.checkCancellation()
             let package = try McuMgrPackage(from: url)
             let manager = FirmwareUpgradeManager(transport: transport, delegate: self)
@@ -141,7 +139,7 @@ final class DeviceOTAViewModel: NSObject {
     }
 
     private func verifyAfterUpdate() async {
-        guard let peripheral = currentPeripheral, let cloud = currentCloud else {
+        guard let peripheral = currentPeripheral else {
             state = .idle
             return
         }
@@ -149,7 +147,7 @@ final class DeviceOTAViewModel: NSObject {
             try? await Task.sleep(for: attempt == 1 ? Self.firstVerificationDelay : Self.retryVerificationDelay)
             guard !Task.isCancelled else { return }
             state = .verifying
-            await performCheck(peripheral: peripheral, cloud: cloud)
+            await performCheck(peripheral: peripheral)
             if case .failed = state {
                 log.info("Re-reading firmware version after the update failed (attempt \(attempt)). Retrying.")
                 continue

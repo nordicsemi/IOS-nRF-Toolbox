@@ -7,11 +7,10 @@
 //
 
 import SwiftUI
+import iOSOtaLibrary
 import iOS_Common_Libraries
 
 struct OTASection: View {
-
-    @Environment(NRFCloudViewModel.self) private var cloud: NRFCloudViewModel
 
     let viewModel: DeviceOTAViewModel
     let peripheral: UUID
@@ -97,19 +96,17 @@ struct OTASection: View {
     private var footer: some View {
         if let date = viewModel.lastCheckedDate, !viewModel.isBusy {
             Text("Last checked \(date.formatted(.relative(presentation: .named)))")
-        } else if !cloud.isConfigured {
-            Text("Sign in and select a cloud project to check for firmware updates.")
         }
     }
 
     private func checkButton(title: String) -> some View {
         Button {
-            viewModel.checkForUpdate(peripheral: peripheral, cloud: cloud)
+            viewModel.checkForUpdate(peripheral: peripheral)
         } label: {
             Label(title, systemImage: "arrow.clockwise")
         }
         .foregroundStyle(Color.universalAccentColor)
-        .disabled(!cloud.isConfigured)
+        .disabled(!isConnected)
     }
 
     private var cancelButton: some View {
@@ -120,7 +117,7 @@ struct OTASection: View {
     }
 
     @ViewBuilder
-    private func releaseRows(_ release: CatalogRelease) -> some View {
+    private func releaseRows(_ release: LatestReleaseInfo) -> some View {
         LabeledContent("New version available") {
             Text(release.version)
                 .font(.callout.monospaced())
@@ -148,7 +145,7 @@ struct OTASection: View {
     private var isChecking: Bool {
         switch viewModel.state {
         case .checking: true
-        case .idle: cloud.isConfigured && isConnected
+        case .idle: isConnected
         default: false
         }
     }

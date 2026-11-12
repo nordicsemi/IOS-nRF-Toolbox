@@ -42,6 +42,7 @@ final class NRFCloudViewModel {
     }
     
     @ObservationIgnored private var lastGroupingSignature = ""
+    private var knownSerials: [String: String] = UserDefaults.standard.dictionary(forKey: "nrfcloud.knownSerials") as? [String: String] ?? [:]
     
     private let identity: NordicIdentityRepository
     private let repository: NRFCloudRepository
@@ -137,6 +138,18 @@ final class NRFCloudViewModel {
         await refresh()
     }
     
+    func remember(serial: String, for peripheral: UUID) {
+        let key = serial.trimmed.lowercased()
+        guard !key.isEmpty, knownSerials[peripheral.uuidString] != key else { return }
+        knownSerials[peripheral.uuidString] = key
+        UserDefaults.standard.set(knownSerials, forKey: "nrfcloud.knownSerials")
+        log.info("Remembered serial \(key) for peripheral \(peripheral.uuidString)")
+    }
+    
+    private func matchKeys(of scanResult: ConnectedDevicesViewModel.ScanResult) -> Set<String> {
+        Set([scanResult.name, knownSerials[scanResult.id.uuidString]].compactMap { $0?.trimmed.lowercased() }.filter { !$0.isEmpty })
+    }
+    
     func cloudDevice(matching identifiers: [String?]) -> NRFCloudDevice? {
         let keys = Set(identifiers.compactMap { $0?.trimmed.lowercased() }.filter { !$0.isEmpty })
         let match = devices.first { !$0.matchKeys.isDisjoint(with: keys) }
@@ -205,8 +218,8 @@ final class NRFCloudViewModel {
             return Grouping(inRange: [], other: scanned, offline: [], inRangeCloudCount: 0)
         }
         let cloudKeys = devices.reduce(into: Set<String>()) { $0.formUnion($1.matchKeys) }
-        let scannedNames = Set(scanned.compactMap { $0.name?.trimmed.lowercased() })
-        let inRange = scanned.filter { $0.name.map { cloudKeys.contains($0.trimmed.lowercased()) } ?? false }
+        let scannedNames = scanned.reduce(into: Set<String>()) { $0.formUnion(matchKeys(of: $1)) }
+        let inRange = scanned.filter { !matchKeys(of: $0).isDisjoint(with: cloudKeys) }
         let other = scanned.filter { !inRange.contains($0) }
         let offline = devices.filter { $0.matchKeys.isDisjoint(with: scannedNames) }
         logGrouping(scanned: scanned, inRange: inRange, offline: offline)

@@ -76,7 +76,7 @@ enum OTAPhase: Hashable {
     var subtitle: String {
         switch self {
         case .idle: "Tap to look for a newer version"
-        case .checking: "Comparing with your cloud releases"
+        case .checking: "Looking for the latest release"
         case .upToDate: "You have the latest version"
         case .available: "A newer release is ready to install"
         case .downloading: "Keep the app open"
