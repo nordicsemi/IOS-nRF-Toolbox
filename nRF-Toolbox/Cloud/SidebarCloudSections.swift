@@ -57,15 +57,7 @@ struct NRFCloudSection: View {
         }
     }
     
-    @ViewBuilder
     private var signedOut: some View {
-        Label("Not signed in", systemImage: "person.crop.circle.badge.questionmark")
-            .setAccent(Color.universalAccentColor)
-        
-        Text("Sign in with myNordic to pick an nRF Cloud project and see crashes and reboots of your devices.")
-            .font(.caption)
-            .foregroundStyle(.secondary)
-        
         Button {
             Task {
                 await account.signIn()
@@ -73,16 +65,27 @@ struct NRFCloudSection: View {
             }
         } label: {
             HStack {
-                Label(account.isSigningIn ? "Signing in…" : "Sign in to myNordic",
-                      systemImage: "person.badge.key")
+                Label {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(account.isSigningIn ? "Signing in…" : "Sign in to myNordic")
+                        
+                        Text("Pick an nRF Cloud project and see crashes and reboots of your devices.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                } icon: {
+                    Image(systemName: "person.crop.circle")
+                        .setAccent(Color.universalAccentColor)
+                }
                 
                 if account.isSigningIn {
                     Spacer()
                     ProgressView()
                 }
             }
+            .contentShape(Rectangle())
         }
-        .foregroundStyle(Color.universalAccentColor)
+        .buttonStyle(.plain)
         .disabled(account.isSigningIn)
     }
     
@@ -99,7 +102,6 @@ struct NRFCloudSection: View {
     }
     
     private var title: String {
-        guard let selection = cloud.selection else { return "Select project" }
-        return "\(selection.project) · \(selection.organization)"
+        cloud.selection?.project ?? "Select project"
     }
 }
