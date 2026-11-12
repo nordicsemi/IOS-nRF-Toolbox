@@ -21,6 +21,7 @@ final class NRFCloudRepository {
     }
 
     private var cloudToken: NRFCloudToken?
+    private var tokenTask: Task<String, Error>?
     private var didProvision = false
 
     init(identity: NordicIdentityRepository, service: NRFCloudService = NRFCloudService()) {
@@ -30,6 +31,8 @@ final class NRFCloudRepository {
     }
 
     func reset() {
+        tokenTask?.cancel()
+        tokenTask = nil
         cloudToken = nil
         didProvision = false
     }
@@ -103,6 +106,16 @@ final class NRFCloudRepository {
         if let cloudToken, cloudToken.expiresAt.timeIntervalSinceNow > Self.expirationMargin {
             return cloudToken.value
         }
+        if let tokenTask {
+            return try await tokenTask.value
+        }
+        let task = Task { try await fetchToken() }
+        tokenTask = task
+        defer { tokenTask = nil }
+        return try await task.value
+    }
+
+    private func fetchToken() async throws -> String {
         let idToken = try await identity.obtainIdentity().idToken
         if !didProvision {
             try await service.provisionAccount(idToken: idToken)
