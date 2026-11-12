@@ -19,13 +19,9 @@ struct OTASection: View {
 
     var body: some View {
         Section {
-            VStack(alignment: .leading, spacing: 16) {
-                header
+            status
 
-                content
-                    .animation(.smooth(duration: 0.35), value: phase)
-            }
-            .padding(.vertical, 6)
+            content
         } header: {
             Text("Firmware Update")
         } footer: {
@@ -33,54 +29,35 @@ struct OTASection: View {
         }
     }
 
-    // MARK: Header
-
-    private var header: some View {
-        HStack(spacing: 14) {
-            Image(systemName: phase.icon)
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(phase.tint)
-                .symbolEffect(.pulse, isActive: phase.isWorking)
-                .contentTransition(.symbolEffect(.replace))
-                .frame(width: 44, height: 44)
-                .background(Circle().fill(phase.tint.opacity(0.15)))
-                .fixedSize()
-                .animation(.smooth(duration: 0.3), value: phase.icon)
-                .keyframeAnimator(initialValue: 1.0, trigger: phase.icon) { view, scale in
-                    view.scaleEffect(scale)
-                } keyframes: { _ in
-                    KeyframeTrack {
-                        SpringKeyframe(0.8, duration: 0.15)
-                        SpringKeyframe(1.0, duration: 0.35, spring: .bouncy)
-                    }
-                }
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(statusTitle)
-                    .font(.headline)
-
-                Text(phase.subtitle)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer(minLength: 8)
-
+    private var status: some View {
+        LabeledContent {
             if let installed = viewModel.installedVersion {
-                VersionPill(version: installed, tint: .secondary)
+                Text(installed)
+                    .font(.callout.monospaced())
             } else if isChecking {
-                SkeletonBar(width: 56, height: 28)
+                ProgressView()
+            }
+        } label: {
+            Label {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(statusTitle)
+
+                    Text(phase.subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            } icon: {
+                Image(systemName: phase.icon)
+                    .foregroundStyle(phase.tint)
             }
         }
     }
-
-    // MARK: Content
 
     @ViewBuilder
     private var content: some View {
         switch viewModel.state {
         case .idle where isChecking, .checking:
-            SkeletonCard()
+            EmptyView()
         case .idle:
             checkButton(title: "Check for Updates")
         case .upToDate:
@@ -88,20 +65,16 @@ struct OTASection: View {
 
             checkButton(title: "Check Again")
         case .available(let release):
-            releaseCard(release)
+            releaseRows(release)
 
             Button {
                 viewModel.install(release)
             } label: {
-                Label("Install \(release.version)", systemImage: "arrow.down.circle.fill")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 6)
+                Label("Install \(release.version)", systemImage: "arrow.down.circle")
             }
-            .buttonStyle(.borderedProminent)
-            .tint(Color.universalAccentColor)
+            .foregroundStyle(Color.universalAccentColor)
         case .downloading(let release):
-            releaseCard(release)
+            releaseRows(release)
 
             ProgressRow(text: "Downloading firmware…")
 
@@ -113,12 +86,8 @@ struct OTASection: View {
         case .verifying:
             ProgressRow(text: "Device is restarting. Reading the new version…")
         case .failed(let message):
-            Label(message, systemImage: "exclamationmark.triangle.fill")
-                .font(.subheadline)
+            Label(message, systemImage: "exclamationmark.triangle")
                 .foregroundStyle(Color.nordicRed)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(12)
-                .otaCard(Color.nordicRed, opacity: 0.1, radius: 12)
 
             checkButton(title: "Try Again")
         }
@@ -133,56 +102,35 @@ struct OTASection: View {
         }
     }
 
-    // MARK: Pieces
-
     private func checkButton(title: String) -> some View {
         Button {
             viewModel.checkForUpdate(peripheral: peripheral, cloud: cloud)
         } label: {
             Label(title, systemImage: "arrow.clockwise")
-                .font(.subheadline.weight(.semibold))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 4)
         }
-        .buttonStyle(.bordered)
-        .tint(Color.universalAccentColor)
+        .foregroundStyle(Color.universalAccentColor)
         .disabled(!cloud.isConfigured)
     }
 
     private var cancelButton: some View {
-        Button(role: .cancel) {
+        Button("Cancel", role: .cancel) {
             viewModel.cancel()
-        } label: {
-            Text("Cancel")
-                .frame(maxWidth: .infinity)
         }
-        .buttonStyle(.bordered)
-        .tint(.secondary)
+        .foregroundStyle(Color.nordicRed)
     }
 
-    private func releaseCard(_ release: CatalogRelease) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
-                VersionPill(version: viewModel.installedVersion ?? "–", tint: .secondary)
-
-                Image(systemName: "arrow.right")
-                    .font(.footnote.weight(.bold))
-                    .foregroundStyle(.tertiary)
-
-                VersionPill(version: release.version, tint: Color.universalAccentColor, emphasised: true)
-
-                Spacer()
-            }
-
-            if !release.notes.trimmed.isEmpty {
-                Text(release.notes)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
+    @ViewBuilder
+    private func releaseRows(_ release: CatalogRelease) -> some View {
+        LabeledContent("Available") {
+            Text(release.version)
+                .font(.callout.monospaced())
         }
-        .padding(14)
-        .otaCard(Color.universalAccentColor)
+
+        if !release.notes.trimmed.isEmpty {
+            Text(release.notes)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
     }
 
     @ViewBuilder
@@ -192,17 +140,10 @@ struct OTASection: View {
             let text = matches
                 ? "Updated from \(viewModel.updatedFromVersion ?? "previous version") to \(to)"
                 : "Update to \(to) was sent, but the device reports \(viewModel.installedVersion ?? "an unknown version")"
-            let color: Color = matches ? Color.universalAccentColor : .orange
-            Label(text, systemImage: matches ? "checkmark.seal.fill" : "questionmark.circle.fill")
-                .font(.subheadline)
-                .foregroundStyle(color)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(12)
-                .otaCard(color, opacity: 0.1, radius: 12)
+            Label(text, systemImage: matches ? "checkmark.seal" : "questionmark.circle")
+                .foregroundStyle(matches ? Color.universalAccentColor : Color.nordicSun)
         }
     }
-
-    // MARK: Status
 
     private var isChecking: Bool {
         switch viewModel.state {

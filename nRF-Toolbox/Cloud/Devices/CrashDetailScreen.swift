@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import iOS_Common_Libraries
 
 struct CrashDetailScreen: View {
     
@@ -30,11 +31,12 @@ struct CrashDetailScreen: View {
             } else if let errorMessage {
                 Section {
                     Label(errorMessage, systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(.red)
+                        .foregroundStyle(Color.nordicRed)
                     
                     Button("Retry") {
                         Task { await load() }
                     }
+                    .foregroundStyle(Color.universalAccentColor)
                 }
             } else {
                 Section {
@@ -196,8 +198,8 @@ struct CrashDetailScreen: View {
     
     private func color(for level: String?) -> Color {
         switch level?.uppercased() {
-        case "ERROR": .red
-        case "WARNING": .orange
+        case "ERROR": Color.nordicRed
+        case "WARNING": Color.nordicSun
         default: .secondary
         }
     }

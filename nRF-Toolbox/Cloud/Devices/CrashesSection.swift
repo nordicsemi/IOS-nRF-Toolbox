@@ -107,9 +107,10 @@ struct CrashesSection: View {
                 }
             case .loaded(let items) where items.isEmpty:
                 Label("No reboots reported", systemImage: "checkmark.circle")
-                    .foregroundStyle(.secondary)
+                    .setAccent(Color.universalAccentColor)
             case .loaded(let items):
                 Label("\(items.count) reboot\(items.count == 1 ? "" : "s") reported", systemImage: "arrow.clockwise")
+                    .setAccent(Color.universalAccentColor)
                 
                 ForEach(items.prefix(Self.displayLimit)) { reboot in
                     ReportRow(title: reboot.reasonName, date: reboot.time, release: reboot.release)
@@ -164,7 +165,7 @@ struct CrashesSection: View {
             
             if let error = viewModel.addDeviceError {
                 Label(error, systemImage: "exclamationmark.triangle")
-                    .foregroundStyle(.red)
+                    .foregroundStyle(Color.nordicRed)
             }
         } else {
             ProgressView()
@@ -183,10 +184,11 @@ struct CrashesSection: View {
     @ViewBuilder
     private func failure(_ message: String, retry: @escaping () async -> Void) -> some View {
         Label(message, systemImage: "exclamationmark.triangle")
-            .foregroundStyle(.red)
+            .foregroundStyle(Color.nordicRed)
         
         Button("Retry") {
             Task { await retry() }
         }
+        .foregroundStyle(Color.universalAccentColor)
     }
 }

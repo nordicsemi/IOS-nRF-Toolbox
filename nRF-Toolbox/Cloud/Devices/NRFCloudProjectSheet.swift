@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import iOS_Common_Libraries
 
 struct NRFCloudProjectSheet: View {
     
@@ -27,8 +28,7 @@ struct NRFCloudProjectSheet: View {
             projectsSection
             errorSection
         }
-        .animation(.default, value: cloud.projects)
-        .animation(.default, value: cloud.isLoadingProjects)
+        .listStyle(.insetGrouped)
         .sensoryFeedback(.selection, trigger: project)
         .navigationTitle("nRF Cloud")
         .navigationBarTitleDisplayMode(.inline)
@@ -61,12 +61,14 @@ struct NRFCloudProjectSheet: View {
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("Cancel") { dismiss() }
+                    .foregroundStyle(Color.universalAccentColor)
             }
             ToolbarItem(placement: .confirmationAction) {
                 Button("Save") {
                     cloud.selectProject(organization: organization, project: project)
                     dismiss()
                 }
+                .foregroundStyle(Color.universalAccentColor)
                 .disabled(organization.isEmpty || project.isEmpty)
             }
         }
@@ -74,29 +76,9 @@ struct NRFCloudProjectSheet: View {
     
     private var header: some View {
         Section {
-            VStack(spacing: 12) {
-                Image(systemName: "cloud.fill")
-                    .font(.system(size: 34, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 76, height: 76)
-                    .background(
-                        LinearGradient(colors: [.accentColor, .accentColor.opacity(0.65)],
-                                       startPoint: .topLeading, endPoint: .bottomTrailing),
-                        in: RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    )
-                    .shadow(color: .accentColor.opacity(0.35), radius: 12, y: 6)
-                
-                Text("Choose a project")
-                    .font(.title2.bold())
-                
-                Text("Crashes and reboots of your devices are loaded from the selected nRF Cloud project.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 8)
-            .listRowBackground(Color.clear)
+            Text("Crashes and reboots of your devices are loaded from the selected nRF Cloud project.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
         }
     }
     
@@ -109,11 +91,14 @@ struct NRFCloudProjectSheet: View {
                     }
                 }
             } label: {
-                HStack(spacing: 12) {
-                    iconBadge("building.2.fill")
-                    
-                    Text(organizationName ?? (cloud.isLoadingProjects ? "Loading…" : "No organization"))
-                        .foregroundStyle(organizationName == nil ? .secondary : .primary)
+                HStack {
+                    Label {
+                        Text(organizationName ?? (cloud.isLoadingProjects ? "Loading…" : "No organization"))
+                            .foregroundStyle(organizationName == nil ? .secondary : .primary)
+                    } icon: {
+                        Image(systemName: "building.2")
+                            .setAccent(Color.universalAccentColor)
+                    }
                     
                     Spacer()
                     
@@ -132,13 +117,8 @@ struct NRFCloudProjectSheet: View {
     private var projectsSection: some View {
         Section("Projects") {
             if cloud.isLoadingProjects && cloud.projects.isEmpty {
-                HStack(spacing: 12) {
-                    ProgressView()
-                    Text("Loading projects…")
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 6)
+                ProgressView()
+                    .centered()
             } else if cloud.projects.isEmpty && cloud.projectsErrorMessage == nil {
                 Label("No projects in this organization", systemImage: "tray")
                     .foregroundStyle(.secondary)
@@ -154,14 +134,13 @@ struct NRFCloudProjectSheet: View {
     private var errorSection: some View {
         if let message = cloud.projectsErrorMessage {
             Section {
-                Label(message, systemImage: "exclamationmark.triangle.fill")
-                    .foregroundStyle(.red)
+                Label(message, systemImage: "exclamationmark.triangle")
+                    .foregroundStyle(Color.nordicRed)
                 
-                Button {
+                Button("Try Again") {
                     Task { await cloud.loadOrganizations() }
-                } label: {
-                    Label("Try Again", systemImage: "arrow.clockwise")
                 }
+                .foregroundStyle(Color.universalAccentColor)
             }
         }
     }
@@ -171,37 +150,31 @@ struct NRFCloudProjectSheet: View {
         return Button {
             project = item.slug
         } label: {
-            HStack(spacing: 12) {
-                iconBadge("folder.fill", isHighlighted: isSelected)
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(item.name)
-                        .foregroundStyle(.primary)
-                    Text(item.slug)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+            HStack {
+                Label {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(item.name)
+                            .foregroundStyle(.primary)
+                        Text(item.slug)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                } icon: {
+                    Image(systemName: "folder")
+                        .setAccent(Color.universalAccentColor)
                 }
                 
                 Spacer()
                 
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.title3)
-                    .foregroundStyle(isSelected ? Color.accentColor : Color.secondary.opacity(0.4))
-                    .symbolEffect(.bounce, value: isSelected)
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(Color.universalAccentColor)
+                }
             }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .listRowBackground(isSelected ? Color.accentColor.opacity(0.12) : nil)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
-    }
-    
-    private func iconBadge(_ systemName: String, isHighlighted: Bool = true) -> some View {
-        Image(systemName: systemName)
-            .font(.system(size: 15, weight: .semibold))
-            .foregroundStyle(.white)
-            .frame(width: 32, height: 32)
-            .background(isHighlighted ? Color.accentColor : Color.secondary.opacity(0.5),
-                        in: RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 }
