@@ -9,7 +9,7 @@
 internal struct TokenResponse: Decodable {
     
     let accessToken: String
-    let idToken: String?
+    let idToken: String
     let refreshToken: String?
     let errorDescription: String?
     

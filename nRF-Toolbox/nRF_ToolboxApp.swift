@@ -41,7 +41,7 @@ struct nRF_ToolboxApp: App {
     var body: some Scene {
         WindowGroup {
             SplashContainer(preload: {
-                await accountViewModel.restore()
+                await accountViewModel.signIn()
                 await cloudViewModel.start()
             }) {
                 RootNavigationView()

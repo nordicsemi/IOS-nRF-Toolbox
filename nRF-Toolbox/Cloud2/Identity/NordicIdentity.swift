@@ -10,6 +10,6 @@ struct NordicIdentity {
     
     let userName: String
     let accessToken: String // Used for getting an user name.
-    let idToken: String? // Used for getting a cloud token.
+    let idToken: String // Used for getting a cloud token.
     let refreshToken: String?
 }

@@ -30,20 +30,10 @@ final class NordicAccountViewModel {
         isSigningIn = true
         defer { isSigningIn = false }
         do {
-            try await repository.signInInteractively()
+            _ = try await repository.obtainIdentity()
         } catch NordicIdentityError.cancelled {
         } catch {
             errorMessage = error.localizedDescription
-        }
-    }
-
-    func restore() async {
-        guard !isSignedIn else { return }
-        log.info("Restoring myNordic session")
-        do {
-            _ = try await repository.restoreSession()
-        } catch {
-            log.error("Restoring myNordic session failed: \(error.localizedDescription)")
         }
     }
 

@@ -17,7 +17,6 @@ final class NordicIdentityRepository {
     @ObservationIgnored private let service: NordicIdentityService
     @ObservationIgnored private let keychain = NordicIdentityKeychain()
     private var identity: NordicIdentity?
-    @ObservationIgnored private var identityTask: Task<NordicIdentity, Error>?
 
     init(service: NordicIdentityService = NordicIdentityService()) {
         self.service = service
@@ -25,27 +24,17 @@ final class NordicIdentityRepository {
 
     var userName: String? { identity?.userName }
     var isSignedIn: Bool { userName != nil }
-
-    func restoreSession() async throws -> Bool {
-        try await restore() != nil
-    }
-
-    func signInInteractively() async throws {
-        _ = try await signIn()
+    
+    func obtainIdentity() async throws -> NordicIdentity {
+        if let restored = try await restore() {
+            return restored
+        }
+        return try await signIn()
     }
 
     func signOut() {
         identity = nil
         keychain.deleteRefreshToken()
-    }
-
-    func idToken() async throws -> String {
-        if let idToken = identity?.idToken, isValid(idToken) {
-            return idToken
-        }
-        let current = try await obtainIdentity()
-        guard let idToken = current.idToken else { throw NordicIdentityError.invalidResponse }
-        return idToken
     }
 }
 
@@ -54,21 +43,6 @@ private extension NordicIdentityRepository {
     func isValid(_ idToken: String) -> Bool {
         guard let expiration = Claims(jwt: idToken)?.expirationDate else { return false }
         return expiration.timeIntervalSinceNow > Self.expirationMargin
-    }
-
-    func obtainIdentity() async throws -> NordicIdentity {
-        if let identityTask {
-            return try await identityTask.value
-        }
-        let task = Task {
-            if let restored = try await restore() {
-                return restored
-            }
-            return try await signIn()
-        }
-        identityTask = task
-        defer { identityTask = nil }
-        return try await task.value
     }
 
     func restore() async throws -> NordicIdentity? {

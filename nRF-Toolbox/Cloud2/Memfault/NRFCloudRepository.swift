@@ -103,7 +103,7 @@ final class NRFCloudRepository {
         if let cloudToken, cloudToken.expiresAt.timeIntervalSinceNow > Self.expirationMargin {
             return cloudToken.value
         }
-        let idToken = try await identity.idToken()
+        let idToken = try await identity.obtainIdentity().idToken
         if !didProvision {
             try await service.provisionAccount(idToken: idToken)
             didProvision = true
